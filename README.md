@@ -31,7 +31,7 @@ The video was generated using Hyperframes. To modify the video tutorial:
    ```
 
 ## Development
-To run this project locally, you don't need any special build tools since the site is a static HTML file using a Tailwind CDN. 
+To run this project locally, you don't need any special build tools since the site is a static HTML file using Tailwind and GSAP via CDNs. 
 Just open `index.html` in your web browser!
 
 ## Design Details
