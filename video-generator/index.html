@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0f1115; font-family: "Inter", sans-serif; color: #fff; }
+      .clip { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
+      .glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
+      .neon-text { text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      
+      <!-- Scene 1: Blanket Name Game -->
+      <div id="game1-scene" class="clip flex flex-col items-center justify-center bg-[#0f1115]" data-start="0" data-duration="12" data-track-index="1">
+        <div class="absolute top-16 w-full text-center flex flex-col items-center">
+            <span class="bg-red-600 text-white px-6 py-2 text-2xl font-bold uppercase tracking-widest rounded-full mb-4 inline-block shadow-[0_0_20px_rgba(220,38,38,0.6)]">Tutorial Demo</span>
+            <h2 class="text-7xl font-extrabold text-white mb-2 neon-text">Blanket Name Game</h2>
+            <p id="g1-step" class="text-3xl text-gray-400">Step 1: Two teams separated by a blanket</p>
+        </div>
+        
+        <div class="relative w-[1400px] h-[600px] mt-32 glass rounded-3xl flex items-center justify-between px-32 overflow-hidden shadow-2xl">
+            <!-- Team 1 -->
+            <div class="flex flex-col items-center gap-4 z-0">
+                <div class="text-2xl text-gray-400 font-bold uppercase tracking-widest">Team A</div>
+                <div id="p1" class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_40px_rgba(59,130,246,0.6)] flex items-center justify-center text-white text-6xl">👤</div>
+            </div>
+            <div id="bubble1" class="absolute left-64 top-48 bg-white text-black px-10 py-5 rounded-3xl rounded-bl-none font-extrabold text-4xl z-20 shadow-2xl opacity-0 scale-50">JOHN!!</div>
+            
+            <!-- Team 2 -->
+            <div id="bubble2" class="absolute right-64 top-48 bg-white text-black px-10 py-5 rounded-3xl rounded-br-none font-extrabold text-4xl z-20 shadow-2xl opacity-0 scale-50">SARAH!!</div>
+            <div class="flex flex-col items-center gap-4 z-0">
+                <div class="text-2xl text-gray-400 font-bold uppercase tracking-widest">Team B</div>
+                <div id="p2" class="w-32 h-32 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-[0_0_40px_rgba(239,68,68,0.6)] flex items-center justify-center text-white text-6xl">👤</div>
+            </div>
+            
+            <!-- Blanket -->
+            <div id="blanket" class="absolute left-1/2 -translate-x-1/2 top-0 w-16 h-[800px] bg-gradient-to-b from-gray-800 to-gray-900 border-x border-gray-700 z-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] flex items-center justify-center">
+                <div class="rotate-90 text-gray-500 font-bold tracking-[0.5em] uppercase text-2xl whitespace-nowrap">Blanket</div>
+            </div>
+        </div>
+      </div>
+
+      <!-- Scene 2: Balloon Scatter -->
+      <div id="game2-scene" class="clip flex flex-col items-center justify-center bg-[#0f1115]" data-start="12" data-duration="12" data-track-index="1">
+        <div class="absolute top-16 w-full text-center flex flex-col items-center">
+            <span class="bg-red-600 text-white px-6 py-2 text-2xl font-bold uppercase tracking-widest rounded-full mb-4 inline-block shadow-[0_0_20px_rgba(220,38,38,0.6)]">Tutorial Demo</span>
+            <h2 class="text-7xl font-extrabold text-white mb-2 neon-text">Balloon Team Scatter</h2>
+            <p id="g2-step" class="text-3xl text-gray-400">Step 1: Write names & throw balloons in center</p>
+        </div>
+        
+        <div class="relative w-[1400px] h-[600px] mt-32 glass rounded-3xl shadow-2xl overflow-hidden">
+            <!-- Team Circles -->
+            <div id="team-zone" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border-4 border-dashed border-gray-700 rounded-full opacity-0 flex items-center justify-center">
+                <span class="text-gray-600 font-bold text-2xl uppercase tracking-widest">Team Zone</span>
+            </div>
+            
+            <!-- Players -->
+            <div id="pl1" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 10%; left: 10%">🏃‍♀️</div>
+            <div id="pl2" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 80%; left: 80%">🏃‍♂️</div>
+            <div id="pl3" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 15%; left: 85%">🏃‍♂️</div>
+            <div id="pl4" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 80%; left: 15%">🏃‍♀️</div>
+
+            <!-- Balloons -->
+            <div id="b1" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-pink-400 to-pink-600 shadow-[0_0_30px_rgba(236,72,153,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[-15deg]">Sarah</span></div>
+            <div id="b2" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[10deg]">John</span></div>
+            <div id="b3" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-green-400 to-green-600 shadow-[0_0_30px_rgba(34,197,94,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[25deg]">Mike</span></div>
+            <div id="b4" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-[0_0_30px_rgba(234,179,8,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[-5deg]">Emma</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.set("#game1-scene", { display: "flex" }, 0);
+      tl.set("#game2-scene", { display: "none" }, 0);
+      tl.set("#game2-scene", { display: "flex" }, 12);
+      tl.set("#game1-scene", { display: "none" }, 12);
+
+      // GAME 1: Blanket Name Game (0s - 12s)
+      tl.from("#game1-scene", { opacity: 0, duration: 1 }, 0);
+      tl.to("#g1-step", { innerText: "Step 2: Drop the blanket on 'GO'", duration: 0.1 }, 3);
+      tl.to("#blanket", { y: 1000, duration: 1, ease: "power3.in" }, 4);
+      
+      tl.to("#g1-step", { innerText: "Step 3: First to shout the opponent's name wins!", duration: 0.1 }, 6);
+      // Shout animation
+      tl.to("#bubble1", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 6.5);
+      tl.to("#bubble2", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 6.7);
+      
+      tl.to("#game1-scene", { opacity: 0, duration: 1 }, 11);
+
+      // GAME 2: Balloon Scatter (12s - 24s)
+      tl.from("#game2-scene", { opacity: 0, duration: 1 }, 12);
+      
+      tl.to("#g2-step", { innerText: "Step 2: Organizers scatter balloons wildly", duration: 0.1 }, 14);
+      // Scatter balloons
+      tl.to("#b1", { top: "20%", left: "15%", duration: 1, ease: "power2.out", rotation: -45 }, 14.5);
+      tl.to("#b2", { top: "80%", left: "75%", duration: 1, ease: "power2.out", rotation: 60 }, 14.5);
+      tl.to("#b3", { top: "25%", left: "85%", duration: 1, ease: "power2.out", rotation: 20 }, 14.5);
+      tl.to("#b4", { top: "75%", left: "25%", duration: 1, ease: "power2.out", rotation: -30 }, 14.5);
+
+      tl.to("#g2-step", { innerText: "Step 3: Run in, find your team's balloons & sit!", duration: 0.1 }, 17);
+      tl.to(["#pl1", "#pl2", "#pl3", "#pl4"], { opacity: 1, duration: 0.5 }, 17.5);
+      tl.to("#team-zone", { opacity: 1, duration: 0.5 }, 17.5);
+      
+      // Players run to balloons
+      tl.to("#pl1", { top: "20%", left: "15%", duration: 1, ease: "power2.inOut" }, 18);
+      tl.to("#pl2", { top: "80%", left: "75%", duration: 1, ease: "power2.inOut" }, 18);
+      tl.to("#pl3", { top: "25%", left: "85%", duration: 1, ease: "power2.inOut" }, 18);
+      tl.to("#pl4", { top: "75%", left: "25%", duration: 1, ease: "power2.inOut" }, 18);
+
+      // Gather in center
+      tl.to(["#pl1", "#b1"], { top: "40%", left: "40%", duration: 1, ease: "power2.inOut" }, 20);
+      tl.to(["#pl2", "#b2"], { top: "60%", left: "60%", duration: 1, ease: "power2.inOut" }, 20);
+      tl.to(["#pl3", "#b3"], { top: "40%", left: "60%", duration: 1, ease: "power2.inOut" }, 20);
+      tl.to(["#pl4", "#b4"], { top: "60%", left: "40%", duration: 1, ease: "power2.inOut" }, 20);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

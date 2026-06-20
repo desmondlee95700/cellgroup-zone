@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ignite Cellgroup Gathering - Games</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFDF5; /* Cream background */
+            color: #000;
+        }
+        h1, h2, h3, .brutal-font {
+            font-family: 'Alfa Slab One', serif;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+        .brutal-box {
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px #000;
+            position: relative;
+        }
+        .fold-corner-orange {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 50px;
+            height: 50px;
+            background: #F59E0B; /* Orange */
+            border-left: 4px solid #000;
+            border-bottom: 4px solid #000;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+            z-index: 10;
+        }
+        .fold-corner-blue {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 50px;
+            height: 50px;
+            background: #0284C7; /* Dark blue */
+            border-left: 4px solid #000;
+            border-bottom: 4px solid #000;
+            clip-path: polygon(100% 0, 0 100%, 100% 100%);
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-black selection:text-[#FACC15]">
+
+    <!-- Header Section -->
+    <header class="bg-[#18181B] border-b-4 border-black py-16 px-6 text-center shadow-[0_8px_0px_#000] relative z-20">
+        <h1 class="brutal-font text-5xl md:text-7xl text-[#FACC15] mb-6 drop-shadow-[4px_4px_0px_#000]">GAMES</h1>
+        <p class="text-gray-300 font-bold tracking-[0.2em] uppercase text-sm md:text-base">50 Players · High Energy · Unforgettable</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 py-16">
+        
+        <!-- Video Demo Section -->
+        <section class="mb-20">
+            <h2 class="brutal-font text-4xl mb-6 uppercase">Watch The Live Demo</h2>
+            <div class="brutal-box bg-white p-2">
+                <video class="w-full h-auto border-4 border-black" controls autoplay loop muted>
+                    <source src="assets/videos/games-demo.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+
+        <!-- Tricky Part: Team Formation -->
+        <section class="mb-20">
+            <h2 class="brutal-font text-4xl mb-6 uppercase">How to Form Teams <span class="text-[#F59E0B] drop-shadow-[2px_2px_0px_#000]">(The Tricky Part!)</span></h2>
+            <p class="text-xl font-bold mb-8">
+                With 50 players, dividing into teams is the first game itself! Here are creative ways to randomly (and chaotically) group everyone up before the balloon game:
+            </p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="brutal-box p-8 bg-white">
+                    <h3 class="brutal-font text-2xl mb-4 text-[#F59E0B] drop-shadow-[2px_2px_0px_#000]">1. Puzzle Pieces</h3>
+                    <p class="font-bold text-lg leading-relaxed">Hand out cut-up pieces of different pictures as people arrive. Players must find the others with the matching pieces to complete the picture and form their team.</p>
+                </div>
+                <div class="brutal-box p-8 bg-white">
+                    <h3 class="brutal-font text-2xl mb-4 text-[#F59E0B] drop-shadow-[2px_2px_0px_#000]">2. Colored Candies</h3>
+                    <p class="font-bold text-lg leading-relaxed">Have everyone draw a candy (like Skittles or M&Ms) from an opaque bag. Your team is everyone who pulled the same color.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <div class="space-y-20">
+            <!-- Game 1 -->
+            <article>
+                <div class="bg-[#18181B] border-4 border-black border-b-0 py-8 px-8 flex flex-col md:flex-row md:items-center justify-between shadow-[8px_0px_0px_#000]">
+                    <div>
+                        <h2 class="brutal-font text-4xl text-[#FACC15] mb-2">Blanket Name Game</h2>
+                        <p class="text-gray-300 font-bold tracking-widest text-xs uppercase">Icebreaker · Fast Reflexes · Quick Memory</p>
+                    </div>
+                </div>
+                <div class="brutal-box bg-[#FACC15] p-8 md:p-12 border-b-0 shadow-none">
+                    <div class="fold-corner-orange"></div>
+                    <h3 class="brutal-font text-3xl mb-8 uppercase">How to Play</h3>
+                    <ul class="space-y-6">
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#FACC15] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">1</span>
+                            <span class="text-2xl font-black mt-1">Split the group into two large halves.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#FACC15] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">2</span>
+                            <span class="text-2xl font-black mt-1">The organizers hold up a big black carpet or blanket between the two groups so they can't see each other.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#FACC15] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">3</span>
+                            <span class="text-2xl font-black mt-1">Each group silently selects 1 or 2 players to sit directly in front of the blanket.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#FACC15] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">4</span>
+                            <span class="text-2xl font-black mt-1">On the count of three, the organizers drop the blanket! The selected players must race to spit out the name of the opponent(s) facing them. The first to say the correct name wins the round!</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Illustration -->
+                <div class="bg-white border-4 border-black border-t-0 p-4 brutal-box">
+                    <img src="assets/images/blanket_game.png" alt="Blanket Name Game" class="w-full h-auto border-4 border-black object-cover">
+                </div>
+            </article>
+
+            <!-- Game 2 -->
+            <article>
+                <div class="bg-[#18181B] border-4 border-black border-b-0 py-8 px-8 flex flex-col md:flex-row md:items-center justify-between shadow-[8px_0px_0px_#000]">
+                    <div>
+                        <h2 class="brutal-font text-4xl text-[#38BDF8] mb-2">Balloon Team Scatter</h2>
+                        <p class="text-gray-300 font-bold tracking-widest text-xs uppercase">Teamwork · Chaos · Coordination</p>
+                    </div>
+                </div>
+                <div class="brutal-box bg-[#38BDF8] p-8 md:p-12 border-b-0 shadow-none">
+                    <div class="fold-corner-blue"></div>
+                    <h3 class="brutal-font text-3xl mb-8 uppercase drop-shadow-[2px_2px_0px_#fff]">How to Play</h3>
+                    <ul class="space-y-6">
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#38BDF8] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">1</span>
+                            <span class="text-2xl font-black mt-1">After forming teams, give every player a balloon and a permanent marker.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#38BDF8] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">2</span>
+                            <span class="text-2xl font-black mt-1">Players write their names clearly on their balloons.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#38BDF8] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">3</span>
+                            <span class="text-2xl font-black mt-1">All players toss their balloons into the center of the room, and organizers scatter them wildly.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-[#38BDF8] w-10 h-10 flex items-center justify-center font-black text-2xl border-4 border-black mr-6 shrink-0 shadow-[2px_2px_0px_#fff]">4</span>
+                            <span class="text-2xl font-black mt-1">On "GO", players run into the center. They must find the balloons belonging to their specific teammates, gather them, and sit down in a circle as a completed team. First team to reunite with all correct balloons wins!</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Illustration -->
+                <div class="bg-white border-4 border-black border-t-0 p-4 brutal-box">
+                    <img src="assets/images/balloon_scatter.png" alt="Balloon Scatter Game" class="w-full h-auto border-4 border-black object-cover">
+                </div>
+            </article>
+        </div>
+
+    </main>
+
+</body>
+</html>
