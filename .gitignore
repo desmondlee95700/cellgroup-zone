@@ -1,7 +1,7 @@
 node_modules/
 .DS_Store
 *.mp4
-!assets/videos/*.mp4
+!public/assets/videos/*.mp4
 .vercel
 
 # dependencies
