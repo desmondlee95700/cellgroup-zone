@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-alfa-slab-one: var(--font-alfa-slab-one);
+  --font-inter: var(--font-inter);
+}
+
+body {
+  background-color: #FFFDF5; /* Cream background */
+  color: #000;
+}
+
+h1, h2, h3, .brutal-font {
+  font-family: var(--font-alfa-slab-one), serif;
+  letter-spacing: 1px;
+  font-weight: normal;
+}
+
+.brutal-box {
+  border: 4px solid #000;
+  box-shadow: 8px 8px 0px #000;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Interactive Hover State for Boxes */
+.brutal-box-hover:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0px #000;
+}
+
+.fold-corner-orange {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 50px;
+  height: 50px;
+  background: #F59E0B; /* Orange */
+  border-left: 4px solid #000;
+  border-bottom: 4px solid #000;
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.fold-corner-blue {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 50px;
+  height: 50px;
+  background: #0284C7; /* Dark blue */
+  border-left: 4px solid #000;
+  border-bottom: 4px solid #000;
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+/* Interactive fold peel on hover */
+.brutal-box-hover:hover .fold-corner-orange, 
+.brutal-box-hover:hover .fold-corner-blue {
+  width: 60px;
+  height: 60px;
+}
+
+/* Physical Game Token Numbers */
+.game-token {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 4px solid #000;
+  font-family: var(--font-alfa-slab-one), serif;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-right: 1.5rem;
+  position: relative;
+}
+.game-token::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 2px dashed rgba(0,0,0,0.3);
+}
+
+/* Jumbotron Screws */
+.screw {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #333;
+  border-radius: 50%;
+  border: 2px solid #000;
+}
+.screw::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  width: 80%;
+  height: 2px;
+  background: #000;
+  transform: translateY(-50%) rotate(45deg);
+}
