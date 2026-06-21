@@ -4,124 +4,695 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0f1115; font-family: "Inter", sans-serif; color: #fff; }
-      .clip { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
-      .glass { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
-      .neon-text { text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+      * { box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0;
+        overflow: hidden;
+        background: #101318;
+        color: #f7f1e8;
+        font-family: "Space Mono", monospace;
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 16% 18%, rgba(255, 77, 61, 0.25), rgba(255, 77, 61, 0) 34%),
+          radial-gradient(circle at 88% 84%, rgba(34, 211, 197, 0.18), rgba(34, 211, 197, 0) 30%),
+          #101318;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        padding: 76px 96px 84px;
+        overflow: hidden;
+        background-color: #101318;
+      }
+      .scene-grid {
+        position: absolute;
+        inset: 0;
+        opacity: 0.18;
+        background-image:
+          linear-gradient(rgba(247, 241, 232, 0.13) 1px, rgba(247, 241, 232, 0) 1px),
+          linear-gradient(90deg, rgba(247, 241, 232, 0.13) 1px, rgba(247, 241, 232, 0) 1px);
+        background-size: 80px 80px;
+      }
+      .ghost-word {
+        position: absolute;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 210px;
+        letter-spacing: 0.01em;
+        color: rgba(247, 241, 232, 0.045);
+        text-transform: uppercase;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .header {
+        position: relative;
+        z-index: 6;
+        display: grid;
+        grid-template-columns: 1fr 520px;
+        align-items: end;
+        gap: 48px;
+      }
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        width: max-content;
+        min-height: 46px;
+        padding: 8px 18px;
+        background: #ff4d3d;
+        color: #101318;
+        border-radius: 6px;
+        font-family: "Space Mono", monospace;
+        font-size: 24px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 22px 0 0;
+        max-width: 1120px;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 112px;
+        line-height: 0.92;
+        letter-spacing: 0.01em;
+        text-transform: uppercase;
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+      .tag {
+        padding: 11px 16px;
+        border: 2px solid rgba(247, 241, 232, 0.22);
+        border-radius: 999px;
+        color: #f7f1e8;
+        font-family: "Space Mono", monospace;
+        font-size: 20px;
+        background: rgba(25, 31, 39, 0.88);
+      }
+      .stage {
+        position: relative;
+        z-index: 3;
+        display: grid;
+        grid-template-columns: 520px 1fr;
+        gap: 42px;
+        height: 706px;
+        margin-top: 52px;
+      }
+      .steps {
+        position: relative;
+        padding: 28px;
+        border: 2px solid rgba(247, 241, 232, 0.16);
+        background: rgba(25, 31, 39, 0.9);
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.25);
+      }
+      .steps-title {
+        font-family: "Space Mono", monospace;
+        color: #ffd166;
+        font-size: 28px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 54px 1fr;
+        align-items: start;
+        gap: 18px;
+        margin-top: 22px;
+        color: #b9c0c9;
+        font-size: 27px;
+        line-height: 1.18;
+      }
+      .step-num {
+        display: grid;
+        place-items: center;
+        width: 54px;
+        height: 54px;
+        background: #2a313b;
+        border: 2px solid rgba(247, 241, 232, 0.18);
+        color: #f7f1e8;
+        font-family: "Space Mono", monospace;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .step.active {
+        color: #f7f1e8;
+      }
+      .step.active .step-num {
+        background: #ff4d3d;
+        color: #101318;
+        border-color: #ff4d3d;
+      }
+      .arena {
+        position: relative;
+        overflow: hidden;
+        border: 2px solid rgba(247, 241, 232, 0.16);
+        background:
+          radial-gradient(circle at center, rgba(255, 209, 102, 0.08), rgba(255, 209, 102, 0) 45%),
+          #191f27;
+        box-shadow: inset 0 0 0 1px rgba(247, 241, 232, 0.05), 0 30px 100px rgba(0, 0, 0, 0.28);
+      }
+      .floor-line {
+        position: absolute;
+        height: 2px;
+        left: 54px;
+        right: 54px;
+        background: rgba(247, 241, 232, 0.12);
+      }
+      .floor-line.one { top: 142px; }
+      .floor-line.two { bottom: 142px; }
+      .team-label {
+        position: absolute;
+        top: 34px;
+        font-family: "Space Mono", monospace;
+        font-size: 25px;
+        font-weight: 700;
+        color: #101318;
+        padding: 9px 15px;
+      }
+      .team-a-label { left: 42px; background: #22d3c5; }
+      .team-b-label { right: 42px; background: #4f8cff; }
+      .player {
+        position: absolute;
+        width: 86px;
+        height: 132px;
+        transform-origin: 50% 100%;
+      }
+      .player .head {
+        position: absolute;
+        left: 23px;
+        top: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f7c792;
+        border: 3px solid #101318;
+      }
+      .player .hair {
+        position: absolute;
+        left: 19px;
+        top: -4px;
+        width: 49px;
+        height: 20px;
+        border-radius: 20px 20px 7px 7px;
+        background: #2d1c14;
+      }
+      .player .body {
+        position: absolute;
+        left: 14px;
+        top: 39px;
+        width: 58px;
+        height: 58px;
+        border-radius: 16px 16px 10px 10px;
+        background: var(--shirt);
+        border: 3px solid #101318;
+      }
+      .player .arm {
+        position: absolute;
+        top: 48px;
+        width: 16px;
+        height: 54px;
+        border-radius: 999px;
+        background: #f7c792;
+        border: 3px solid #101318;
+      }
+      .player .arm.left { left: 0; transform: rotate(18deg); }
+      .player .arm.right { right: 0; transform: rotate(-18deg); }
+      .player .leg {
+        position: absolute;
+        top: 91px;
+        width: 18px;
+        height: 42px;
+        border-radius: 999px;
+        background: #38404b;
+        border: 3px solid #101318;
+      }
+      .player .leg.left { left: 24px; transform: rotate(12deg); }
+      .player .leg.right { right: 24px; transform: rotate(-12deg); }
+      .player.small { transform: scale(0.82); }
+      .player.sitting .leg.left { transform: rotate(76deg); left: 12px; top: 94px; }
+      .player.sitting .leg.right { transform: rotate(-76deg); right: 12px; top: 94px; }
+      .name-chip {
+        position: absolute;
+        left: 50%;
+        top: 138px;
+        transform: translateX(-50%);
+        padding: 5px 10px;
+        background: #101318;
+        border: 1px solid rgba(247, 241, 232, 0.25);
+        color: #f7f1e8;
+        font-family: "Space Mono", monospace;
+        font-size: 16px;
+        white-space: nowrap;
+      }
+      .blanket {
+        position: absolute;
+        left: 50%;
+        top: -22px;
+        width: 190px;
+        height: 660px;
+        transform: translateX(-50%);
+        transform-origin: 50% 0;
+        z-index: 20;
+        background:
+          linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0) 18%, rgba(0,0,0,0.23) 52%, rgba(255,255,255,0.04)),
+          repeating-linear-gradient(90deg, #090a0c 0 18px, #14171d 18px 34px);
+        box-shadow: 0 24px 70px rgba(0,0,0,0.65);
+      }
+      .blanket:before, .blanket:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 7px;
+        background: #2a313b;
+      }
+      .blanket:before { left: 16px; }
+      .blanket:after { right: 16px; }
+      .blanket-label {
+        position: absolute;
+        left: 50%;
+        top: 46%;
+        transform: translate(-50%, -50%) rotate(90deg);
+        color: #b9c0c9;
+        font-family: "Space Mono", monospace;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .countdown {
+        position: absolute;
+        left: 50%;
+        top: 80px;
+        transform: translateX(-50%);
+        z-index: 30;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 128px;
+        line-height: 1;
+        color: #ffd166;
+        text-shadow: 0 8px 0 #101318;
+      }
+      .speech {
+        position: absolute;
+        z-index: 24;
+        max-width: 300px;
+        padding: 18px 24px;
+        background: #f7f1e8;
+        color: #101318;
+        border: 5px solid #101318;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 42px;
+        line-height: 0.96;
+        text-transform: uppercase;
+        box-shadow: 10px 10px 0 #ff4d3d;
+      }
+      .speech:after {
+        content: "";
+        position: absolute;
+        bottom: -25px;
+        width: 0;
+        height: 0;
+        border-top: 26px solid #101318;
+      }
+      .speech.left { left: 355px; top: 224px; }
+      .speech.left:after { left: 26px; border-right: 22px solid rgba(0,0,0,0); }
+      .speech.right { right: 315px; top: 218px; box-shadow: -10px 10px 0 #4f8cff; }
+      .speech.right:after { right: 26px; border-left: 22px solid rgba(0,0,0,0); }
+      .burst {
+        position: absolute;
+        z-index: 22;
+        width: 200px;
+        height: 200px;
+        background: #ffd166;
+        clip-path: polygon(50% 0%, 58% 34%, 91% 18%, 68% 46%, 100% 58%, 63% 62%, 78% 95%, 50% 72%, 23% 95%, 37% 62%, 0% 58%, 32% 46%, 9% 18%, 42% 34%);
+      }
+      .burst.one { left: 360px; top: 278px; }
+      .burst.two { right: 320px; top: 285px; background: #ff4d3d; }
+      .center-call {
+        position: absolute;
+        left: 50%;
+        bottom: 45px;
+        transform: translateX(-50%);
+        padding: 14px 24px;
+        background: #ffd166;
+        color: #101318;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 48px;
+        text-transform: uppercase;
+        box-shadow: 8px 8px 0 #101318;
+      }
+      .table {
+        position: absolute;
+        left: 50%;
+        top: 55%;
+        width: 360px;
+        height: 160px;
+        transform: translate(-50%, -50%);
+        background: #32241d;
+        border: 5px solid #101318;
+        box-shadow: 13px 13px 0 rgba(0,0,0,0.3);
+      }
+      .table:before {
+        content: "";
+        position: absolute;
+        left: 26px;
+        right: 26px;
+        top: 23px;
+        height: 10px;
+        background: rgba(247,241,232,0.2);
+      }
+      .marker {
+        position: absolute;
+        width: 92px;
+        height: 18px;
+        border-radius: 999px;
+        background: #f7f1e8;
+        border: 3px solid #101318;
+      }
+      .marker:after {
+        content: "";
+        position: absolute;
+        right: -8px;
+        top: 2px;
+        border-left: 12px solid #ff4d3d;
+        border-top: 4px solid rgba(0,0,0,0);
+        border-bottom: 4px solid rgba(0,0,0,0);
+      }
+      .balloon {
+        position: absolute;
+        z-index: 8;
+        width: 92px;
+        height: 118px;
+        border-radius: 52% 52% 48% 48%;
+        background: var(--balloon);
+        border: 4px solid #101318;
+        box-shadow: inset -13px -16px 0 rgba(0,0,0,0.18), 8px 9px 0 rgba(0,0,0,0.22);
+        transform-origin: 50% 100%;
+      }
+      .balloon:before {
+        content: "";
+        position: absolute;
+        left: 20px;
+        top: 18px;
+        width: 18px;
+        height: 31px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.36);
+      }
+      .balloon:after {
+        content: "";
+        position: absolute;
+        left: 44px;
+        bottom: -54px;
+        width: 2px;
+        height: 56px;
+        background: rgba(247,241,232,0.62);
+      }
+      .balloon-name {
+        position: absolute;
+        left: 50%;
+        top: 45px;
+        transform: translateX(-50%) rotate(-10deg);
+        color: #101318;
+        font-family: "Space Mono", monospace;
+        font-size: 17px;
+        font-weight: 700;
+      }
+      .motion-dash {
+        position: absolute;
+        width: 120px;
+        height: 14px;
+        border-radius: 999px;
+        background: rgba(255, 209, 102, 0.72);
+        transform-origin: 100% 50%;
+      }
+      .zone {
+        position: absolute;
+        z-index: 2;
+        border: 5px dashed rgba(247,241,232,0.32);
+        background: rgba(34, 211, 197, 0.08);
+      }
+      .zone.one {
+        left: 290px;
+        bottom: 68px;
+        width: 300px;
+        height: 210px;
+        border-radius: 48% 52% 46% 54%;
+      }
+      .zone.two {
+        right: 290px;
+        bottom: 68px;
+        width: 300px;
+        height: 210px;
+        border-radius: 52% 48% 55% 45%;
+        background: rgba(79, 140, 255, 0.08);
+      }
+      .zone-label {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-family: "Space Mono", monospace;
+        font-size: 22px;
+        font-weight: 700;
+        color: rgba(247,241,232,0.55);
+        text-transform: uppercase;
+      }
+      .transition-wipe {
+        position: absolute;
+        inset: 0;
+        z-index: 80;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .wipe-panel {
+        position: absolute;
+        top: 0;
+        width: 25%;
+        height: 100%;
+        background: #ff4d3d;
+      }
+      .wipe-panel:nth-child(2) { left: 25%; background: #ffd166; }
+      .wipe-panel:nth-child(3) { left: 50%; background: #22d3c5; }
+      .wipe-panel:nth-child(4) { left: 75%; background: #4f8cff; }
+      .wipe-panel:nth-child(1) { left: 0; }
+      .final-card {
+        position: absolute;
+        right: 58px;
+        top: 58px;
+        z-index: 18;
+        width: 330px;
+        padding: 22px;
+        background: #f7f1e8;
+        color: #101318;
+        border: 5px solid #101318;
+        box-shadow: 12px 12px 0 #ff4d3d;
+        font-family: "Archivo Black", sans-serif;
+        font-size: 42px;
+        line-height: 1;
+        text-transform: uppercase;
+      }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
-      
-      <!-- Scene 1: Blanket Name Game -->
-      <div id="game1-scene" class="clip flex flex-col items-center justify-center bg-[#0f1115]" data-start="0" data-duration="12" data-track-index="1">
-        <div class="absolute top-16 w-full text-center flex flex-col items-center">
-            <span class="bg-red-600 text-white px-6 py-2 text-2xl font-bold uppercase tracking-widest rounded-full mb-4 inline-block shadow-[0_0_20px_rgba(220,38,38,0.6)]">Tutorial Demo</span>
-            <h2 class="text-7xl font-extrabold text-white mb-2 neon-text">Blanket Name Game</h2>
-            <p id="g1-step" class="text-3xl text-gray-400">Step 1: Two teams separated by a blanket</p>
-        </div>
-        
-        <div class="relative w-[1400px] h-[600px] mt-32 glass rounded-3xl flex items-center justify-between px-32 overflow-hidden shadow-2xl">
-            <!-- Team 1 -->
-            <div class="flex flex-col items-center gap-4 z-0">
-                <div class="text-2xl text-gray-400 font-bold uppercase tracking-widest">Team A</div>
-                <div id="p1" class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_40px_rgba(59,130,246,0.6)] flex items-center justify-center text-white text-6xl">👤</div>
-            </div>
-            <div id="bubble1" class="absolute left-64 top-48 bg-white text-black px-10 py-5 rounded-3xl rounded-bl-none font-extrabold text-4xl z-20 shadow-2xl opacity-0 scale-50">JOHN!!</div>
-            
-            <!-- Team 2 -->
-            <div id="bubble2" class="absolute right-64 top-48 bg-white text-black px-10 py-5 rounded-3xl rounded-br-none font-extrabold text-4xl z-20 shadow-2xl opacity-0 scale-50">SARAH!!</div>
-            <div class="flex flex-col items-center gap-4 z-0">
-                <div class="text-2xl text-gray-400 font-bold uppercase tracking-widest">Team B</div>
-                <div id="p2" class="w-32 h-32 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-[0_0_40px_rgba(239,68,68,0.6)] flex items-center justify-center text-white text-6xl">👤</div>
-            </div>
-            
-            <!-- Blanket -->
-            <div id="blanket" class="absolute left-1/2 -translate-x-1/2 top-0 w-16 h-[800px] bg-gradient-to-b from-gray-800 to-gray-900 border-x border-gray-700 z-10 shadow-[0_0_100px_rgba(0,0,0,0.8)] flex items-center justify-center">
-                <div class="rotate-90 text-gray-500 font-bold tracking-[0.5em] uppercase text-2xl whitespace-nowrap">Blanket</div>
-            </div>
-        </div>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080">
+      <section id="blanket-scene" class="clip scene" data-start="0" data-duration="15" data-track-index="1">
+        <div class="scene-grid" data-layout-ignore></div>
+        <div class="ghost-word" id="ghost-blanket" style="left: -40px; bottom: -34px;">Blanket Drop</div>
+        <header class="header">
+          <div>
+            <div class="kicker">Icebreaker · Fast Reflexes · Quick Memory</div>
+            <h1>Blanket Name Game</h1>
+          </div>
+          <div class="tags">
+            <div class="tag">Split</div>
+            <div class="tag">Hide</div>
+            <div class="tag">Choose</div>
+            <div class="tag">Drop</div>
+            <div class="tag">Shout</div>
+          </div>
+        </header>
+        <main class="stage">
+          <aside class="steps">
+            <div class="steps-title">How to Play</div>
+            <div class="step" id="b-step-1"><div class="step-num">1</div><div>Split the group into two large halves.</div></div>
+            <div class="step" id="b-step-2"><div class="step-num">2</div><div>Hold up a large black blanket between the groups.</div></div>
+            <div class="step" id="b-step-3"><div class="step-num">3</div><div>Each group silently selects 1 or 2 players.</div></div>
+            <div class="step" id="b-step-4"><div class="step-num">4</div><div>On THREE, drop it. First name shouted wins.</div></div>
+          </aside>
+          <div class="arena">
+            <div class="floor-line one"></div>
+            <div class="floor-line two"></div>
+            <div class="team-label team-a-label">TEAM A</div>
+            <div class="team-label team-b-label">TEAM B</div>
+            <div class="player small b-crowd-a1" style="--shirt:#22d3c5; left:90px; top:140px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div class="player small b-crowd-a2" style="--shirt:#ffd166; left:110px; top:360px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div class="player small b-crowd-a3" style="--shirt:#ff5da8; left:230px; top:505px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div class="player small b-crowd-b1" style="--shirt:#4f8cff; right:90px; top:140px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div class="player small b-crowd-b2" style="--shirt:#5bd46d; right:120px; top:370px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div class="player small b-crowd-b3" style="--shirt:#ff4d3d; right:235px; top:505px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
+            <div id="chosen-a" class="player sitting" style="--shirt:#22d3c5; left:335px; top:312px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Maya</div></div>
+            <div id="chosen-b" class="player sitting" style="--shirt:#4f8cff; right:335px; top:312px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Noah</div></div>
+            <div id="blanket" class="blanket"><div class="blanket-label">Black Blanket</div></div>
+            <div id="countdown" class="countdown">THREE</div>
+            <div class="burst one" id="burst-left"></div>
+            <div class="burst two" id="burst-right"></div>
+            <div class="speech left" id="shout-left">Noah!</div>
+            <div class="speech right" id="shout-right">Maya!</div>
+            <div class="center-call" id="winner-call">Fastest name wins</div>
+          </div>
+        </main>
+      </section>
+
+      <section id="balloon-scene" class="clip scene" data-start="15" data-duration="15" data-track-index="1">
+        <div class="scene-grid" data-layout-ignore></div>
+        <div class="ghost-word" id="ghost-balloon" style="right: -54px; bottom: -34px;">Scatter</div>
+        <header class="header">
+          <div>
+            <div class="kicker">Team Rush · Name Hunt · Sit Together</div>
+            <h1>Balloon Team Scatter</h1>
+          </div>
+          <div class="tags">
+            <div class="tag">Name</div>
+            <div class="tag">Toss</div>
+            <div class="tag">Scatter</div>
+            <div class="tag">Find</div>
+            <div class="tag">Sit</div>
+          </div>
+        </header>
+        <main class="stage">
+          <aside class="steps">
+            <div class="steps-title">How to Play</div>
+            <div class="step" id="s-step-1"><div class="step-num">1</div><div>Give every player a balloon and marker.</div></div>
+            <div class="step" id="s-step-2"><div class="step-num">2</div><div>Players write their names clearly on balloons.</div></div>
+            <div class="step" id="s-step-3"><div class="step-num">3</div><div>Toss balloons into the center and scatter them wildly.</div></div>
+            <div class="step" id="s-step-4"><div class="step-num">4</div><div>On GO, find teammates' balloons and sit in a circle.</div></div>
+          </aside>
+          <div class="arena">
+            <div class="floor-line one"></div>
+            <div class="floor-line two"></div>
+            <div class="table" id="supply-table"></div>
+            <div class="marker" id="marker-one" style="left: 560px; top: 386px; transform: rotate(-14deg);"></div>
+            <div class="marker" id="marker-two" style="left: 700px; top: 461px; transform: rotate(18deg);"></div>
+            <div class="zone one" id="zone-a"><div class="zone-label">Team A seated</div></div>
+            <div class="zone two" id="zone-b"><div class="zone-label">Team B seated</div></div>
+            <div class="motion-dash" id="dash-1" style="left: 225px; top: 288px; transform: rotate(8deg);"></div>
+            <div class="motion-dash" id="dash-2" style="right: 240px; top: 392px; transform: rotate(188deg);"></div>
+            <div class="motion-dash" id="dash-3" style="left: 440px; top: 560px; transform: rotate(-18deg);"></div>
+            <div class="player s-player" id="runner-1" style="--shirt:#22d3c5; left:116px; top:120px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Ava</div></div>
+            <div class="player s-player" id="runner-2" style="--shirt:#4f8cff; right:118px; top:150px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Leo</div></div>
+            <div class="player s-player" id="runner-3" style="--shirt:#ffd166; left:165px; top:470px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Mia</div></div>
+            <div class="player s-player" id="runner-4" style="--shirt:#ff4d3d; right:170px; top:490px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Sam</div></div>
+            <div class="balloon" id="bal-1" style="--balloon:#ff5da8; left:535px; top:292px;"><div class="balloon-name">Ava</div></div>
+            <div class="balloon" id="bal-2" style="--balloon:#4f8cff; left:655px; top:312px;"><div class="balloon-name">Leo</div></div>
+            <div class="balloon" id="bal-3" style="--balloon:#5bd46d; left:590px; top:438px;"><div class="balloon-name">Mia</div></div>
+            <div class="balloon" id="bal-4" style="--balloon:#ffd166; left:755px; top:421px;"><div class="balloon-name">Sam</div></div>
+            <div class="center-call" id="go-call">GO!</div>
+            <div class="final-card" id="finish-card">First fully seated team wins</div>
+          </div>
+        </main>
+      </section>
+
+      <div id="game-transition" class="clip transition-wipe" data-start="14.35" data-duration="1.3" data-track-index="2" data-layout-ignore>
+        <div class="wipe-panel"></div>
+        <div class="wipe-panel"></div>
+        <div class="wipe-panel"></div>
+        <div class="wipe-panel"></div>
       </div>
-
-      <!-- Scene 2: Balloon Scatter -->
-      <div id="game2-scene" class="clip flex flex-col items-center justify-center bg-[#0f1115]" data-start="12" data-duration="12" data-track-index="1">
-        <div class="absolute top-16 w-full text-center flex flex-col items-center">
-            <span class="bg-red-600 text-white px-6 py-2 text-2xl font-bold uppercase tracking-widest rounded-full mb-4 inline-block shadow-[0_0_20px_rgba(220,38,38,0.6)]">Tutorial Demo</span>
-            <h2 class="text-7xl font-extrabold text-white mb-2 neon-text">Balloon Team Scatter</h2>
-            <p id="g2-step" class="text-3xl text-gray-400">Step 1: Write names & throw balloons in center</p>
-        </div>
-        
-        <div class="relative w-[1400px] h-[600px] mt-32 glass rounded-3xl shadow-2xl overflow-hidden">
-            <!-- Team Circles -->
-            <div id="team-zone" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border-4 border-dashed border-gray-700 rounded-full opacity-0 flex items-center justify-center">
-                <span class="text-gray-600 font-bold text-2xl uppercase tracking-widest">Team Zone</span>
-            </div>
-            
-            <!-- Players -->
-            <div id="pl1" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 10%; left: 10%">🏃‍♀️</div>
-            <div id="pl2" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 80%; left: 80%">🏃‍♂️</div>
-            <div id="pl3" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 15%; left: 85%">🏃‍♂️</div>
-            <div id="pl4" class="absolute w-20 h-20 rounded-full bg-gray-800 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.5)] flex items-center justify-center text-3xl opacity-0" style="top: 80%; left: 15%">🏃‍♀️</div>
-
-            <!-- Balloons -->
-            <div id="b1" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-pink-400 to-pink-600 shadow-[0_0_30px_rgba(236,72,153,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[-15deg]">Sarah</span></div>
-            <div id="b2" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-blue-400 to-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[10deg]">John</span></div>
-            <div id="b3" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-green-400 to-green-600 shadow-[0_0_30px_rgba(34,197,94,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[25deg]">Mike</span></div>
-            <div id="b4" class="absolute w-24 h-28 rounded-[50%] bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-[0_0_30px_rgba(234,179,8,0.6)] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"><span class="text-white font-bold text-lg rotate-[-5deg]">Emma</span></div>
-        </div>
-      </div>
-
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 
-      tl.set("#game1-scene", { display: "flex" }, 0);
-      tl.set("#game2-scene", { display: "none" }, 0);
-      tl.set("#game2-scene", { display: "flex" }, 12);
-      tl.set("#game1-scene", { display: "none" }, 12);
+      tl.from("#blanket-scene .kicker", { y: -28, opacity: 0, duration: 0.44, ease: "back.out(1.6)" }, 0.18);
+      tl.from("#blanket-scene h1", { x: -90, opacity: 0, duration: 0.72, ease: "expo.out" }, 0.28);
+      tl.from("#blanket-scene .tag", { y: 36, opacity: 0, scale: 0.86, duration: 0.4, stagger: 0.07, ease: "power3.out" }, 0.55);
+      tl.from("#blanket-scene .steps", { x: -70, opacity: 0, duration: 0.6, ease: "circ.out" }, 0.82);
+      tl.from("#blanket-scene .arena", { scale: 0.96, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.92);
+      tl.from("#blanket-scene .team-label", { y: -34, opacity: 0, duration: 0.36, stagger: 0.08, ease: "bounce.out" }, 1.16);
+      tl.from("#blanket-scene .player", { y: 46, opacity: 0, rotation: -4, duration: 0.52, stagger: 0.045, ease: "back.out(1.9)" }, 1.32);
+      tl.from("#blanket", { y: -720, skewX: -5, duration: 0.72, ease: "bounce.out" }, 1.55);
+      tl.from("#ghost-blanket", { x: -120, opacity: 0, duration: 1.2, ease: "sine.out" }, 0.35);
 
-      // GAME 1: Blanket Name Game (0s - 12s)
-      tl.from("#game1-scene", { opacity: 0, duration: 1 }, 0);
-      tl.to("#g1-step", { innerText: "Step 2: Drop the blanket on 'GO'", duration: 0.1 }, 3);
-      tl.to("#blanket", { y: 1000, duration: 1, ease: "power3.in" }, 4);
-      
-      tl.to("#g1-step", { innerText: "Step 3: First to shout the opponent's name wins!", duration: 0.1 }, 6);
-      // Shout animation
-      tl.to("#bubble1", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 6.5);
-      tl.to("#bubble2", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)" }, 6.7);
-      
-      tl.to("#game1-scene", { opacity: 0, duration: 1 }, 11);
+      tl.to("#b-step-1", { className: "step active", duration: 0.05 }, 1.3);
+      tl.to("#chosen-a", { x: 120, y: 28, scale: 1.08, duration: 0.68, ease: "power3.inOut" }, 3.0);
+      tl.to("#chosen-b", { x: -120, y: 28, scale: 1.08, duration: 0.68, ease: "power3.inOut" }, 3.0);
+      tl.to("#b-step-1", { className: "step", duration: 0.05 }, 3.15);
+      tl.to("#b-step-2", { className: "step active", duration: 0.05 }, 3.2);
+      tl.to("#blanket", { scaleX: 1.14, duration: 0.32, ease: "sine.inOut", yoyo: true, repeat: 5 }, 3.65);
+      tl.to("#b-step-2", { className: "step", duration: 0.05 }, 5.35);
+      tl.to("#b-step-3", { className: "step active", duration: 0.05 }, 5.4);
+      tl.to([".b-crowd-a1", ".b-crowd-b2"], { rotation: 8, y: -14, duration: 0.26, yoyo: true, repeat: 3, ease: "sine.inOut" }, 5.55);
+      tl.from("#countdown", { scale: 0, opacity: 0, rotation: -9, duration: 0.38, ease: "back.out(2.4)" }, 7.15);
+      tl.to("#b-step-3", { className: "step", duration: 0.05 }, 7.5);
+      tl.to("#b-step-4", { className: "step active", duration: 0.05 }, 7.55);
+      tl.to("#countdown", { textContent: "TWO", scale: 1.06, duration: 0.16, ease: "power4.out" }, 8.0);
+      tl.to("#countdown", { textContent: "ONE", scale: 1.06, duration: 0.16, ease: "power4.out" }, 8.7);
+      tl.to("#countdown", { textContent: "DROP!", color: "#ff4d3d", duration: 0.12, ease: "none" }, 9.25);
+      tl.to("#blanket", { y: 790, rotation: 5, scaleY: 0.82, duration: 0.64, ease: "power4.in" }, 9.35);
+      tl.to("#chosen-a", { x: 162, y: 10, rotation: -7, duration: 0.24, ease: "power3.out" }, 9.65);
+      tl.to("#chosen-b", { x: -162, y: 10, rotation: 7, duration: 0.24, ease: "power3.out" }, 9.65);
+      tl.from(["#burst-left", "#burst-right"], { scale: 0, opacity: 0, rotation: -30, duration: 0.28, stagger: 0.08, ease: "back.out(2.6)" }, 9.82);
+      tl.from("#shout-left", { x: -40, y: 20, opacity: 0, scale: 0.72, duration: 0.35, ease: "back.out(2.2)" }, 9.9);
+      tl.from("#shout-right", { x: 40, y: 20, opacity: 0, scale: 0.72, duration: 0.35, ease: "elastic.out(1, 0.55)" }, 10.05);
+      tl.from("#winner-call", { y: 70, opacity: 0, scaleX: 0.75, duration: 0.48, ease: "expo.out" }, 10.65);
+      tl.to("#blanket-scene .scene-grid", { opacity: 0.28, duration: 4.5, ease: "sine.inOut" }, 2.0);
 
-      // GAME 2: Balloon Scatter (12s - 24s)
-      tl.from("#game2-scene", { opacity: 0, duration: 1 }, 12);
-      
-      tl.to("#g2-step", { innerText: "Step 2: Organizers scatter balloons wildly", duration: 0.1 }, 14);
-      // Scatter balloons
-      tl.to("#b1", { top: "20%", left: "15%", duration: 1, ease: "power2.out", rotation: -45 }, 14.5);
-      tl.to("#b2", { top: "80%", left: "75%", duration: 1, ease: "power2.out", rotation: 60 }, 14.5);
-      tl.to("#b3", { top: "25%", left: "85%", duration: 1, ease: "power2.out", rotation: 20 }, 14.5);
-      tl.to("#b4", { top: "75%", left: "25%", duration: 1, ease: "power2.out", rotation: -30 }, 14.5);
+      tl.fromTo(".wipe-panel", { yPercent: -110 }, { yPercent: 0, duration: 0.38, stagger: 0.055, ease: "power4.inOut" }, 14.35);
+      tl.to(".wipe-panel", { yPercent: 112, duration: 0.42, stagger: 0.055, ease: "power3.inOut" }, 15.05);
 
-      tl.to("#g2-step", { innerText: "Step 3: Run in, find your team's balloons & sit!", duration: 0.1 }, 17);
-      tl.to(["#pl1", "#pl2", "#pl3", "#pl4"], { opacity: 1, duration: 0.5 }, 17.5);
-      tl.to("#team-zone", { opacity: 1, duration: 0.5 }, 17.5);
-      
-      // Players run to balloons
-      tl.to("#pl1", { top: "20%", left: "15%", duration: 1, ease: "power2.inOut" }, 18);
-      tl.to("#pl2", { top: "80%", left: "75%", duration: 1, ease: "power2.inOut" }, 18);
-      tl.to("#pl3", { top: "25%", left: "85%", duration: 1, ease: "power2.inOut" }, 18);
-      tl.to("#pl4", { top: "75%", left: "25%", duration: 1, ease: "power2.inOut" }, 18);
+      tl.from("#balloon-scene .kicker", { y: -28, opacity: 0, duration: 0.4, ease: "back.out(1.6)" }, 15.18);
+      tl.from("#balloon-scene h1", { x: -90, opacity: 0, duration: 0.66, ease: "expo.out" }, 15.3);
+      tl.from("#balloon-scene .tag", { y: 34, opacity: 0, scale: 0.86, duration: 0.36, stagger: 0.06, ease: "power3.out" }, 15.6);
+      tl.from("#balloon-scene .steps", { x: -70, opacity: 0, duration: 0.56, ease: "circ.out" }, 15.85);
+      tl.from("#balloon-scene .arena", { scale: 0.96, opacity: 0, duration: 0.62, ease: "power2.out" }, 15.96);
+      tl.from("#supply-table", { y: 70, opacity: 0, rotation: 1.5, duration: 0.5, ease: "back.out(1.8)" }, 16.32);
+      tl.from(["#marker-one", "#marker-two"], { x: -40, opacity: 0, rotation: -35, duration: 0.38, stagger: 0.1, ease: "power4.out" }, 16.52);
+      tl.from("#balloon-scene .s-player", { y: 50, opacity: 0, rotation: -5, duration: 0.46, stagger: 0.065, ease: "back.out(1.9)" }, 16.62);
+      tl.from("#balloon-scene .balloon", { scale: 0, opacity: 0, y: 40, duration: 0.45, stagger: 0.08, ease: "elastic.out(1, 0.65)" }, 16.9);
+      tl.from("#ghost-balloon", { x: 120, opacity: 0, duration: 1.2, ease: "sine.out" }, 15.5);
 
-      // Gather in center
-      tl.to(["#pl1", "#b1"], { top: "40%", left: "40%", duration: 1, ease: "power2.inOut" }, 20);
-      tl.to(["#pl2", "#b2"], { top: "60%", left: "60%", duration: 1, ease: "power2.inOut" }, 20);
-      tl.to(["#pl3", "#b3"], { top: "40%", left: "60%", duration: 1, ease: "power2.inOut" }, 20);
-      tl.to(["#pl4", "#b4"], { top: "60%", left: "40%", duration: 1, ease: "power2.inOut" }, 20);
+      tl.to("#s-step-1", { className: "step active", duration: 0.05 }, 16.3);
+      tl.to("#s-step-1", { className: "step", duration: 0.05 }, 18.1);
+      tl.to("#s-step-2", { className: "step active", duration: 0.05 }, 18.15);
+      tl.to("#marker-one", { x: 28, y: 24, rotation: 8, duration: 0.48, yoyo: true, repeat: 3, ease: "sine.inOut" }, 18.4);
+      tl.to("#marker-two", { x: -22, y: 30, rotation: -12, duration: 0.48, yoyo: true, repeat: 3, ease: "sine.inOut" }, 18.45);
+      tl.to("#s-step-2", { className: "step", duration: 0.05 }, 20.05);
+      tl.to("#s-step-3", { className: "step active", duration: 0.05 }, 20.1);
+      tl.to("#bal-1", { left: 178, top: 168, rotation: -28, duration: 0.72, ease: "power4.out" }, 20.35);
+      tl.to("#bal-2", { left: 930, top: 124, rotation: 24, duration: 0.72, ease: "power4.out" }, 20.35);
+      tl.to("#bal-3", { left: 364, top: 508, rotation: 35, duration: 0.72, ease: "power4.out" }, 20.35);
+      tl.to("#bal-4", { left: 812, top: 474, rotation: -32, duration: 0.72, ease: "power4.out" }, 20.35);
+      tl.from(["#dash-1", "#dash-2", "#dash-3"], { scaleX: 0, opacity: 0, duration: 0.24, stagger: 0.08, ease: "expo.out" }, 20.46);
+      tl.from("#go-call", { y: 80, opacity: 0, scale: 0.5, rotation: -8, duration: 0.36, ease: "back.out(2.4)" }, 21.35);
+      tl.to("#s-step-3", { className: "step", duration: 0.05 }, 21.65);
+      tl.to("#s-step-4", { className: "step active", duration: 0.05 }, 21.7);
+      tl.to("#runner-1", { left: 176, top: 168, rotation: -10, duration: 0.76, ease: "power3.inOut" }, 21.95);
+      tl.to("#runner-2", { right: 218, top: 124, rotation: 9, duration: 0.76, ease: "power3.inOut" }, 21.95);
+      tl.to("#runner-3", { left: 350, top: 506, rotation: -8, duration: 0.76, ease: "power3.inOut" }, 21.95);
+      tl.to("#runner-4", { right: 372, top: 474, rotation: 11, duration: 0.76, ease: "power3.inOut" }, 21.95);
+      tl.from(["#zone-a", "#zone-b"], { scale: 0.72, opacity: 0, duration: 0.45, stagger: 0.08, ease: "back.out(1.8)" }, 23.0);
+      tl.to(["#runner-1", "#bal-1"], { left: 330, top: 492, rotation: -14, duration: 0.82, ease: "power2.inOut" }, 23.35);
+      tl.to(["#runner-3", "#bal-3"], { left: 470, top: 530, rotation: 10, duration: 0.82, ease: "power2.inOut" }, 23.35);
+      tl.to(["#runner-2", "#bal-2"], { left: 1000, top: 494, rotation: 12, duration: 0.82, ease: "power2.inOut" }, 23.35);
+      tl.to(["#runner-4", "#bal-4"], { left: 860, top: 530, rotation: -10, duration: 0.82, ease: "power2.inOut" }, 23.35);
+      tl.to(["#runner-1", "#runner-2", "#runner-3", "#runner-4"], { scale: 0.82, duration: 0.45, ease: "sine.inOut" }, 24.0);
+      tl.from("#finish-card", { x: 120, opacity: 0, rotation: 3, duration: 0.52, ease: "expo.out" }, 24.65);
+      tl.to("#finish-card", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 3, ease: "sine.inOut" }, 25.3);
+      tl.to("#balloon-scene .scene-grid", { opacity: 0.28, duration: 4.2, ease: "sine.inOut" }, 16.3);
+      tl.to("#root", { backgroundColor: "#08090c", duration: 0.75, ease: "sine.inOut" }, 29.15);
+      tl.to("#balloon-scene", { opacity: 0, duration: 0.65, ease: "sine.inOut" }, 29.25);
 
       window.__timelines["main"] = tl;
     </script>
