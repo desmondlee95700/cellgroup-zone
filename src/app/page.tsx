@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import GameIcon from "@/components/GameIcon";
 
 export default function Home() {
   const container = useRef<HTMLDivElement>(null);
@@ -30,7 +31,8 @@ export default function Home() {
     <div ref={container}>
       {/* Header Section */}
       <header className="gsap-reveal bg-[#18181B] border-b-4 border-black py-16 px-6 text-center shadow-[0_8px_0px_#000] relative z-20">
-        <h1 className="brutal-font text-5xl md:text-7xl text-[#FACC15] drop-shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform duration-300 inline-block cursor-default uppercase">
+        <h1 className="brutal-font text-5xl md:text-7xl text-[#FACC15] drop-shadow-[4px_4px_0px_#000] hover:scale-105 transition-transform duration-300 inline-flex items-center gap-4 cursor-default uppercase">
+          <GameIcon className="w-12 h-12 md:w-20 md:h-20" />
           Zone Games Gathering
         </h1>
       </header>
