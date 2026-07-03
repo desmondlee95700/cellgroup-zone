@@ -515,7 +515,7 @@ export default function MixerPage() {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#FFFDF5] selection:bg-black selection:text-[#FACC15] pb-24">
+    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-black selection:text-[#FACC15] pb-24">
       {/* Header Banner */}
       <header className="bg-[#18181B] border-b-4 border-black py-10 px-6 text-center shadow-[0_6px_0px_#000] relative z-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">

@@ -207,7 +207,7 @@ export default function EntryLandingPage() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-[#FFFDF5] selection:bg-black selection:text-[#FACC15] py-12 px-6 flex flex-col items-center justify-center overflow-x-hidden relative"
+      className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-black selection:text-[#FACC15] py-12 px-6 flex flex-col items-center justify-center overflow-x-hidden relative"
     >
       {/* Toast Alert popup */}
       {toastMessage && (
