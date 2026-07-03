@@ -569,7 +569,7 @@ export default function MixerPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 brutal-box bg-white border border-black hover:bg-gray-100 text-[10px] font-black px-2 py-1 uppercase"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 brutal-box bg-white border border-black hover:bg-gray-100 text-[10px] text-black font-black px-2 py-1 uppercase"
                   >
                     {showPassword ? "Hide" : "Show"}
                   </button>
@@ -612,7 +612,7 @@ export default function MixerPage() {
         <section className="lg:col-span-5 space-y-8">
           
           {/* Quick Roster Config Card */}
-          <div className="brutal-box p-6 bg-white shadow-[8px_8px_0px_#000]">
+          <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000]">
             <div className="fold-corner-orange"></div>
             <h2 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#F59E0B] drop-shadow-[1px_1px_0px_#000]">
               1. Add Members
@@ -627,7 +627,7 @@ export default function MixerPage() {
                   placeholder="e.g. John Doe"
                   value={inputName}
                   onChange={(e) => setInputName(e.target.value)}
-                  className="w-full px-4 py-2 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none"
+                  className="w-full px-4 py-2 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-500"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -636,7 +636,7 @@ export default function MixerPage() {
                   <select
                     value={inputCG || cellGroups[0] || ""}
                     onChange={(e) => setInputCG(e.target.value)}
-                    className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white outline-none"
+                    className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white text-black outline-none"
                   >
                     {cellGroups.map(cg => (
                       <option key={cg} value={cg}>{cg}</option>
@@ -688,7 +688,7 @@ export default function MixerPage() {
                   placeholder="New Group Name"
                   value={newCGName}
                   onChange={(e) => setNewCGName(e.target.value)}
-                  className="flex-1 px-3 py-1.5 border-2 border-black text-sm font-bold outline-none"
+                  className="flex-1 px-3 py-1.5 border-2 border-black text-sm font-bold outline-none text-black bg-white placeholder-zinc-500"
                 />
                 <button
                   onClick={addCellGroup}
@@ -800,9 +800,9 @@ export default function MixerPage() {
 
           {/* Roster tab content */}
           {activeTab === "roster" && (
-            <div className="brutal-box p-6 bg-white shadow-[8px_8px_0px_#000] min-h-[500px]">
+            <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] min-h-[500px]">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="brutal-font text-xl md:text-2xl uppercase">ACTIVE ROSTER</h3>
+                <h3 className="brutal-font text-xl md:text-2xl uppercase text-black">ACTIVE ROSTER</h3>
                 <span className="text-xs bg-black text-white font-bold px-3 py-1 border-2 border-black uppercase">
                   Balanced by Cell Group
                 </span>
@@ -817,7 +817,7 @@ export default function MixerPage() {
                 </div>
               ) : (
                 <div className="overflow-y-auto max-h-[550px] border-4 border-black">
-                  <table className="w-full text-left border-collapse text-sm">
+                  <table className="w-full text-left border-collapse text-sm text-black">
                     <thead>
                       <tr className="bg-black text-[#FFFDF5] border-b-4 border-black">
                         <th className="p-3 font-black uppercase text-xs">#</th>
@@ -858,8 +858,8 @@ export default function MixerPage() {
             <div className="space-y-6">
               
               {/* Output Actions Tool Belt */}
-              <div className="brutal-box p-4 bg-white shadow-[6px_6px_0px_#000] flex flex-wrap gap-4 items-center justify-between">
-                <span className="font-black text-sm uppercase">Export results:</span>
+              <div className="brutal-box p-4 bg-white text-black shadow-[6px_6px_0px_#000] flex flex-wrap gap-4 items-center justify-between">
+                <span className="font-black text-sm uppercase text-black">Export results:</span>
                 <div className="flex gap-2 flex-wrap">
                   <button
                     onClick={copyShareLink}
@@ -939,9 +939,9 @@ export default function MixerPage() {
                       </div>
 
                       {/* Team Members List */}
-                      <ul className="p-4 bg-white divide-y divide-gray-200">
+                      <ul className="p-4 bg-white text-black divide-y divide-gray-200">
                         {team.members.map((m, idx) => (
-                          <li key={m.id} className="py-2.5 flex justify-between items-center font-bold text-sm">
+                          <li key={m.id} className="py-2.5 flex justify-between items-center font-bold text-sm text-black">
                             <span className="flex items-center gap-2">
                               <span className="text-xs text-gray-400 font-mono">{idx + 1}.</span>
                               {m.name}
@@ -968,7 +968,7 @@ export default function MixerPage() {
       {/* Bulk Import Modal */}
       {showBulkModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl brutal-box bg-white p-6 md:p-8 shadow-[12px_12px_0px_#000] relative">
+          <div className="w-full max-w-2xl brutal-box bg-white text-black p-6 md:p-8 shadow-[12px_12px_0px_#000] relative">
             <button
               onClick={() => setShowBulkModal(false)}
               className="absolute top-4 right-4 brutal-box bg-red-500 text-white font-black text-lg w-8 h-8 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000]"
@@ -995,7 +995,7 @@ export default function MixerPage() {
               value={bulkInput}
               onChange={(e) => setBulkInput(e.target.value)}
               placeholder="Paste names here..."
-              className="w-full p-4 border-4 border-black font-bold font-mono text-sm mb-6 outline-none bg-[#FFFDF5]"
+              className="w-full p-4 border-4 border-black font-bold font-mono text-sm mb-6 outline-none bg-[#FFFDF5] text-black placeholder-zinc-500"
             ></textarea>
 
             <div className="flex gap-4 justify-end">
