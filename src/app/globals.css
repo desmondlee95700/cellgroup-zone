@@ -106,3 +106,94 @@ h1, h2, h3, .brutal-font {
   background: #000;
   transform: translateY(-50%) rotate(45deg);
 }
+
+/* CRT Arcade console effects */
+.crt-overlay {
+  position: relative;
+  overflow: hidden;
+}
+.crt-overlay::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  z-index: 20;
+  background-size: 100% 4px, 6px 100%;
+  pointer-events: none;
+}
+.crt-overlay::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: rgba(18, 16, 16, 0.1);
+  opacity: 0;
+  z-index: 20;
+  pointer-events: none;
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.18; }
+  50% { opacity: 0.22; }
+  100% { opacity: 0.18; }
+}
+
+/* Retro arcade components */
+.led-red {
+  background-color: #EF4444;
+  box-shadow: 0 0 8px #EF4444;
+  animation: led-pulse 0.8s infinite alternate;
+}
+.led-green {
+  background-color: #22C55E;
+  box-shadow: 0 0 8px #22C55E;
+  animation: led-pulse 1.2s infinite alternate;
+}
+.led-yellow {
+  background-color: #EAB308;
+  box-shadow: 0 0 8px #EAB308;
+  animation: led-pulse 0.5s infinite alternate;
+}
+
+@keyframes led-pulse {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Floating icons styling */
+.floating-element {
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+/* Marquee / Ticker text */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+/* Text glow for high-scores and titles */
+.brutal-text-glow-yellow {
+  text-shadow: 3px 3px 0px #000, 5px 5px 0px #FACC15;
+}
+.brutal-text-glow-pink {
+  text-shadow: 3px 3px 0px #000, 5px 5px 0px #F472B6;
+}
+
+/* QR Code Laser Scanner Animation */
+@keyframes qr-scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(144px); } /* 144px matches the height of the w-36 (144px) image wrapper */
+}
+.animate-qr-scan {
+  animation: qr-scan 2s linear infinite alternate;
+}
+
