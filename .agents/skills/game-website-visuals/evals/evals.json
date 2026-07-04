@@ -1,0 +1,23 @@
+{
+  "skill_name": "game-website-visuals",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Redesign an existing game landing page so it feels like a premium AAA reveal, with cinematic first-viewport impact and real game-world UI instead of generic feature cards.",
+      "expected_output": "A project-native implementation that chooses a cinematic game direction, creates a strong first-viewport world signal, uses meaningful game artifacts, and verifies responsive polish.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Build a tournament lobby page for a multiplayer game night. It should feel like an esports broadcast interface with brackets, live match energy, countdowns, and tactile controls.",
+      "expected_output": "A framework-matched page or component with typed data/state, bracket or scoreboard visual systems, rich interaction states, and mobile/desktop layouts that preserve the broadcast fantasy.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Create a fantasy RPG game website section for choosing a quest and party loadout. Make it visually top tier, immersive, and interactive without copying the app's old style.",
+      "expected_output": "A genre-specific RPG codex, quest board, map, inventory, or character-sheet interface with cohesive materials, game artifacts, selected states, and accessible responsive behavior.",
+      "files": []
+    }
+  ]
+}
