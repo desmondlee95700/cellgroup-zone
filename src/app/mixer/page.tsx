@@ -31,7 +31,6 @@ const TEAM_COLOR_PALETTES = [
   "bg-[#2DD4BF] text-black", // Teal
 ];
 
-
 function generateId(): string {
   return `${Date.now()}-${Math.random()}`;
 }
@@ -93,24 +92,6 @@ export default function MixerPage() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showShowcase, setShowShowcase] = useState(false);
   
-  const handleVerifyPasscode = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Default secret passcode is admin@123
-    if (enteredPasscode.trim() === "admin@123") {
-      setIsAuthenticated(true);
-      if (typeof window !== "undefined") {
-        if (rememberMe) {
-          localStorage.setItem("cg_mixer_auth", "true");
-        } else {
-          sessionStorage.setItem("cg_mixer_auth", "true");
-        }
-      }
-      showToast("Access granted! System unlocked.");
-    } else {
-      showToast("Incorrect access code!");
-    }
-  };
-  
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
   const [namingPreset, setNamingPreset] = useState<"numbers" | "colors" | "heroes">("colors");
@@ -124,7 +105,99 @@ export default function MixerPage() {
   // Notification Toast state
   const [toastMessage, setToastMessage] = useState("");
 
-  // Load from localStorage on mount (deferred to prevent hydration mismatch and cascading render warnings)
+  // Synthesize retro chiptune sound effects
+  const playSynthSound = (freq: number, duration: number, type: OscillatorType = "sine") => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration);
+    } catch (e) {
+      console.warn("Audio blocked", e);
+    }
+  };
+
+  const playSuccessChirp = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const playTone = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.08, start);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + dur);
+      };
+      playTone(523.25, now, 0.08); // C5
+      playTone(783.99, now + 0.08, 0.15); // G5
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
+  const playDeleteChirp = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      const playTone = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.08, start);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + dur);
+      };
+      playTone(659.25, now, 0.08); // E5
+      playTone(329.63, now + 0.08, 0.15); // E4
+    } catch (e) {
+      console.warn(e);
+    }
+  };
+
+  // Authenticate Admin Passcode
+  const handleVerifyPasscode = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (enteredPasscode.trim() === "admin@123") {
+      setIsAuthenticated(true);
+      if (typeof window !== "undefined") {
+        if (rememberMe) {
+          localStorage.setItem("cg_mixer_auth", "true");
+        } else {
+          sessionStorage.setItem("cg_mixer_auth", "true");
+        }
+      }
+      playSuccessChirp();
+      showToast("Access granted! System unlocked.");
+    } else {
+      playSynthSound(150, 0.25, "sawtooth");
+      showToast("Incorrect access code!");
+    }
+  };
+
+  // Load from localStorage on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       if (typeof window !== "undefined") {
@@ -146,14 +219,13 @@ export default function MixerPage() {
         const savedAuth = localStorage.getItem("cg_mixer_auth") || sessionStorage.getItem("cg_mixer_auth");
         if (savedAuth === "true") setIsAuthenticated(true);
 
-        // Mark loading as complete so sync effects can safely execute thereafter
         isLoadedRef.current = true;
       }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  // Sync states to localStorage (guarded by isLoadedRef to prevent clobbering on mount)
+  // Sync states to localStorage
   useEffect(() => {
     if (!isLoadedRef.current) return;
     if (typeof window !== "undefined") {
@@ -188,29 +260,33 @@ export default function MixerPage() {
       localStorage.setItem("cg_mixer_preset", namingPreset);
     }
   }, [namingPreset]);
+
   // Add individual cell group
   const addCellGroup = () => {
     const clean = newCGName.trim();
     if (!clean) return;
     if (cellGroups.map(c => c.toLowerCase()).includes(clean.toLowerCase())) {
+      playSynthSound(220, 0.15, "triangle");
       showToast("Cell Group already exists!");
       return;
     }
     setCellGroups([...cellGroups, clean]);
     setNewCGName("");
     setInputCG(clean);
+    playSuccessChirp();
     showToast(`Added group "${clean}"`);
   };
 
   // Remove individual cell group
   const removeCellGroup = (cg: string) => {
     if (cellGroups.length <= 1) {
+      playSynthSound(220, 0.15, "triangle");
       showToast("You need at least one cell group!");
       return;
     }
     setCellGroups(cellGroups.filter(c => c !== cg));
-    // Re-bind members of deleted cell group to general group if needed
     setMembers(members.map(m => m.cg === cg ? { ...m, cg: cellGroups.find(c => c !== cg) || "General" } : m));
+    playDeleteChirp();
     showToast(`Removed group "${cg}"`);
   };
 
@@ -220,9 +296,9 @@ export default function MixerPage() {
     const cleanName = inputName.trim();
     if (!cleanName) return;
 
-    // Check for exact case-insensitive duplicates
     const isDup = members.some(m => m.name.toLowerCase() === cleanName.toLowerCase());
     if (isDup) {
+      playSynthSound(300, 0.1, "triangle");
       showToast(`Warning: "${cleanName}" is already in the roster.`);
     }
 
@@ -234,6 +310,7 @@ export default function MixerPage() {
 
     setMembers([newMember, ...members]);
     setInputName("");
+    playSuccessChirp();
     showToast(`Added ${cleanName} (${newMember.cg})`);
   };
 
@@ -241,6 +318,7 @@ export default function MixerPage() {
   const handleRemoveMember = (id: string) => {
     const member = members.find(m => m.id === id);
     setMembers(members.filter(m => m.id !== id));
+    playDeleteChirp();
     if (member) showToast(`Removed ${member.name}`);
   };
 
@@ -249,6 +327,7 @@ export default function MixerPage() {
     if (confirm("Are you sure you want to clear the roster?")) {
       setMembers([]);
       setFinalTeams([]);
+      playSynthSound(200, 0.4, "sawtooth");
       showToast("Roster cleared!");
     }
   };
@@ -264,7 +343,6 @@ export default function MixerPage() {
       const cleanLine = line.trim();
       if (!cleanLine) return;
 
-      // Skip header rows if copied from spreadsheets (e.g. "Name\tCellGroup")
       const lowerLine = cleanLine.toLowerCase();
       if (
         lowerLine.startsWith("name\t") ||
@@ -279,26 +357,21 @@ export default function MixerPage() {
       let name = cleanLine;
       let cg = inputCG || cellGroups[0] || "General";
 
-      // Attempt parsing formats:
-      // Format 0: Tab or double spaces delimiter (from Excel/Sheets copy-paste)
       const tabSpaceMatch = cleanLine.split(/\t| {2,}/);
       if (tabSpaceMatch.length >= 2) {
         name = tabSpaceMatch[0].trim();
         cg = tabSpaceMatch[1].trim();
       } else {
-        // Format 1: "Name (Cell Group)"
         const bracketMatch = cleanLine.match(/^([^(]+)\(([^)]+)\)$/);
         if (bracketMatch) {
           name = bracketMatch[1].trim();
           cg = bracketMatch[2].trim();
         } else {
-          // Format 2: "Name, Cell Group"
           const commaIdx = cleanLine.indexOf(",");
           if (commaIdx !== -1) {
             name = cleanLine.substring(0, commaIdx).trim();
             cg = cleanLine.substring(commaIdx + 1).trim();
           } else {
-            // Format 3: "Name - Cell Group"
             const dashIdx = cleanLine.indexOf("-");
             if (dashIdx !== -1) {
               name = cleanLine.substring(0, dashIdx).trim();
@@ -308,10 +381,8 @@ export default function MixerPage() {
         }
       }
 
-      // Normalize CG
       cg = cg.replace(/\s+/g, " ").trim();
       if (!cellGroups.includes(cg)) {
-        // Automatically add parsed cell group to our active list if not already present
         setCellGroups(prev => [...prev, cg]);
       }
 
@@ -330,6 +401,7 @@ export default function MixerPage() {
 
     if (added.length > 0) {
       setMembers(prev => [...added, ...prev]);
+      playSuccessChirp();
     }
     setShowBulkModal(false);
     setBulkInput("");
@@ -376,6 +448,7 @@ export default function MixerPage() {
     setIsDealing(true);
     setDealIndex(-1);
     setActiveTab("teams");
+    playSynthSound(300, 0.1, "sawtooth");
 
     // Shuffle helper
     const shuffleArray = <T,>(arr: T[]): T[] => {
@@ -412,18 +485,14 @@ export default function MixerPage() {
       color: TEAM_COLOR_PALETTES[i % TEAM_COLOR_PALETTES.length],
     }));
 
-    // Find the best group using greedy logic
     const findSmallestGroupForMember = (targetCG: string): Team => {
-      // Find the absolute minimum length currently in target groups
       let minLen = Infinity;
       groups.forEach(g => {
         if (g.members.length < minLen) minLen = g.members.length;
       });
 
-      // Filter groups to only those at minLen (ensures ±1 balancing)
       let candidates = groups.filter(g => g.members.length === minLen);
 
-      // Find the minimum number of members from the same cell group inside candidates
       let minSameCG = Infinity;
       const counts = candidates.map(g => {
         const n = g.members.filter(m => m.cg === targetCG).length;
@@ -431,10 +500,7 @@ export default function MixerPage() {
         return n;
       });
 
-      // Keep candidates with minimum same cell group overlap
       candidates = candidates.filter((_, i) => counts[i] === minSameCG);
-
-      // Random tie-break
       return candidates[Math.floor(Math.random() * candidates.length)];
     };
 
@@ -446,7 +512,6 @@ export default function MixerPage() {
       });
     });
 
-    // 6. Visual Dealing Stagger Animation using GSAP
     setFinalTeams(groups);
     if (typeof window !== "undefined") {
       localStorage.setItem("cg_mixer_teams", JSON.stringify(groups));
@@ -456,17 +521,18 @@ export default function MixerPage() {
     let currentIdx = 0;
     const interval = setInterval(() => {
       setDealIndex(currentIdx);
+      playSynthSound(400 + (currentIdx * 10), 0.05, "sine");
       currentIdx++;
       if (currentIdx >= members.length) {
         clearInterval(interval);
         setIsDealing(false);
+        playSuccessChirp();
         showToast("Teams generated successfully with maximum mixing!");
       }
-    }, Math.max(10, Math.min(100, 1500 / members.length))); // Dynamic dealing speed
+    }, Math.max(15, Math.min(120, 1500 / members.length)));
   };
 
-
-
+  // Fixed routing path here: pointing directly to `/showcase` instead of `/find-my-team`
   const copyShareLink = () => {
     if (finalTeams.length === 0) return;
     try {
@@ -476,16 +542,40 @@ export default function MixerPage() {
         members: t.members.map(m => ({ name: m.name, cg: m.cg }))
       }));
 
-      // Base64 serialize with UTF-8 support
       const serialized = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      const shareUrl = `${window.location.origin}/find-my-team?t=${serialized}`;
+      const shareUrl = `${window.location.origin}/showcase?t=${serialized}`;
 
       navigator.clipboard.writeText(shareUrl);
+      playSuccessChirp();
       showToast("Player Share Link Copied! 🔗");
     } catch (e) {
       console.error(e);
       showToast("Failed to generate share link!");
     }
+  };
+
+  // Calculate same CG overlaps count
+  const totalSameCGOverlaps = () => {
+    let overlaps = 0;
+    finalTeams.forEach(team => {
+      const cgCounts: { [key: string]: number } = {};
+      team.members.forEach(m => {
+        cgCounts[m.cg] = (cgCounts[m.cg] || 0) + 1;
+      });
+      Object.values(cgCounts).forEach(cnt => {
+        if (cnt > 1) overlaps += (cnt - 1);
+      });
+    });
+    return overlaps;
+  };
+
+  // Calculate rating grade
+  const getMixQualityGrade = () => {
+    const overlaps = totalSameCGOverlaps();
+    if (overlaps === 0) return { grade: "🌟 S-TIER", text: "PERFECT DISPERSION", color: "bg-[#22C55E]" };
+    if (overlaps <= 2) return { grade: "🟢 A-TIER", text: "OPTIMALLY BALANCED", color: "bg-[#4ADE80]" };
+    if (overlaps <= 5) return { grade: "🟡 B-TIER", text: "STABLE DISPERSION", color: "bg-[#FACC15]" };
+    return { grade: "🔴 C-TIER", text: "CHAOTIC OVERLAPS", color: "bg-[#EF4444] text-white" };
   };
 
   // GSAP animations for active parts
@@ -499,41 +589,26 @@ export default function MixerPage() {
     }
   }, [activeTab, finalTeams, isDealing]);
 
-  // Calculate stats for quality check
-  const totalSameCGOverlaps = () => {
-    let overlaps = 0;
-    finalTeams.forEach(team => {
-      const cgCounts: { [key: string]: number } = {};
-      team.members.forEach(m => {
-        cgCounts[m.cg] = (cgCounts[m.cg] || 0) + 1;
-      });
-      Object.values(cgCounts).forEach(cnt => {
-        if (cnt > 1) overlaps += (cnt - 1); // overlap occurrences
-      });
-    });
-    return overlaps;
-  };
-
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-black selection:text-[#FACC15] pb-24">
-      {/* Header Banner */}
+    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black pb-24">
+      {/* Header Panel */}
       <header className="bg-[#18181B] border-b-4 border-black py-10 px-6 text-center shadow-[0_6px_0px_#000] relative z-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link
             href="/"
-            className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-sm px-4 py-2 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000]"
+            className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-sm px-5 py-2.5 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5"
           >
-            ← Back to Entry
+            ← ESC BACK
           </Link>
-          <h1 className="brutal-font text-3xl md:text-5xl text-[#FACC15] uppercase tracking-wider">
-            🎲 DIGITAL TEAM MIXER
+          <h1 className="brutal-font text-3xl md:text-5xl text-[#FACC15] uppercase tracking-wider select-none">
+            🎲 DIGITAL TEAM SHUFFLER
           </h1>
           {isAuthenticated && (
             <div className="flex gap-2">
               <button
                 onClick={handleClearRoster}
                 disabled={members.length === 0}
-                className="brutal-box bg-red-500 text-white font-black uppercase text-xs md:text-sm px-4 py-2 border-2 border-black hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_#000]"
+                className="brutal-box bg-red-500 text-white font-black uppercase text-xs md:text-sm px-4 py-2.5 border-2 border-black hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
               >
                 Clear Roster ❌
               </button>
@@ -542,65 +617,71 @@ export default function MixerPage() {
         </div>
       </header>
 
-      {/* Main Container */}
+      {/* Main Content Space */}
       {!isAuthenticated ? (
         <main className="max-w-md mx-auto px-6 py-20">
-          <div className="brutal-box p-8 bg-[#FACC15] text-black shadow-[8px_8px_0px_#000] relative rounded-xl">
-            <div className="fold-corner-orange"></div>
-            
-            <h2 className="brutal-font text-2xl mb-2 uppercase text-black">
-              🔒 ADMIN ACCESS REQUIRED
-            </h2>
-            <p className="text-xs font-black text-black/80 mb-6 uppercase tracking-wider">
-              ENTER ACCESS CODE TO UNLOCK ADMIN CONTROLS.
-            </p>
+          {/* Bezel locked screen style */}
+          <div className="arcade-bezel bg-[#27272A] p-6 shadow-[12px_12px_0px_#000] border-8 border-black rounded-3xl relative text-center text-black">
+            <div className="screw top-3 left-3"></div>
+            <div className="screw top-3 right-3"></div>
+            <div className="screw bottom-3 left-3"></div>
+            <div className="screw bottom-3 right-3"></div>
 
-            <form onSubmit={handleVerifyPasscode} className="space-y-4">
-              <div>
-                <label className="block text-xs font-black uppercase mb-1">ACCESS CODE</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter passcode..."
-                    value={enteredPasscode}
-                    onChange={(e) => setEnteredPasscode(e.target.value)}
-                    className="w-full px-4 py-3 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 pr-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 brutal-box bg-white border border-black hover:bg-gray-100 text-[10px] text-black font-black px-2 py-1 uppercase"
-                  >
-                    {showPassword ? "Hide" : "Show"}
-                  </button>
+            <div className="brutal-box p-6 bg-[#EF4444] text-white border-4 border-black shadow-[6px_6px_0px_#000] relative rounded-2xl">
+              <div className="scanline-line"></div>
+              <h2 className="brutal-font text-2xl mb-1 uppercase text-black brutal-text-glow-yellow">
+                🔒 ACCESS RESTRICTED
+              </h2>
+              <p className="text-[10px] font-black text-black/80 mb-6 uppercase tracking-wider">
+                ENTER AUTHORIZATION PASSCODE TO ACCESS SYSTEM INTERFACES
+              </p>
+
+              <form onSubmit={handleVerifyPasscode} className="space-y-4 text-left">
+                <div>
+                  <label className="block text-[10px] font-black uppercase mb-1 text-black">DECRYPT KEY</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter passcode..."
+                      value={enteredPasscode}
+                      onChange={(e) => setEnteredPasscode(e.target.value)}
+                      className="w-full px-4 py-3 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 pr-16"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 brutal-box bg-white border border-black hover:bg-gray-100 text-[9px] text-black font-black px-2 py-0.5 uppercase"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Remember Me Checkbox */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 border-2 border-black accent-black rounded cursor-pointer animate-none"
-                />
-                <label htmlFor="rememberMe" className="text-xs font-black uppercase cursor-pointer select-none text-zinc-800">
-                  Keep me logged in
-                </label>
-              </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 border-2 border-black accent-black rounded cursor-pointer animate-none"
+                  />
+                  <label htmlFor="rememberMe" className="text-[10px] font-black uppercase cursor-pointer select-none text-black">
+                    Keep me logged in
+                  </label>
+                </div>
 
-              <button
-                type="submit"
-                className="w-full brutal-box brutal-box-hover bg-black text-[#FACC15] font-black uppercase text-sm py-3 border-2 border-black hover:bg-zinc-800 shadow-[4px_4px_0px_#000]"
-              >
-                UNLOCK SYSTEM 🔓
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="w-full brutal-box bg-black text-[#FACC15] hover:text-[#fff] font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-zinc-800 shadow-[4px_4px_0px_#000] cursor-pointer"
+                >
+                  DECRYPT & MOUNT SYSTEM 🔓
+                </button>
+              </form>
+            </div>
             
-            <div className="mt-6 pt-4 border-t-2 border-black/20 text-center">
-              <Link href="/" className="text-xs font-black uppercase hover:underline">
-                ← Return to Landing Page
+            <div className="mt-6">
+              <Link href="/" className="text-xs font-black uppercase hover:underline text-white font-mono">
+                ← Return to Lobby Landing
               </Link>
             </div>
           </div>
@@ -608,35 +689,35 @@ export default function MixerPage() {
       ) : (
         <main className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Side: Setup & Settings (4 cols) */}
+        {/* Left Side: Setup Command Center Modules (5 cols) */}
         <section className="lg:col-span-5 space-y-8">
           
-          {/* Quick Roster Config Card */}
-          <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000]">
+          {/* Module 1: Member Intake Panel */}
+          <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
             <div className="fold-corner-orange"></div>
-            <h2 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#F59E0B] drop-shadow-[1px_1px_0px_#000]">
-              1. Add Members
+            <h2 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#F59E0B] border-b-2 border-black pb-2">
+              1. MEMBER INTAKE
             </h2>
             
             {/* Quick Add Form */}
             <form onSubmit={handleAddMember} className="space-y-4 mb-6">
               <div>
-                <label className="block text-xs font-black uppercase mb-1">PLAYER NAME</label>
+                <label className="block text-[10px] font-black uppercase mb-1">PLAYER DETAILS (NAME)</label>
                 <input
                   type="text"
                   placeholder="e.g. John Doe"
                   value={inputName}
                   onChange={(e) => setInputName(e.target.value)}
-                  className="w-full px-4 py-2 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-500"
+                  className="w-full px-4 py-2.5 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 text-sm"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black uppercase mb-1">CELL GROUP</label>
+                  <label className="block text-[10px] font-black uppercase mb-1">CELL GROUP SLOT</label>
                   <select
                     value={inputCG || cellGroups[0] || ""}
                     onChange={(e) => setInputCG(e.target.value)}
-                    className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white text-black outline-none"
+                    className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white text-black outline-none text-sm"
                   >
                     {cellGroups.map(cg => (
                       <option key={cg} value={cg}>{cg}</option>
@@ -646,9 +727,9 @@ export default function MixerPage() {
                 <div className="flex items-end">
                   <button
                     type="submit"
-                    className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-sm py-2.5 border-2 border-black hover:bg-[#34d399] shadow-[2px_2px_0px_#000]"
+                    className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5"
                   >
-                    Add Player +
+                    ADD SLOT +
                   </button>
                 </div>
               </div>
@@ -656,23 +737,23 @@ export default function MixerPage() {
 
             <div className="border-t-4 border-black pt-4">
               <div className="flex justify-between items-center mb-3">
-                <label className="block text-xs font-black uppercase">MANAGE GROUPS</label>
-                <span className="text-xs bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase">
-                  {cellGroups.length} Active
+                <label className="block text-[10px] font-black uppercase">MANAGE LOCAL CELL GROUPS</label>
+                <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
+                  {cellGroups.length} GROUPS
                 </span>
               </div>
               
-              {/* Dynamic Cell Groups Badges */}
+              {/* Dynamic Groups Badges */}
               <div className="flex flex-wrap gap-2 mb-4">
                 {cellGroups.map(cg => (
                   <span
                     key={cg}
-                    className={`inline-flex items-center gap-1 ${getGroupColor(cg)} text-black font-bold text-xs px-2.5 py-1 border-2 border-black`}
+                    className={`inline-flex items-center gap-1 ${getGroupColor(cg)} text-black font-bold text-[10px] px-2.5 py-1 border-2 border-black shadow-[1px_1px_0px_#000]`}
                   >
-                    {cg}
+                    {cg.toUpperCase()}
                     <button
                       onClick={() => removeCellGroup(cg)}
-                      className="text-black hover:text-red-600 font-black ml-1 text-sm leading-none"
+                      className="text-black hover:text-red-600 font-black ml-1 text-xs leading-none"
                       title="Remove cell group"
                     >
                       ×
@@ -681,71 +762,73 @@ export default function MixerPage() {
                 ))}
               </div>
 
-              {/* Add New Cell Group Inline */}
+              {/* Add New Cell Group inline */}
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="New Group Name"
                   value={newCGName}
                   onChange={(e) => setNewCGName(e.target.value)}
-                  className="flex-1 px-3 py-1.5 border-2 border-black text-sm font-bold outline-none text-black bg-white placeholder-zinc-500"
+                  className="flex-1 px-3 py-2 border-2 border-black text-xs font-bold outline-none text-black bg-white placeholder-zinc-400"
                 />
                 <button
                   onClick={addCellGroup}
-                  className="brutal-box bg-white text-black font-black uppercase text-xs px-3 py-1.5 border-2 border-black hover:bg-gray-100 shadow-[2px_2px_0px_#000]"
+                  className="brutal-box bg-white text-black font-black uppercase text-[10px] px-3 py-2 border-2 border-black hover:bg-gray-100 shadow-[2px_2px_0px_#000] cursor-pointer"
                 >
-                  Create
+                  CREATE
                 </button>
               </div>
             </div>
 
-            {/* Bulk Import Button */}
+            {/* Bulk Sheets Import button */}
             <div className="mt-6 pt-4 border-t-4 border-black">
               <button
                 onClick={() => setShowBulkModal(true)}
-                className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-sm py-3 border-2 border-black hover:bg-[#0ea5e9] shadow-[2px_2px_0px_#000]"
+                className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
               >
                 📥 BULK EXCEL/SHEETS IMPORT
               </button>
             </div>
           </div>
 
-          {/* Mixer Settings Panel */}
-          <div className="brutal-box p-6 bg-[#FACC15] shadow-[8px_8px_0px_#000]">
+          {/* Module 2: Shuffler Configuration Panel */}
+          <div className="brutal-box p-6 bg-[#FACC15] text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
             <div className="fold-corner-orange"></div>
-            <h2 className="brutal-font text-xl md:text-2xl mb-6 uppercase text-black">
-              2. Split Controls
+            <h2 className="brutal-font text-xl md:text-2xl mb-6 uppercase text-black border-b-2 border-black pb-2">
+              2. CONFIG MIXER
             </h2>
+            
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-sm font-black uppercase text-black">TARGET TEAM COUNT</label>
-                  <span className="brutal-font text-xl bg-black text-[#FACC15] px-3 py-1 border-2 border-black">
-                    {groupCount} Teams
+                  <label className="text-[10px] font-black uppercase">TARGET SPLIT QUANTITY</label>
+                  <span className="brutal-font text-base bg-black text-[#FACC15] px-3 py-1 border-2 border-black font-mono">
+                    {groupCount} TEAMS
                   </span>
                 </div>
+                {/* Visual styled slider */}
                 <input
                   type="range"
                   min="2"
                   max={Math.max(2, members.length)}
                   value={groupCount}
                   onChange={(e) => setGroupCount(parseInt(e.target.value, 10))}
-                  className="w-full accent-black cursor-pointer"
+                  className="w-full accent-black cursor-pointer bg-black h-2 rounded-full outline-none"
                 />
-                <div className="flex justify-between text-xs font-black mt-1 uppercase text-black">
-                  <span>Min: 2</span>
-                  <span>Max: {members.length || 2} players</span>
+                <div className="flex justify-between text-[9px] font-mono font-bold mt-1 uppercase text-black">
+                  <span>MIN: 2</span>
+                  <span>MAX: {members.length || 2} PLATES</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-black uppercase text-black mb-2">TEAM NAMES STYLE</label>
+                <label className="block text-[10px] font-black uppercase mb-2">NOMENCLATURE PRESETS</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(["numbers", "colors", "heroes"] as const).map(preset => (
                     <button
                       key={preset}
                       onClick={() => setNamingPreset(preset)}
-                      className={`px-3 py-2 border-2 border-black font-bold uppercase text-xs transition-all shadow-[2px_2px_0px_#000] ${
+                      className={`px-3 py-2 border-2 border-black font-bold uppercase text-[10px] tracking-tighter transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer ${
                         namingPreset === preset
                           ? "bg-black text-[#FACC15]"
                           : "bg-white text-black hover:bg-gray-100"
@@ -760,7 +843,7 @@ export default function MixerPage() {
               <button
                 onClick={generateTeams}
                 disabled={members.length < 2 || isDealing}
-                className="w-full brutal-box brutal-box-hover bg-black text-[#FACC15] font-black uppercase text-lg py-4 border-4 border-black hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000]"
+                className="w-full brutal-font text-lg bg-black text-[#FACC15] hover:text-[#fff] hover:bg-zinc-950 py-4 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000] cursor-pointer active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000]"
               >
                 {isDealing ? "MIXING & DEALING... 🎲" : "SPLIT TEAMS NOW 🎲"}
               </button>
@@ -768,17 +851,17 @@ export default function MixerPage() {
           </div>
         </section>
 
-        {/* Right Side: Roster and Results (7 cols) */}
+        {/* Right Side: Roster ledger and shuffler boards (7 cols) */}
         <section className="lg:col-span-7 space-y-6">
           
-          {/* Tab Navigation */}
+          {/* Tab Navigation knobs */}
           <div className="flex gap-2 relative z-10">
             <button
               onClick={() => setActiveTab("roster")}
-              className={`brutal-font text-lg md:text-xl px-6 py-3 uppercase border-4 border-black border-b-0 rounded-t-xl transition-all duration-200 shadow-[4px_0_0_#000] ${
+              className={`brutal-font text-base sm:text-lg px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] cursor-pointer ${
                 activeTab === "roster"
-                  ? "bg-[#FACC15] text-black -translate-y-1 h-13"
-                  : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-1 h-12"
+                  ? "bg-[#FACC15] text-black -translate-y-1.5 h-15"
+                  : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-2 h-13"
               }`}
             >
               Roster ({members.length} players)
@@ -788,60 +871,60 @@ export default function MixerPage() {
                 if (finalTeams.length > 0) setActiveTab("teams");
               }}
               disabled={finalTeams.length === 0}
-              className={`brutal-font text-lg md:text-xl px-6 py-3 uppercase border-4 border-black border-b-0 rounded-t-xl transition-all duration-200 shadow-[4px_0_0_#000] disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`brutal-font text-base sm:text-lg px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                 activeTab === "teams"
-                  ? "bg-[#38BDF8] text-black -translate-y-1 h-13"
-                  : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-1 h-12"
+                  ? "bg-[#38BDF8] text-black -translate-y-1.5 h-15"
+                  : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-2 h-13"
               }`}
             >
-              Results 🚀
+              Shuffler Results 🚀
             </button>
           </div>
 
-          {/* Roster tab content */}
+          {/* Roster Ledger sheet Tab */}
           {activeTab === "roster" && (
-            <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] min-h-[500px]">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="brutal-font text-xl md:text-2xl uppercase text-black">ACTIVE ROSTER</h3>
-                <span className="text-xs bg-black text-white font-bold px-3 py-1 border-2 border-black uppercase">
-                  Balanced by Cell Group
+            <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-b-3xl border-4 border-black min-h-[500px]">
+              <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
+                <h3 className="brutal-font text-lg md:text-xl uppercase text-black">ACTIVE ROSTER LEDGER</h3>
+                <span className="text-[9px] bg-black text-[#FFFDF5] font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider font-mono">
+                  BALANCED SHUFFLER QUEUE
                 </span>
               </div>
 
               {members.length === 0 ? (
-                <div className="text-center py-20 border-4 border-dashed border-gray-300 rounded-lg">
-                  <p className="font-bold text-xl text-gray-500 mb-4 uppercase">Roster is empty</p>
-                  <p className="text-sm text-gray-400 mb-6 max-w-sm mx-auto">
-                    Manually add players on the left or paste your spreadsheet roster above.
+                <div className="text-center py-24 border-4 border-dashed border-zinc-300 rounded-2xl bg-zinc-50">
+                  <p className="font-black text-xl text-zinc-400 mb-2 uppercase">Ledger is Empty</p>
+                  <p className="text-xs text-zinc-500 mb-6 max-w-xs mx-auto uppercase">
+                    Manually add players on the left or paste your sheet roster values.
                   </p>
                 </div>
               ) : (
-                <div className="overflow-y-auto max-h-[550px] border-4 border-black">
-                  <table className="w-full text-left border-collapse text-sm text-black">
+                <div className="overflow-y-auto max-h-[520px] border-4 border-black shadow-[4px_4px_0px_#000]">
+                  <table className="w-full text-left border-collapse text-xs text-black">
                     <thead>
                       <tr className="bg-black text-[#FFFDF5] border-b-4 border-black">
-                        <th className="p-3 font-black uppercase text-xs">#</th>
-                        <th className="p-3 font-black uppercase text-xs">Player Name</th>
-                        <th className="p-3 font-black uppercase text-xs">Cell Group</th>
-                        <th className="p-3 font-black uppercase text-xs text-right">Action</th>
+                        <th className="p-3.5 font-black uppercase text-left w-12 font-mono">#</th>
+                        <th className="p-3.5 font-black uppercase">PLAYER SLOTS</th>
+                        <th className="p-3.5 font-black uppercase">CELL LEAD</th>
+                        <th className="p-3.5 font-black uppercase text-right w-24">COMMANDS</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y-2 divide-black">
+                    <tbody className="divide-y-2 divide-black bg-[#FFFDF5]">
                       {members.map((m, idx) => (
-                        <tr key={m.id} className="hover:bg-[#FFFDF5] font-bold">
-                          <td className="p-3 text-gray-500">{members.length - idx}</td>
-                          <td className="p-3 text-base">{m.name}</td>
-                          <td className="p-3">
-                            <span className={`inline-block ${getGroupColor(m.cg)} text-black text-xs px-2 py-0.5 border border-black uppercase font-black`}>
+                        <tr key={m.id} className="hover:bg-zinc-100 font-bold transition-colors">
+                          <td className="p-3.5 text-zinc-500 font-mono">{members.length - idx}</td>
+                          <td className="p-3.5 text-base font-black truncate max-w-[180px]">{m.name}</td>
+                          <td className="p-3.5">
+                            <span className={`inline-block ${getGroupColor(m.cg)} text-black text-[9px] px-2.5 py-1 border-2 border-black font-black uppercase tracking-wider shadow-[1px_1px_0px_#000]`}>
                               {m.cg}
                             </span>
                           </td>
-                          <td className="p-3 text-right">
+                          <td className="p-3.5 text-right">
                             <button
                               onClick={() => handleRemoveMember(m.id)}
-                              className="text-red-500 hover:text-red-700 hover:underline uppercase text-xs font-black"
+                              className="text-red-600 hover:text-red-700 font-black uppercase text-[10px] tracking-wide border border-transparent hover:border-red-600 px-2 py-1 transition-all rounded"
                             >
-                              Remove
+                              [ REMOVE ]
                             </button>
                           </td>
                         </tr>
@@ -853,106 +936,117 @@ export default function MixerPage() {
             </div>
           )}
 
-          {/* Results Tab Content */}
+          {/* Shuffler Results tab */}
           {activeTab === "teams" && finalTeams.length > 0 && (
             <div className="space-y-6">
               
-              {/* Output Actions Tool Belt */}
-              <div className="brutal-box p-4 bg-white text-black shadow-[6px_6px_0px_#000] flex flex-wrap gap-4 items-center justify-between">
-                <span className="font-black text-sm uppercase text-black">Export results:</span>
-                <div className="flex gap-2 flex-wrap">
+              {/* Output Actions dashboard Belt */}
+              <div className="brutal-box p-4 bg-white text-black shadow-[6px_6px_0px_#000] rounded-2xl border-4 border-black flex flex-wrap gap-4 items-center justify-between">
+                <span className="font-black text-xs uppercase tracking-wider">EXPORT TEAMS DATA:</span>
+                <div className="flex gap-2.5 flex-wrap">
                   <button
                     onClick={copyShareLink}
-                    className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs px-3 py-2 border-2 border-black hover:bg-[#0ea5e9] shadow-[2px_2px_0px_#000]"
+                    className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs px-4 py-2.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
                   >
                     🔗 Copy Share Link
                   </button>
                   <button
-                    onClick={() => setShowShowcase(true)}
-                    className="brutal-box bg-[#FACC15] text-black font-black uppercase text-xs px-3 py-2 border-2 border-black hover:bg-[#eab308] shadow-[2px_2px_0px_#000]"
+                    onClick={() => {
+                      setShowShowcase(true);
+                      playSynthSound(600, 0.2, "sine");
+                    }}
+                    className="brutal-box bg-[#FACC15] text-black font-black uppercase text-xs px-4 py-2.5 border-2 border-black hover:bg-[#eab308] shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
                   >
-                    📺 Showcase Teams
+                    📺 Showcase Presentation
                   </button>
                 </div>
               </div>
 
-              {/* Dealing simulation screen */}
+              {/* Dealing simulation screen overlay */}
               {isDealing && (
-                <div className="brutal-box p-8 bg-[#18181B] text-white text-center shadow-[8px_8px_0px_#000] relative overflow-hidden animate-pulse">
-                  <h4 className="brutal-font text-2xl text-[#FACC15] mb-2 uppercase">DEALING IN PROGRESS...</h4>
+                <div className="brutal-box p-8 bg-black text-white text-center shadow-[8px_8px_0px_#000] border-4 border-black rounded-3xl relative overflow-hidden">
+                  <div className="scanline-line"></div>
+                  <h4 className="brutal-font text-2xl text-[#FACC15] mb-2 uppercase animate-bounce">DEALING ACTIVE...</h4>
                   <div className="flex justify-center items-center gap-4 my-6">
-                    <div className="w-16 h-24 bg-[#F59E0B] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[-10deg] flex items-center justify-center">
+                    <div className="w-16 h-24 bg-[#F59E0B] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[-12deg] flex items-center justify-center animate-pulse">
                       <span className="text-black font-black text-3xl">🃏</span>
                     </div>
-                    <div className="w-16 h-24 bg-[#38BDF8] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform translate-y-[-10px] flex items-center justify-center">
+                    <div className="w-16 h-24 bg-[#38BDF8] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform translate-y-[-10px] flex items-center justify-center scale-105">
                       <span className="text-black font-black text-3xl">🎲</span>
                     </div>
-                    <div className="w-16 h-24 bg-[#FACC15] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[10deg] flex items-center justify-center">
+                    <div className="w-16 h-24 bg-[#FACC15] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[12deg] flex items-center justify-center animate-pulse">
                       <span className="text-black font-black text-3xl">⚡</span>
                     </div>
                   </div>
-                  <p className="font-bold text-lg text-gray-300">
-                    Dealing player <span className="text-[#38BDF8] font-black">{members[dealIndex]?.name || "starting..."}</span>
+                  <p className="font-bold text-lg text-[#FFFDF5]">
+                    Dealing <span className="text-[#38BDF8] font-black uppercase underline">{members[dealIndex]?.name || "slots..."}</span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-2 uppercase">
-                    Greedy Dealer is scanning cells for minimum overlap collisions...
+                  <p className="text-[10px] font-mono text-zinc-500 mt-2 uppercase tracking-wider">
+                    GreedyDealer is allocating buckets based on cell group collision grids
                   </p>
                 </div>
               )}
 
               {/* Quality Stats Board */}
               {!isDealing && (
-                <div className="brutal-box p-4 bg-[#C084FC] text-black shadow-[6px_6px_0px_#000] grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-bold">
-                  <div>
-                    <span className="block text-xs uppercase font-black text-purple-950">PLAYERS MIXED</span>
-                    <span className="text-2xl brutal-font">{members.length}</span>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  {/* Quality rating grade metric */}
+                  <div className={`md:col-span-5 brutal-box p-4 shadow-[6px_6px_0px_#000] border-4 border-black rounded-2xl flex flex-col justify-center items-center text-black font-bold text-center ${getMixQualityGrade().color}`}>
+                    <span className="text-[10px] uppercase font-black text-black/70 tracking-widest font-mono">MIX RATING MATCH</span>
+                    <span className="text-3xl brutal-font tracking-tighter mt-1">{getMixQualityGrade().grade}</span>
+                    <span className="text-[8px] font-mono font-black border border-black px-1.5 py-0.5 uppercase tracking-wide bg-black text-[#FFFDF5] mt-1.5">{getMixQualityGrade().text}</span>
                   </div>
-                  <div>
-                    <span className="block text-xs uppercase font-black text-purple-950">TEAMS TARGET</span>
-                    <span className="text-2xl brutal-font">{finalTeams.length}</span>
-                  </div>
-                  <div>
-                    <span className="block text-xs uppercase font-black text-purple-950">SIZE DIFFERENCE</span>
-                    <span className="text-2xl brutal-font">±{members.length % finalTeams.length === 0 ? "0" : "1"}</span>
-                  </div>
-                  <div>
-                    <span className="block text-xs uppercase font-black text-purple-950">CG COLLISONS</span>
-                    <span className="text-2xl brutal-font">{totalSameCGOverlaps()}</span>
+
+                  <div className="md:col-span-7 brutal-box p-4 bg-[#C084FC] text-black shadow-[6px_6px_0px_#000] border-4 border-black rounded-2xl grid grid-cols-3 gap-2 text-center font-bold items-center">
+                    <div>
+                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">SLOTS</span>
+                      <span className="text-2xl brutal-font">{members.length}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">COLLISION</span>
+                      <span className="text-2xl brutal-font">{totalSameCGOverlaps()}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">TEAMS</span>
+                      <span className="text-2xl brutal-font">{finalTeams.length}</span>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Teams Grid */}
+              {/* Teams cards Deck Grid */}
               {!isDealing && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {finalTeams.map((team) => (
                     <div
                       key={team.id}
-                      className="team-card brutal-box shadow-[8px_8px_0px_#000] overflow-hidden"
+                      className="team-card brutal-box shadow-[8px_8px_0px_#000] rounded-2xl border-4 border-black overflow-hidden flex flex-col justify-between"
                     >
                       {/* Team Header */}
                       <div className={`p-4 border-b-4 border-black flex justify-between items-center ${team.color}`}>
-                        <h4 className="brutal-font text-lg md:text-xl uppercase">{team.name}</h4>
-                        <span className="bg-black text-white text-xs font-black px-2 py-0.5 border border-black uppercase">
-                          {team.members.length} players
+                        <h4 className="brutal-font text-base md:text-lg uppercase tracking-tight flex items-center gap-1.5 truncate">
+                          <span>{getTeamEmoji(team.name)}</span> {team.name}
+                        </h4>
+                        <span className="bg-black text-[#FFFDF5] text-[9px] font-mono font-black px-2.5 py-1 border border-black uppercase tracking-wider shrink-0 shadow-[1px_1px_0px_#000]">
+                          {team.members.length} P
                         </span>
                       </div>
 
                       {/* Team Members List */}
-                      <ul className="p-4 bg-white text-black divide-y divide-gray-200">
+                      <ul className="p-4 bg-white text-black divide-y-2 divide-zinc-150 flex-grow">
                         {team.members.map((m, idx) => (
-                          <li key={m.id} className="py-2.5 flex justify-between items-center font-bold text-sm text-black">
-                            <span className="flex items-center gap-2">
-                              <span className="text-xs text-gray-400 font-mono">{idx + 1}.</span>
-                              {m.name}
+                          <li key={m.id} className="py-2.5 flex justify-between items-center font-bold text-xs text-black">
+                            <span className="flex items-center gap-2 truncate pr-1">
+                              <span className="text-zinc-400 font-mono text-[10px]">{idx + 1}.</span>
+                              <span className="truncate">{m.name}</span>
                             </span>
-                            <span className={`${getGroupColor(m.cg)} text-black text-[10px] px-2 py-0.5 border border-black uppercase font-black`}>
+                            <span className={`${getGroupColor(m.cg)} text-black text-[9px] px-2 py-0.5 border border-zinc-700 uppercase font-black shrink-0`}>
                               {m.cg}
                             </span>
                           </li>
                         ))}
                         {team.members.length === 0 && (
-                          <li className="py-4 text-center text-xs text-gray-400 italic">No players allocated</li>
+                          <li className="py-6 text-center text-xs text-zinc-400 italic">No players allocated</li>
                         )}
                       </ul>
                     </div>
@@ -965,28 +1059,31 @@ export default function MixerPage() {
       </main>
       )}
 
-      {/* Bulk Import Modal */}
+      {/* Bulk Import Modal dialog box */}
       {showBulkModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl brutal-box bg-white text-black p-6 md:p-8 shadow-[12px_12px_0px_#000] relative">
+          <div className="w-full max-w-2xl brutal-box bg-white text-black p-6 md:p-8 shadow-[12px_12px_0px_#000] border-4 border-black rounded-3xl relative">
             <button
-              onClick={() => setShowBulkModal(false)}
-              className="absolute top-4 right-4 brutal-box bg-red-500 text-white font-black text-lg w-8 h-8 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000]"
+              onClick={() => {
+                setShowBulkModal(false);
+                playSynthSound(400, 0.1, "sine");
+              }}
+              className="absolute top-4 right-4 brutal-box bg-red-500 text-white font-black text-base w-8 h-8 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer"
             >
               ×
             </button>
-            <h3 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#38BDF8]">
-              📥 Paste Roster from Excel / Sheets
+            <h3 className="brutal-font text-xl md:text-2xl mb-3 uppercase text-[#38BDF8] border-b-2 border-black pb-2">
+              📥 IMPORT ROSTER SPREADSHEET
             </h3>
             
-            <p className="text-xs font-bold text-gray-500 mb-4 leading-relaxed uppercase">
-              Paste names from Excel or Google Sheets (one player per line). Custom Cell Groups will be auto-generated:
-              <span className="block mt-2 font-mono text-[10px] text-zinc-600 bg-gray-100 p-2 border border-dashed border-gray-300 font-normal normal-case">
-                Example inputs supported:<br />
-                John Doe (Youth)<br />
-                Sarah Lin, Ignite<br />
-                Dave Smith - Adults<br />
-                David Chew (No cell group format defaults to selected cell group)
+            <p className="text-[10px] font-bold text-zinc-500 mb-4 leading-relaxed uppercase">
+              Copy-paste values directly from Excel or Google Sheets. Columns will auto-map (Name, Group):
+              <span className="block mt-2 font-mono text-[9px] text-zinc-600 bg-gray-100 p-2.5 border border-dashed border-gray-300 font-normal normal-case leading-normal">
+                Supported formatting presets:<br />
+                - Alex Chew (Jason CG)<br />
+                - Alex Chew, Lemuel<br />
+                - Alex Chew - Jason<br />
+                - Alex Chew (defaults to general lead if blank)
               </span>
             </p>
 
@@ -994,20 +1091,20 @@ export default function MixerPage() {
               rows={8}
               value={bulkInput}
               onChange={(e) => setBulkInput(e.target.value)}
-              placeholder="Paste names here..."
-              className="w-full p-4 border-4 border-black font-bold font-mono text-sm mb-6 outline-none bg-[#FFFDF5] text-black placeholder-zinc-500"
+              placeholder="Paste names here... (one player name per line)"
+              className="w-full p-4 border-4 border-black font-bold font-mono text-xs mb-6 outline-none bg-[#FFFDF5] text-black placeholder-zinc-400"
             ></textarea>
 
             <div className="flex gap-4 justify-end">
               <button
                 onClick={() => setShowBulkModal(false)}
-                className="brutal-box bg-white text-black font-black uppercase text-sm px-6 py-3 border-2 border-black hover:bg-gray-100 shadow-[4px_4px_0px_#000]"
+                className="brutal-box bg-white text-black font-black uppercase text-xs px-5 py-3 border-2 border-black hover:bg-gray-100 shadow-[3px_3px_0px_#000] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBulkImport}
-                className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-sm px-6 py-3 border-2 border-black hover:bg-[#0ea5e9] shadow-[4px_4px_0px_#000]"
+                className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs px-5 py-3 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer"
               >
                 Parse & Import 🚀
               </button>
@@ -1016,52 +1113,64 @@ export default function MixerPage() {
         </div>
       )}
 
-      {/* Presentation Showcase Modal Overlay */}
+      {/* Presentation Showcase Modal Overlay (Ticket style) */}
       {showShowcase && finalTeams.length > 0 && (
-        <div className="fixed inset-0 bg-[#FFFDF5] z-50 overflow-y-auto p-6 md:p-12 flex flex-col justify-between selection:bg-black selection:text-[#FACC15]">
+        <div className="fixed inset-0 bg-[#18181B] bg-grid-pattern-dark z-50 overflow-y-auto p-6 md:p-12 flex flex-col justify-between selection:bg-black selection:text-[#FACC15]">
           <div className="max-w-7xl mx-auto w-full space-y-8">
             
-            {/* Header section with QR Code */}
-            <div className="brutal-box bg-[#18181B] text-white p-8 rounded-xl shadow-[8px_8px_0px_#000] flex flex-col items-center gap-6 relative border-4 border-black">
-              
+            {/* Header section ticket layout */}
+            <div className="brutal-box bg-[#FFFDF5] text-black p-6 md:p-8 rounded-3xl shadow-[12px_12px_0px_#000] border-8 border-black flex flex-col items-center gap-6 relative">
+              {/* Mechanical panel details */}
+              <div className="screw top-3 left-3"></div>
+              <div className="screw top-3 right-3"></div>
+              <div className="screw bottom-3 left-3"></div>
+              <div className="screw bottom-3 right-3"></div>
+
               {/* Cabinet Top bar */}
-              <div className="flex justify-between items-center w-full border-b-2 border-zinc-800 pb-4 mb-2">
-                <span className="font-mono text-xs text-green-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span>
-                  STAGE_PROJECTION_ON
+              <div className="flex justify-between items-center w-full border-b-4 border-black pb-4 mb-2">
+                <span className="font-mono text-xs text-green-650 uppercase tracking-widest flex items-center gap-2 font-black">
+                  <span className="w-3 h-3 rounded-full bg-green-500 led-glow-green animate-pulse"></span>
+                  • TRANSMITTING STAGE BROADCAST DECK
                 </span>
                 <button
-                  onClick={() => setShowShowcase(false)}
-                  className="brutal-box bg-[#EF4444] text-white font-black text-xs px-3.5 py-2 border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-red-600 uppercase flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
+                  onClick={() => {
+                    setShowShowcase(false);
+                    playSynthSound(400, 0.15, "triangle");
+                  }}
+                  className="brutal-box bg-[#EF4444] text-white font-black text-xs px-5 py-2.5 border-4 border-black shadow-[3px_3px_0px_#000] hover:bg-red-600 uppercase flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                 >
                   🚪 CLOSE DECK
                 </button>
               </div>
 
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6 w-full">
-                <div className="space-y-3 max-w-xl text-center md:text-left">
-                  <span className="bg-[#FACC15] text-black text-xs font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider inline-block">
-                    PRESENTATION DECK 📺
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 w-full">
+                <div className="space-y-4 max-w-2xl text-center md:text-left">
+                  <span className="bg-black text-[#FFFDF5] text-[10px] font-black px-3 py-1 border-2 border-black uppercase tracking-widest inline-block shadow-[2px_2px_0px_#000]">
+                    AUDITORIUM SCREEN OVERLAY 📺
                   </span>
-                  <h2 className="brutal-font text-3xl sm:text-5xl text-[#FACC15] brutal-text-glow-yellow uppercase tracking-wider">
+                  <h2 className="brutal-font text-4xl sm:text-6xl text-black brutal-text-glow-yellow uppercase tracking-wider select-none leading-none">
                     TEAM DISTRIBUTIONS
                   </h2>
-                  <p className="font-medium text-gray-300 text-sm leading-relaxed">
-                    The admin has shuffled and allocated the roster. Check your assigned teams below, or scan the QR code to view the list and search your name on your own phone!
+                  <p className="font-bold text-zinc-700 text-sm leading-relaxed max-w-xl">
+                    Cell Group shuffles complete. Review allocations below or scan the ticket QR code to launch search highlighting on your own phone device!
                   </p>
                 </div>
 
-                {/* QR Code Container (Ticket Style) */}
-                <div className="brutal-box p-6 bg-[#FFFDF5] text-black border-4 border-black shadow-[6px_6px_0px_#000] flex flex-col items-center justify-center shrink-0 relative overflow-visible">
-                  {/* Ticket notch cutouts */}
-                  <div className="absolute top-1/2 -left-3 w-5 h-5 bg-[#18181B] border-4 border-black rounded-full transform -translate-y-1/2 z-10"></div>
-                  <div className="absolute top-1/2 -right-3 w-5 h-5 bg-[#18181B] border-4 border-black rounded-full transform -translate-y-1/2 z-10"></div>
-                  
-                  {/* Dashed lines representing ticket tear */}
-                  <div className="absolute top-4 left-4 right-4 border-t-2 border-dashed border-black"></div>
-                  <div className="absolute bottom-10 left-4 right-4 border-t-2 border-dashed border-black"></div>
+                {/* QR Code Ticket Frame */}
+                <div className="ticket-tear brutal-box p-6 bg-[#FFFDF5] text-black border-4 border-black shadow-[6px_6px_0px_#000] flex flex-col items-center justify-center shrink-0 relative overflow-visible rounded-2xl w-52">
+                  {/* Decorative Ticket Barcode */}
+                  <div className="w-full flex justify-between h-4 px-2 mb-2 bg-white border border-zinc-200 py-0.5">
+                    <div className="w-1 h-full bg-black"></div>
+                    <div className="w-2 h-full bg-black"></div>
+                    <div className="w-0.5 h-full bg-black"></div>
+                    <div className="w-1.5 h-full bg-black"></div>
+                    <div className="w-0.5 h-full bg-black"></div>
+                    <div className="w-2.5 h-full bg-black"></div>
+                    <div className="w-1 h-full bg-black"></div>
+                    <div className="w-1.5 h-full bg-black"></div>
+                  </div>
 
-                  <div className="bg-white p-2.5 border-4 border-black mt-2 mb-2 relative z-0">
+                  <div className="bg-white p-2 border-4 border-black mb-2 relative z-0">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
                         `${window.location.origin}/showcase?t=${btoa(
@@ -1078,49 +1187,54 @@ export default function MixerPage() {
                           )
                         )}`
                       )}`}
-                      alt="QR Code"
-                      className="w-32 h-32 block"
+                      alt="QR Code Ticket"
+                      className="w-28 h-28 block select-none"
                     />
                   </div>
-                  <span className="text-[10px] text-black font-black uppercase tracking-widest mt-1">
-                    🎟️ SCAN FOR MOBILE
+                  <span className="text-[9px] text-black font-black uppercase tracking-widest font-mono">
+                    🎟️ SCAN MOBILE
                   </span>
+                  <span className="text-[6px] text-zinc-500 font-mono mt-1">ADMIT ONE // SERIAL: CG-9957</span>
                 </div>
               </div>
             </div>
 
-            {/* Teams Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Showcase teams grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {finalTeams.map((team, idx) => (
                 <div
                   key={idx}
-                  className="brutal-box overflow-hidden shadow-[8px_8px_0px_#000] flex flex-col bg-white border-4 border-black hover:translate-y-[-4px] hover:shadow-[12px_12px_0px_#000] transition-all duration-200"
+                  className="brutal-box overflow-hidden shadow-[10px_10px_0px_#000] rounded-3xl border-4 border-black flex flex-col bg-white hover:-translate-y-1.5 hover:shadow-[14px_14px_0px_#000] transition-all duration-300"
                 >
                   {/* Header card with team color */}
-                  <div className={`p-4 border-b-4 border-black text-center font-black uppercase text-lg ${team.color || "bg-yellow-400 text-black"}`}>
-                    <h3 className="brutal-font tracking-wide truncate flex items-center justify-center gap-1.5">
+                  <div className={`p-5 border-b-4 border-black text-center font-black uppercase text-xl relative ${team.color || "bg-yellow-400 text-black"}`}>
+                    <div className="absolute inset-x-0 top-0 h-1 bg-black/10"></div>
+                    <h3 className="brutal-font tracking-wide truncate flex items-center justify-center gap-2">
                       <span>{getTeamEmoji(team.name)}</span> {team.name}
                     </h3>
-                    <span className="bg-black text-[#FFFDF5] text-[10px] px-2 py-0.5 border border-black uppercase font-bold mt-1.5 inline-block">
-                      {team.members.length} players
+                    <span className="bg-black text-[#FFFDF5] text-[9px] font-mono px-2.5 py-0.5 border border-black uppercase font-black mt-2 inline-block shadow-[1px_1px_0px_#000]">
+                      {team.members.length} PLAYERS
                     </span>
                   </div>
 
-                  {/* Members lists */}
-                  <ul className="p-3 divide-y-2 divide-zinc-100 flex-1 bg-[#FFFDF5]">
+                  {/* Members lists with custom HUD slot list blocks */}
+                  <ul className="p-4 bg-[#FFFDF5] flex-1 space-y-3 max-h-[460px] overflow-y-auto">
                     {team.members.map((m, mIdx) => (
                       <li
                         key={mIdx}
-                        className="py-2 px-2 flex justify-between items-center font-bold text-sm text-zinc-800 hover:bg-zinc-100 transition-colors rounded"
+                        className="brutal-box p-3 bg-white border-2 border-black flex justify-between items-center font-black text-sm text-black shadow-[3px_3px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#000] transition-all rounded-xl"
                       >
-                        <span className="truncate">{m.name}</span>
-                        <span className={`text-[10px] ${getGroupColor(m.cg)} text-black border border-black px-1.5 py-0.5 uppercase font-black shrink-0`}>
+                        <span className="flex items-center gap-2 truncate pr-1">
+                          <span className="font-mono text-[9px] text-zinc-400">P{mIdx + 1}</span>
+                          <span className="truncate uppercase">{m.name}</span>
+                        </span>
+                        <span className={`text-[9px] ${getGroupColor(m.cg)} text-black border border-black px-2 py-0.5 uppercase font-black shrink-0 shadow-[1px_1px_0px_#000]`}>
                           {m.cg}
                         </span>
                       </li>
                     ))}
                     {team.members.length === 0 && (
-                      <li className="py-4 text-center text-xs text-gray-400 italic">No players allocated</li>
+                      <li className="py-6 text-center text-xs text-zinc-400 italic font-bold uppercase">No players allocated</li>
                     )}
                   </ul>
                 </div>
@@ -1134,7 +1248,7 @@ export default function MixerPage() {
       {/* Floating Notifications Toast */}
       {toastMessage && (
         <div className="fixed bottom-8 right-8 z-50 animate-bounce">
-          <div className="brutal-box bg-[#FACC15] text-black font-black uppercase text-sm px-6 py-4 border-4 border-black shadow-[6px_6px_0px_#000]">
+          <div className="brutal-box bg-[#FACC15] text-black font-black uppercase text-xs px-6 py-4 border-4 border-black shadow-[6px_6px_0px_#000] rounded-xl">
             ⚡ {toastMessage}
           </div>
         </div>
