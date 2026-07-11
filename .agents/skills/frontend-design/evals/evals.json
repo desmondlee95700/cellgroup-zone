@@ -1,0 +1,45 @@
+{
+  "skill_name": "frontend-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In this Next.js app, redesign the home page for a 50+ player cellgroup game night. Keep the neo-brutalist brand from AGENTS.md, make the first screen feel like the games are chaotic and playable, and avoid a generic landing page.",
+      "expected_output": "A distinctive implemented homepage whose first viewport communicates the cellgroup game-night subject through neo-brutalist layout, copy, and interaction rather than generic marketing sections.",
+      "files": [],
+      "expectations": [
+        "The output identifies a concrete subject, audience, and page job before or during implementation.",
+        "The implementation uses the local neo-brutalist brand language from AGENTS.md, including thick borders, hard shadows, high-contrast colors, and chunky display typography.",
+        "The first viewport contains a subject-specific signature element related to game-night play state, teams, rounds, timers, cards, boards, or motion.",
+        "The page avoids generic gradient blobs, decorative bokeh/orbs, and default three-card marketing structure unless explicitly justified by the brief.",
+        "The result includes responsive behavior and a visual QA note covering desktop and mobile."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a compact dashboard view for game hosts to pick the next activity, see required supplies, group size, chaos level, setup time, and safety notes. It should feel energetic but be efficient for someone running the room.",
+      "expected_output": "A dense, usable host dashboard where layout supports scanning and decisions, with a distinctive game-host visual language rather than a marketing hero.",
+      "files": [],
+      "expectations": [
+        "The first screen is a usable dashboard surface, not a landing-page hero.",
+        "Game attributes such as supplies, group size, chaos level, setup time, and safety notes are visually organized for scanning and comparison.",
+        "Controls use appropriate UI patterns such as tabs, filters, toggles, segmented controls, menus, or icon buttons instead of only text links.",
+        "Color, type, and surface treatments have explicit jobs tied to status, urgency, category, or action.",
+        "The design includes empty/loading/error or no-results states when the implementation creates filterable or dynamic data."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review the current UI and improve only the parts that feel templated or AI-generated. Keep the scope tight, preserve functionality, and explain the design rationale in a short final note.",
+      "expected_output": "A focused UI polish pass that identifies generic patterns, replaces them with brief-specific design choices, and avoids unrelated refactors.",
+      "files": [],
+      "expectations": [
+        "The review names the generic or AI-templated patterns being targeted before changing them.",
+        "Edits are scoped to visual design, interaction polish, copy, or layout and do not introduce unrelated refactors.",
+        "The changes add or strengthen a brief-specific signature element rather than adding more decoration everywhere.",
+        "The final note explains the rationale for the design decisions without overlong process narration.",
+        "The implementation preserves existing functionality and reports any tests or visual checks run."
+      ]
+    }
+  ]
+}
+
