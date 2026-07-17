@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Member {
   id: string;
@@ -90,6 +91,10 @@ export default function MixerPage() {
   // Bulk import
   const [bulkInput, setBulkInput] = useState("");
   const [showBulkModal, setShowBulkModal] = useState(false);
+
+  // Google Form sync (published CSV link)
+  const [sheetUrl, setSheetUrl] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
   const [showShowcase, setShowShowcase] = useState(false);
   
   // Mixer settings
@@ -216,6 +221,9 @@ export default function MixerPage() {
         const savedPreset = localStorage.getItem("cg_mixer_preset");
         if (savedPreset) setNamingPreset(savedPreset as "numbers" | "colors" | "heroes");
         
+        const savedSheetUrl = localStorage.getItem("cg_mixer_sheet_url");
+        if (savedSheetUrl) setSheetUrl(savedSheetUrl);
+
         const savedAuth = localStorage.getItem("cg_mixer_auth") || sessionStorage.getItem("cg_mixer_auth");
         if (savedAuth === "true") setIsAuthenticated(true);
 
@@ -261,6 +269,13 @@ export default function MixerPage() {
     }
   }, [namingPreset]);
 
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cg_mixer_sheet_url", sheetUrl);
+    }
+  }, [sheetUrl]);
+
   // Add individual cell group
   const addCellGroup = () => {
     const clean = newCGName.trim();
@@ -296,10 +311,17 @@ export default function MixerPage() {
     const cleanName = inputName.trim();
     if (!cleanName) return;
 
+    if (cleanName.length > 50) {
+      playSynthSound(300, 0.1, "triangle");
+      showToast("Name too long! Max 50 characters.");
+      return;
+    }
+
     const isDup = members.some(m => m.name.toLowerCase() === cleanName.toLowerCase());
     if (isDup) {
       playSynthSound(300, 0.1, "triangle");
-      showToast(`Warning: "${cleanName}" is already in the roster.`);
+      showToast(`"${cleanName}" is already in the roster. Not added.`);
+      return;
     }
 
     const newMember: Member = {
@@ -337,6 +359,7 @@ export default function MixerPage() {
     const lines = bulkInput.split("\n");
     const added: Member[] = [];
     const duplicates: string[] = [];
+    const tooLong: string[] = [];
     const currentNames = new Set(members.map(m => m.name.toLowerCase()));
 
     lines.forEach(line => {
@@ -372,10 +395,13 @@ export default function MixerPage() {
             name = cleanLine.substring(0, commaIdx).trim();
             cg = cleanLine.substring(commaIdx + 1).trim();
           } else {
-            const dashIdx = cleanLine.indexOf("-");
+            // Only split on dashes surrounded by spaces, so hyphenated
+            // names like "Mary-Jane" are kept intact.
+            const dashIdx = cleanLine.indexOf(" - ");
             if (dashIdx !== -1) {
               name = cleanLine.substring(0, dashIdx).trim();
-              cg = dashIdx < cleanLine.length - 1 ? cleanLine.substring(dashIdx + 1).trim() : cg;
+              const cgPart = cleanLine.substring(dashIdx + 3).trim();
+              if (cgPart) cg = cgPart;
             }
           }
         }
@@ -384,6 +410,11 @@ export default function MixerPage() {
       cg = cg.replace(/\s+/g, " ").trim();
       if (!cellGroups.includes(cg)) {
         setCellGroups(prev => [...prev, cg]);
+      }
+
+      if (name.length > 50) {
+        tooLong.push(name.substring(0, 20) + "…");
+        return;
       }
 
       const lookupName = name.toLowerCase();
@@ -406,11 +437,132 @@ export default function MixerPage() {
     setShowBulkModal(false);
     setBulkInput("");
 
-    let msg = `Successfully imported ${added.length} players.`;
+    let msg = `Imported ${added.length} players.`;
     if (duplicates.length > 0) {
-      msg += ` Resolved ${duplicates.length} duplicate name warnings.`;
+      const shown = duplicates.slice(0, 3).join(", ");
+      const more = duplicates.length > 3 ? ` +${duplicates.length - 3} more` : "";
+      msg += ` Skipped ${duplicates.length} duplicates: ${shown}${more}.`;
+    }
+    if (tooLong.length > 0) {
+      msg += ` Skipped ${tooLong.length} names over 50 characters.`;
     }
     showToast(msg);
+  };
+
+  // --- Google Form Sync (published CSV) ---
+
+  // Minimal CSV parser that handles quoted fields (commas/newlines inside quotes)
+  const parseCsv = (text: string): string[][] => {
+    const rows: string[][] = [];
+    let row: string[] = [];
+    let field = "";
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += ch;
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ",") {
+        row.push(field); field = "";
+      } else if (ch === "\n" || ch === "\r") {
+        if (ch === "\r" && text[i + 1] === "\n") i++;
+        row.push(field); field = "";
+        if (row.some(f => f.trim() !== "")) rows.push(row);
+        row = [];
+      } else field += ch;
+    }
+    row.push(field);
+    if (row.some(f => f.trim() !== "")) rows.push(row);
+    return rows;
+  };
+
+  // Same header-matching logic as the Apps Script: exact match first, then partial
+  const findColumnByHeader = (headers: string[], candidates: string[]): number => {
+    for (const c of candidates) {
+      const idx = headers.indexOf(c);
+      if (idx !== -1) return idx;
+    }
+    for (let h = 0; h < headers.length; h++) {
+      for (const c of candidates) {
+        if (headers[h].includes(c)) return h;
+      }
+    }
+    return -1;
+  };
+
+  const handleSheetSync = async () => {
+    const url = sheetUrl.trim();
+    if (!url) {
+      showToast("Paste your published CSV link first!");
+      return;
+    }
+    setIsSyncing(true);
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      if (text.trim().startsWith("<")) {
+        showToast("That link returns a webpage, not CSV. Use File → Share → Publish to web → CSV.");
+        return;
+      }
+
+      const rows = parseCsv(text);
+      if (rows.length < 2) {
+        showToast("No form responses in the sheet yet.");
+        return;
+      }
+
+      const headers = rows[0].map(h => h.trim().toLowerCase());
+      const nameCol = findColumnByHeader(headers, ["name", "full name"]);
+      const cgCol = findColumnByHeader(headers, ["cell group", "cellgroup", "cg"]);
+      if (nameCol === -1 || cgCol === -1) {
+        showToast("Couldn't find Name / Cell Group columns in the sheet headers.");
+        return;
+      }
+
+      // Dedup within the sheet: latest submission wins (same rule as Apps Script)
+      const latest: { [key: string]: { name: string; cg: string } } = {};
+      for (let i = 1; i < rows.length; i++) {
+        const rawName = (rows[i][nameCol] || "").trim();
+        const rawCG = (rows[i][cgCol] || "").trim().replace(/\s+/g, " ");
+        if (!rawName || !rawCG) continue;
+        latest[rawName.toLowerCase()] = { name: rawName, cg: rawCG };
+      }
+
+      // Merge mode: only add people not already in the roster; never delete
+      const currentNames = new Set(members.map(m => m.name.toLowerCase()));
+      const added: Member[] = [];
+      const newCGs: string[] = [];
+      let skipped = 0;
+      Object.values(latest).forEach(p => {
+        if (currentNames.has(p.name.toLowerCase())) {
+          skipped++;
+          return;
+        }
+        if (p.name.length > 50) return;
+        added.push({ id: generateId(), name: p.name, cg: p.cg });
+        if (!cellGroups.includes(p.cg) && !newCGs.includes(p.cg)) newCGs.push(p.cg);
+      });
+
+      if (newCGs.length > 0) {
+        setCellGroups(prev => [...prev, ...newCGs.filter(c => !prev.includes(c))]);
+      }
+      if (added.length > 0) {
+        setMembers(prev => [...added, ...prev]);
+        playSuccessChirp();
+      }
+      showToast(`Synced! ${added.length} added, ${skipped} already in roster.`);
+    } catch (e) {
+      console.error("Sheet sync failed", e);
+      playSynthSound(150, 0.25, "sawtooth");
+      showToast("Sync failed — check the link and your connection.");
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   // Toast Helper
@@ -532,20 +684,22 @@ export default function MixerPage() {
     }, Math.max(15, Math.min(120, 1500 / members.length)));
   };
 
+  // Build the showcase share URL (used by both Copy Link and the QR code)
+  const buildShareUrl = (): string => {
+    const payload = finalTeams.map(t => ({
+      name: t.name,
+      color: t.color,
+      members: t.members.map(m => ({ name: m.name, cg: m.cg }))
+    }));
+    const serialized = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+    return `${window.location.origin}/showcase?t=${serialized}`;
+  };
+
   // Fixed routing path here: pointing directly to `/showcase` instead of `/find-my-team`
   const copyShareLink = () => {
     if (finalTeams.length === 0) return;
     try {
-      const payload = finalTeams.map(t => ({
-        name: t.name,
-        color: t.color,
-        members: t.members.map(m => ({ name: m.name, cg: m.cg }))
-      }));
-
-      const serialized = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      const shareUrl = `${window.location.origin}/showcase?t=${serialized}`;
-
-      navigator.clipboard.writeText(shareUrl);
+      navigator.clipboard.writeText(buildShareUrl());
       playSuccessChirp();
       showToast("Player Share Link Copied! 🔗");
     } catch (e) {
@@ -787,6 +941,28 @@ export default function MixerPage() {
                 className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
               >
                 📥 BULK EXCEL/SHEETS IMPORT
+              </button>
+            </div>
+
+            {/* Google Form Auto-Sync */}
+            <div className="mt-4 pt-4 border-t-4 border-black">
+              <label className="block text-[10px] font-black uppercase mb-1">📡 GOOGLE FORM AUTO-SYNC</label>
+              <p className="text-[9px] font-bold text-zinc-500 mb-2 uppercase leading-relaxed">
+                In your response sheet: File → Share → Publish to web → &quot;Form Responses 1&quot; as CSV. Paste that link once — it&apos;s remembered.
+              </p>
+              <input
+                type="text"
+                placeholder="https://docs.google.com/spreadsheets/d/e/...output=csv"
+                value={sheetUrl}
+                onChange={(e) => setSheetUrl(e.target.value)}
+                className="w-full px-3 py-2 border-2 border-black text-[10px] font-bold font-mono outline-none text-black bg-white placeholder-zinc-400 mb-2"
+              />
+              <button
+                onClick={handleSheetSync}
+                disabled={isSyncing || !sheetUrl.trim()}
+                className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
+              >
+                {isSyncing ? "SYNCING... 📡" : "🔄 SYNC FROM GOOGLE FORM"}
               </button>
             </div>
           </div>
@@ -1171,23 +1347,11 @@ export default function MixerPage() {
                   </div>
 
                   <div className="bg-white p-2 border-4 border-black mb-2 relative z-0">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                        `${window.location.origin}/showcase?t=${btoa(
-                          unescape(
-                            encodeURIComponent(
-                              JSON.stringify(
-                                finalTeams.map(t => ({
-                                  name: t.name,
-                                  color: t.color,
-                                  members: t.members.map(m => ({ name: m.name, cg: m.cg }))
-                                }))
-                              )
-                            )
-                          )
-                        )}`
-                      )}`}
-                      alt="QR Code Ticket"
+                    <QRCodeSVG
+                      value={buildShareUrl()}
+                      size={112}
+                      level="M"
+                      marginSize={1}
                       className="w-28 h-28 block select-none"
                     />
                   </div>
