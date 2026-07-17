@@ -213,11 +213,10 @@ export default function GamesPage() {
         </div>
       </header>
 
-      {/* Main Grid: Interactive Illustrations left & video rules right */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+      {/* Main Grid: Interactive rule board */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 relative z-10">
         
-        {/* Left Side: Step console & Interactive Illustrations (7 cols) */}
-        <section className="lg:col-span-7 space-y-8 gsap-reveal">
+        <section className="space-y-8 gsap-reveal">
           
           {/* Tab Navigation buttons */}
           <div className="flex gap-3 relative z-10 overflow-x-auto pb-1 sm:pb-0">
@@ -465,76 +464,74 @@ export default function GamesPage() {
           </div>
         </section>
 
-        {/* Right Side: Video live demo feed screen (5 cols) */}
-        <section className="lg:col-span-5 space-y-6 gsap-reveal">
-          <h2 className="brutal-font text-2xl uppercase flex items-center gap-3 text-white">
-            <span className="w-3.5 h-3.5 bg-red-500 rounded-full animate-pulse border-2 border-black block shadow-[0_0_8px_#ef4444]"></span>
-            LIVE DEMO FEED
-          </h2>
-
-          {/* CRT Cabinet Jumbotron Player Bezel */}
-          <div className="arcade-bezel bg-[#27272A] p-5 shadow-[12px_12px_0px_#000] border-[10px] border-black rounded-3xl relative">
-            <div className="screw top-3 left-3"></div>
-            <div className="screw top-3 right-3"></div>
-            <div className="screw bottom-3 left-3"></div>
-            <div className="screw bottom-3 right-3"></div>
-
-            {/* Video container */}
-            <div className="border-4 border-black rounded-xl overflow-hidden bg-black relative crt-overlay">
-              <video
-                className="w-full h-auto opacity-90 hover:opacity-100 transition-opacity duration-300 block relative z-0"
-                controls
-                autoPlay
-                loop
-                muted
-              >
-                <source src="/assets/videos/games-demo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-
-            {/* Cabinet Controls Panel Accents */}
-            <div className="mt-4 pt-4 border-t-4 border-black flex justify-between items-center bg-black/40 p-3 border-2 border-zinc-800 rounded-xl">
-              {/* Speaker grills visual */}
-              <div className="flex flex-col gap-1 w-20">
-                <div className="h-1 bg-zinc-700 rounded-full"></div>
-                <div className="h-1 bg-zinc-700 rounded-full"></div>
-                <div className="h-1 bg-zinc-700 rounded-full"></div>
-                <div className="h-1 bg-zinc-700 rounded-full"></div>
-              </div>
-
-              {/* Physical action dials */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => playSynthSound(500, 0.08, "triangle")}
-                  className="w-6 h-6 rounded-full bg-[#EF4444] border-2 border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
-                  title="A action button"
-                ></button>
-                <button
-                  onClick={() => playSynthSound(600, 0.08, "triangle")}
-                  className="w-6 h-6 rounded-full bg-[#EAB308] border-2 border-black shadow-[1px_1px_0px_#000] active:translate-y-0.5 active:shadow-none cursor-pointer"
-                  title="B action button"
-                ></button>
-              </div>
-
-              {/* Joystick simulation Visual */}
-              <div className="flex items-center justify-center mr-2">
-                <div className="w-4 h-4 rounded-full bg-zinc-800 border-2 border-zinc-600 relative">
-                  <div className="absolute w-2 h-2 rounded-full bg-red-600 top-[-2px] left-[2px] animate-bounce"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="brutal-box p-6 bg-[#C084FC] text-black rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000]">
-            <h3 className="brutal-font text-base uppercase mb-2">💡 HOST GUIDE TIP</h3>
-            <p className="font-bold text-xs leading-relaxed text-purple-950">
-              When playing these game dynamics, utilize high contrast visuals on the stage projection scoreboard so players can coordinate team targets quickly in the auditorium chaos!
-            </p>
-          </div>
-        </section>
-
       </main>
+
+      <section className="gsap-reveal max-w-5xl mx-auto px-4 sm:px-6 pb-24 relative z-10" aria-labelledby="video-briefing-title">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
+          <div>
+            <p className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] text-[#FACC15] mb-2">
+              Stage briefing / 34 seconds
+            </p>
+            <h2 id="video-briefing-title" className="brutal-font text-3xl sm:text-5xl uppercase text-white leading-none">
+              Watch before<br className="sm:hidden" /> the whistle
+            </h2>
+          </div>
+          <div className="self-start sm:self-auto bg-[#FACC15] text-black border-4 border-black shadow-[5px_5px_0px_#000] px-4 py-3 font-mono text-xs font-black uppercase tracking-wider -rotate-1">
+            ▶ GAME REEL LOADED
+          </div>
+        </div>
+
+        <div className="border-4 border-black bg-[#38BDF8] p-3 sm:p-5 shadow-[12px_12px_0px_#000] relative">
+          <div className="absolute -top-4 right-5 bg-[#EF4444] text-white border-4 border-black px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider shadow-[3px_3px_0px_#000]">
+            ● Now playing
+          </div>
+
+          <div className="grid lg:grid-cols-[minmax(0,1.65fr)_minmax(270px,0.75fr)] gap-5 items-stretch">
+            <div className="bg-black border-4 border-black shadow-[6px_6px_0px_#000]">
+              <div className="flex items-center justify-between gap-3 bg-[#18181B] px-3 py-2 border-b-2 border-zinc-700 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse"></span> Cellgroup games zone</span>
+                <span className="text-[#FACC15]">16:9 / HD</span>
+              </div>
+              <div className="crt-overlay relative aspect-video bg-black">
+                <video
+                  className="w-full h-full object-contain block relative z-0"
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  aria-label="Cellgroup Games Zone introduction video"
+                >
+                  <source src="/assets/videos/games-demo.mp4" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </div>
+
+            <aside className="bg-[#FFFDF5] text-black border-4 border-black p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute right-0 top-0 w-12 h-12 bg-[#FACC15] border-l-4 border-b-4 border-black clip-path-[polygon(100%_0,0_0,100%_100%)]"></div>
+              <div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 mb-3">Host cue</p>
+                <h3 className="brutal-font text-2xl sm:text-3xl leading-[0.95] uppercase">Show this while teams get ready.</h3>
+                <p className="mt-4 font-bold text-sm leading-relaxed text-zinc-700">
+                  The reel shows the action, then the rules land one move at a time—clear enough for the back of the room.
+                </p>
+              </div>
+
+              <ol className="mt-6 border-t-4 border-black pt-4 space-y-3">
+                <li className="flex gap-3 items-start">
+                  <span className="game-token !w-9 !h-9 !text-base !mr-0 bg-[#FACC15]">1</span>
+                  <span><strong className="block font-black uppercase text-sm">Blanket Name</strong><span className="font-mono text-[10px] uppercase text-zinc-600">Spot · drop · shout</span></span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <span className="game-token !w-9 !h-9 !text-base !mr-0 bg-[#38BDF8]">2</span>
+                  <span><strong className="block font-black uppercase text-sm">Balloon Scatter</strong><span className="font-mono text-[10px] uppercase text-zinc-600">Name · find · sit</span></span>
+                </li>
+              </ol>
+            </aside>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -28,14 +28,12 @@ const DIAGNOSTIC_LOG_TEMPLATES = [
 export default function EntryLandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const bootOverlayRef = useRef<HTMLDivElement>(null);
-  const coinRef = useRef<HTMLButtonElement>(null);
   
   // Boot stages: "idle" -> "loading" -> "ready" -> "done"
   const [bootStage, setBootStage] = useState<"idle" | "loading" | "ready" | "done">("idle");
   const [bootProgress, setBootProgress] = useState(0);
   const [visibleLogs, setVisibleLogs] = useState<string[]>([]);
   
-  const [credits, setCredits] = useState(9);
   const [soundOn, setSoundOn] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [roster, setRoster] = useState<string[]>([]);
@@ -119,33 +117,6 @@ export default function EntryLandingPage() {
     }
   };
 
-  const playCoinSound = () => {
-    if (!soundOn) return;
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const playTone = (freq: number, start: number, duration: number) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, start);
-        gain.gain.setValueAtTime(0.12, start);
-        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(start);
-        osc.stop(start + duration);
-      };
-
-      const now = ctx.currentTime;
-      playTone(987.77, now, 0.08); // B5
-      playTone(1318.51, now + 0.08, 0.25); // E6
-    } catch (e) {
-      console.warn(e);
-    }
-  };
-
   // Trigger loading sequence
   const startSystemLoading = () => {
     if (bootStage !== "idle") return;
@@ -173,34 +144,6 @@ export default function EntryLandingPage() {
         playSynthNote(600 + currentProgress * 2, 0.04, "triangle");
       }
     }, 120);
-  };
-
-  // Handle coin insertion click animation
-  const handleAddCredit = () => {
-    if (!coinRef.current) return;
-    
-    // Animate coin rolling down into slot
-    gsap.timeline()
-      .to(coinRef.current, {
-        y: 40,
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.3,
-        ease: "power2.in"
-      })
-      .add(() => {
-        setCredits((prev) => prev + 1);
-        playCoinSound();
-        showToast("🪙 COIN ACCEPTED! +1 CREDIT");
-      })
-      .to(coinRef.current, {
-        y: 0,
-        opacity: 1,
-        scale: 1,
-        duration: 0.2,
-        delay: 0.5,
-        ease: "back.out(1.5)"
-      });
   };
 
   // Entrance reveal animation for main dashboard
@@ -314,7 +257,7 @@ export default function EntryLandingPage() {
             
             <div className="space-y-2">
               <span className="bg-[#F59E0B] text-black font-black px-3 py-1 border-2 border-black text-xs uppercase tracking-widest inline-block transform -rotate-1 shadow-[2px_2px_0px_#000]">
-                INSERT COIN
+                SYSTEM READY
               </span>
               <h1 className="brutal-font text-5xl sm:text-6xl text-[#FACC15] brutal-text-glow-yellow uppercase tracking-wider select-none">
                 ZONE GATHERING
@@ -332,7 +275,7 @@ export default function EntryLandingPage() {
                   <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                   LOBBY_STATE: {bootStage.toUpperCase()}
                 </span>
-                <span className="text-zinc-500 font-black">CREDITS: {credits}</span>
+                <span className="text-zinc-500 font-black">ROOM MODE: READY</span>
               </div>
               
               <div className="space-y-1 text-zinc-300">
@@ -408,7 +351,7 @@ export default function EntryLandingPage() {
 
       {/* Main Console Cabinet Layout */}
       {bootStage === "done" && (
-        <div className="max-w-5xl w-full space-y-8 z-10">
+        <div className="max-w-6xl w-full space-y-8 z-10">
           
           {/* Physical Console Header Cabinet Panel */}
           <header className="terminal-header brutal-box bg-[#18181B] text-white p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#000] border-4 border-black relative">
@@ -427,7 +370,7 @@ export default function EntryLandingPage() {
                     ZONE GATHERING
                   </h1>
                   <p className="text-zinc-500 font-mono text-[10px] sm:text-xs tracking-widest uppercase mt-0.5">
-                    {"/// MIXER CONSOLE & CHAOS GAMES SYSTEM ///"}
+                    {"/// ROUND CONTROL & CHAOS GAMES SYSTEM ///"}
                   </p>
                 </div>
               </div>
@@ -475,9 +418,14 @@ export default function EntryLandingPage() {
           </header>
 
           {/* Scrolling LED Marquee Ticker */}
-          <div className="w-full bg-black text-[#FFFDF5] border-4 border-black p-3 overflow-hidden select-none relative shadow-[6px_6px_0px_#000]">
+          <div className="w-full bg-black text-[#FFFDF5] border-4 border-black overflow-hidden select-none relative shadow-[6px_6px_0px_#000] flex items-stretch">
             <div className="scanline-line"></div>
-            <div className="animate-marquee whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
+            <div className="relative z-10 shrink-0 flex items-center gap-3 bg-[#FACC15] text-black px-4 py-3 border-r-4 border-black font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider">
+              <span className="w-2.5 h-2.5 bg-[#22C55E] rounded-full led-glow-green"></span>
+              {roster.length > 0 ? `${roster.length} players ready` : "Lobby open"}
+            </div>
+            <div className="min-w-0 overflow-hidden py-3">
+              <div className="animate-marquee whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
               {roster.length > 0 ? (
                 Array(6)
                   .fill(roster)
@@ -485,7 +433,7 @@ export default function EntryLandingPage() {
                   .map((name, i) => (
                     <span key={i} className="flex items-center gap-3">
                       <span className="w-2.5 h-2.5 bg-[#4ADE80] rounded-full led-glow-green"></span>
-                      {name} IN QUEUE
+                      {name} READY
                     </span>
                   ))
               ) : (
@@ -504,6 +452,7 @@ export default function EntryLandingPage() {
                     </span>
                   ))
               )}
+              </div>
             </div>
           </div>
 
@@ -530,16 +479,16 @@ export default function EntryLandingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     
                     {/* Action 1: Games rules */}
-                    <div className="action-card brutal-box p-6 bg-[#FACC15] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[220px]">
-                      <div className="space-y-3">
+                    <div className="action-card brutal-box p-7 bg-[#FACC15] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[250px] sm:col-span-2">
+                      <div className="space-y-4 max-w-xl">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          STAGE 01 // OBJECTIVES
+                          NEXT UP // STAGE 01 // OBJECTIVES
                         </span>
-                        <h2 className="brutal-font text-2xl uppercase tracking-tight">
+                        <h2 className="brutal-font text-3xl sm:text-4xl uppercase tracking-tight">
                           GAME CENTER 🕹️
                         </h2>
-                        <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Review dynamic rules for Blanket Game & Balloon Scatter, play audio guides, and stream hyperframes motion tutorial feed.
+                        <p className="font-bold text-sm leading-relaxed text-zinc-900">
+                          Brief the room, run Blanket Name Game and Balloon Scatter, then put the 34-second game reel on the big screen.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -547,13 +496,13 @@ export default function EntryLandingPage() {
                           href="/games"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          OPEN CAB RULES →
+                          OPEN GAME RULES →
                         </Link>
                       </div>
                     </div>
 
                     {/* Action 2: Showcase Board */}
-                    <div className="action-card brutal-box p-6 bg-[#F472B6] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[220px]">
+                    <div className="action-card brutal-box p-6 bg-[#F472B6] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
                       <div className="space-y-3">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
                           STAGE 03 // SHOWCASE
@@ -562,7 +511,7 @@ export default function EntryLandingPage() {
                           SHOW BOARDS 📺
                         </h2>
                         <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Project live shuffles on the big screen! Spot teammate slots, filter search highlights, and launch presentation cycles.
+                          Put live team assignments and player names on the room display when everyone is ready to see them.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -570,13 +519,13 @@ export default function EntryLandingPage() {
                           href="/showcase"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          LAUNCH OVERLAY →
+                          OPEN SHOW BOARD →
                         </Link>
                       </div>
                     </div>
 
                     {/* Action 3: Player Mixer controller */}
-                    <div className="action-card brutal-box p-6 bg-[#38BDF8] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between sm:col-span-2 min-h-[200px]">
+                    <div className="action-card brutal-box p-6 bg-[#38BDF8] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
                       <div className="space-y-3">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
                           STAGE 02 // MIX ENGINE
@@ -585,7 +534,7 @@ export default function EntryLandingPage() {
                           TEAM MASTER CONSOLE 🎲
                         </h2>
                         <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Locked Admin Panel. Shuffles players greedly to prevent cell group collisions, generates presentation links, and triggers live deals.
+                          Build fair teams, avoid cell-group collisions, and prepare the live board before the next round.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -593,7 +542,7 @@ export default function EntryLandingPage() {
                           href="/mixer"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          ACCESS CONTROL CENTER →
+                          OPEN TEAM MIXER →
                         </Link>
                       </div>
                     </div>
@@ -603,66 +552,31 @@ export default function EntryLandingPage() {
               </div>
             </main>
 
-            {/* Right: Arcade Console Side Deck - Coin & Registration (4 Cols) */}
+            {/* Right: Live room status and registration (4 Cols) */}
             <aside className="lg:col-span-4 space-y-8">
-              
-              {/* Coin Acceptor Slot Widget */}
-              <div className="brutal-box p-6 bg-[#27272A] text-white rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] text-center relative overflow-hidden">
-                <div className="screw top-2.5 left-2.5"></div>
-                <div className="screw top-2.5 right-2.5"></div>
-                
-                <h3 className="brutal-font text-[#FACC15] text-lg uppercase mb-3">COIN ACCEPTOR</h3>
-                
-                <div className="bg-black border-4 border-black p-4 rounded-2xl flex flex-col items-center gap-4 relative">
-                  <div className="scanline-line"></div>
-                  
-                  {/* Digital Credit Counter */}
-                  <div className="flex justify-between items-center w-full px-2 border-b border-zinc-800 pb-2">
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase font-black">SYSTEM DECK</span>
-                    <span className={`font-mono text-xs font-bold px-2 py-0.5 border rounded uppercase ${
-                      credits < 3 ? "bg-red-950 text-red-400 border-red-500 animate-pulse" : "bg-zinc-900 text-green-400 border-zinc-700"
-                    }`}>
-                      CREDITS: {credits}
-                    </span>
-                  </div>
-
-                  {/* Physical Slot Visual */}
-                  <div className="w-12 h-24 bg-zinc-900 border-4 border-black rounded-lg relative flex flex-col items-center justify-center shadow-[inset_0_4px_8px_rgba(0,0,0,0.8)]">
-                    {/* Metal slot rim */}
-                    <div className="w-1.5 h-16 bg-black rounded-full shadow-[0_0_2px_#ff0000_inset]"></div>
-                    <div className="absolute top-2 text-[6px] font-mono text-red-500 animate-pulse font-black">25¢</div>
-                  </div>
-
-                  {/* Tactical Clickable Coin */}
-                  <button
-                    ref={coinRef}
-                    onClick={handleAddCredit}
-                    className="w-14 h-14 rounded-full border-4 border-black bg-[#F59E0B] hover:bg-[#FACC15] text-black font-black text-xl flex items-center justify-center shadow-[3px_3px_0px_#000] cursor-pointer hover:scale-105 active:scale-95 transition-transform select-none"
-                    title="Click to insert token"
-                  >
-                    🪙
-                  </button>
-
-                  <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">
-                    CLICK TO INSERT TOKEN & LOAD CREDIT
-                  </p>
-                </div>
-              </div>
-
               {/* Lobby Live Roster Player Ticket List */}
               <div className="brutal-box p-6 bg-white text-black rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] relative">
                 <div className="fold-corner-blue"></div>
-                <div className="space-y-4">
+                <div className="space-y-5">
+                  <div className="bg-[#18181B] text-white border-4 border-black p-4 shadow-[4px_4px_0px_#000]">
+                    <div className="flex items-center justify-between gap-3 font-mono text-[10px] font-black uppercase tracking-wider">
+                      <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#22C55E] led-glow-green"></span> Room status</span>
+                      <span className="text-[#FACC15]">Round 01</span>
+                    </div>
+                    <p className="brutal-font text-3xl text-[#FACC15] mt-3 leading-none">{roster.length}</p>
+                    <p className="font-mono text-[10px] text-zinc-400 uppercase mt-1">Players checked in</p>
+                  </div>
+
                   <div className="border-b-2 border-black pb-2 flex justify-between items-center">
                     <span className="text-[10px] font-black uppercase tracking-wider bg-black text-[#FFFDF5] px-2 py-0.5 border border-black">
-                      QUEUE MONITOR
+                      LIVE ROSTER
                     </span>
-                    <span className="text-xs font-mono font-bold">{roster.length} PLAYERS</span>
+                    <span className="text-xs font-mono font-bold text-[#0284C7]">READY</span>
                   </div>
 
                   {roster.length === 0 ? (
                     <div className="text-center py-6 border-2 border-dashed border-zinc-300 rounded-lg">
-                      <p className="font-bold text-xs uppercase text-zinc-400">Lobby Empty</p>
+                      <p className="font-bold text-xs uppercase text-zinc-400">No players checked in yet</p>
                       <a
                         href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
                         target="_blank"
@@ -687,7 +601,7 @@ export default function EntryLandingPage() {
                       ))}
                       {roster.length > 8 && (
                         <p className="text-center text-[10px] font-mono text-zinc-500 uppercase pt-1">
-                          + {roster.length - 8} MORE PLAYERS IN CONSOLE
+                          + {roster.length - 8} MORE PLAYERS READY
                         </p>
                       )}
                     </div>
@@ -700,7 +614,7 @@ export default function EntryLandingPage() {
                     rel="noopener noreferrer"
                     className="block text-center brutal-font text-xs bg-[#38BDF8] hover:bg-sky-400 text-black py-3 border-2 border-black uppercase shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000]"
                   >
-                    📱 SIGN UP PLAYER ➔
+                    📱 CHECK IN A PLAYER ➔
                   </a>
                 </div>
               </div>
