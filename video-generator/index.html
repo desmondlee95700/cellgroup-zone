@@ -5,695 +5,217 @@
     <meta name="viewport" content="width=1920, height=1080" />
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
+      :root { --ink:#101318; --stage:#191f27; --cream:#f7f1e8; --muted:#b9c0c9; --red:#ff4d3d; --yellow:#ffd166; --teal:#22d3c5; --blue:#4f8cff; --pink:#ff5da8; --green:#5bd46d; }
       * { box-sizing: border-box; }
-      html, body {
-        width: 1920px;
-        height: 1080px;
-        margin: 0;
-        overflow: hidden;
-        background: #101318;
-        color: #f7f1e8;
-        font-family: "Space Mono", monospace;
-      }
-      #root {
-        position: relative;
-        width: 1920px;
-        height: 1080px;
-        overflow: hidden;
-        background:
-          radial-gradient(circle at 16% 18%, rgba(255, 77, 61, 0.25), rgba(255, 77, 61, 0) 34%),
-          radial-gradient(circle at 88% 84%, rgba(34, 211, 197, 0.18), rgba(34, 211, 197, 0) 30%),
-          #101318;
-      }
-      .scene {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        padding: 76px 96px 84px;
-        overflow: hidden;
-        background-color: #101318;
-      }
-      .scene-grid {
-        position: absolute;
-        inset: 0;
-        opacity: 0.18;
-        background-image:
-          linear-gradient(rgba(247, 241, 232, 0.13) 1px, rgba(247, 241, 232, 0) 1px),
-          linear-gradient(90deg, rgba(247, 241, 232, 0.13) 1px, rgba(247, 241, 232, 0) 1px);
-        background-size: 80px 80px;
-      }
-      .ghost-word {
-        position: absolute;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 210px;
-        letter-spacing: 0.01em;
-        color: rgba(247, 241, 232, 0.045);
-        text-transform: uppercase;
-        white-space: nowrap;
-        pointer-events: none;
-      }
-      .header {
-        position: relative;
-        z-index: 6;
-        display: grid;
-        grid-template-columns: 1fr 520px;
-        align-items: end;
-        gap: 48px;
-      }
-      .kicker {
-        display: inline-flex;
-        align-items: center;
-        width: max-content;
-        min-height: 46px;
-        padding: 8px 18px;
-        background: #ff4d3d;
-        color: #101318;
-        border-radius: 6px;
-        font-family: "Space Mono", monospace;
-        font-size: 24px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-      h1 {
-        margin: 22px 0 0;
-        max-width: 1120px;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 112px;
-        line-height: 0.92;
-        letter-spacing: 0.01em;
-        text-transform: uppercase;
-      }
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 12px;
-      }
-      .tag {
-        padding: 11px 16px;
-        border: 2px solid rgba(247, 241, 232, 0.22);
-        border-radius: 999px;
-        color: #f7f1e8;
-        font-family: "Space Mono", monospace;
-        font-size: 20px;
-        background: rgba(25, 31, 39, 0.88);
-      }
-      .stage {
-        position: relative;
-        z-index: 3;
-        display: grid;
-        grid-template-columns: 520px 1fr;
-        gap: 42px;
-        height: 706px;
-        margin-top: 52px;
-      }
-      .steps {
-        position: relative;
-        padding: 28px;
-        border: 2px solid rgba(247, 241, 232, 0.16);
-        background: rgba(25, 31, 39, 0.9);
-        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.25);
-      }
-      .steps-title {
-        font-family: "Space Mono", monospace;
-        color: #ffd166;
-        font-size: 28px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
-      .step {
-        display: grid;
-        grid-template-columns: 54px 1fr;
-        align-items: start;
-        gap: 18px;
-        margin-top: 22px;
-        color: #b9c0c9;
-        font-size: 27px;
-        line-height: 1.18;
-      }
-      .step-num {
-        display: grid;
-        place-items: center;
-        width: 54px;
-        height: 54px;
-        background: #2a313b;
-        border: 2px solid rgba(247, 241, 232, 0.18);
-        color: #f7f1e8;
-        font-family: "Space Mono", monospace;
-        font-size: 24px;
-        font-weight: 700;
-      }
-      .step.active {
-        color: #f7f1e8;
-      }
-      .step.active .step-num {
-        background: #ff4d3d;
-        color: #101318;
-        border-color: #ff4d3d;
-      }
-      .arena {
-        position: relative;
-        overflow: hidden;
-        border: 2px solid rgba(247, 241, 232, 0.16);
-        background:
-          radial-gradient(circle at center, rgba(255, 209, 102, 0.08), rgba(255, 209, 102, 0) 45%),
-          #191f27;
-        box-shadow: inset 0 0 0 1px rgba(247, 241, 232, 0.05), 0 30px 100px rgba(0, 0, 0, 0.28);
-      }
-      .floor-line {
-        position: absolute;
-        height: 2px;
-        left: 54px;
-        right: 54px;
-        background: rgba(247, 241, 232, 0.12);
-      }
-      .floor-line.one { top: 142px; }
-      .floor-line.two { bottom: 142px; }
-      .team-label {
-        position: absolute;
-        top: 34px;
-        font-family: "Space Mono", monospace;
-        font-size: 25px;
-        font-weight: 700;
-        color: #101318;
-        padding: 9px 15px;
-      }
-      .team-a-label { left: 42px; background: #22d3c5; }
-      .team-b-label { right: 42px; background: #4f8cff; }
-      .player {
-        position: absolute;
-        width: 86px;
-        height: 132px;
-        transform-origin: 50% 100%;
-      }
-      .player .head {
-        position: absolute;
-        left: 23px;
-        top: 0;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: #f7c792;
-        border: 3px solid #101318;
-      }
-      .player .hair {
-        position: absolute;
-        left: 19px;
-        top: -4px;
-        width: 49px;
-        height: 20px;
-        border-radius: 20px 20px 7px 7px;
-        background: #2d1c14;
-      }
-      .player .body {
-        position: absolute;
-        left: 14px;
-        top: 39px;
-        width: 58px;
-        height: 58px;
-        border-radius: 16px 16px 10px 10px;
-        background: var(--shirt);
-        border: 3px solid #101318;
-      }
-      .player .arm {
-        position: absolute;
-        top: 48px;
-        width: 16px;
-        height: 54px;
-        border-radius: 999px;
-        background: #f7c792;
-        border: 3px solid #101318;
-      }
-      .player .arm.left { left: 0; transform: rotate(18deg); }
-      .player .arm.right { right: 0; transform: rotate(-18deg); }
-      .player .leg {
-        position: absolute;
-        top: 91px;
-        width: 18px;
-        height: 42px;
-        border-radius: 999px;
-        background: #38404b;
-        border: 3px solid #101318;
-      }
-      .player .leg.left { left: 24px; transform: rotate(12deg); }
-      .player .leg.right { right: 24px; transform: rotate(-12deg); }
-      .player.small { transform: scale(0.82); }
-      .player.sitting .leg.left { transform: rotate(76deg); left: 12px; top: 94px; }
-      .player.sitting .leg.right { transform: rotate(-76deg); right: 12px; top: 94px; }
-      .name-chip {
-        position: absolute;
-        left: 50%;
-        top: 138px;
-        transform: translateX(-50%);
-        padding: 5px 10px;
-        background: #101318;
-        border: 1px solid rgba(247, 241, 232, 0.25);
-        color: #f7f1e8;
-        font-family: "Space Mono", monospace;
-        font-size: 16px;
-        white-space: nowrap;
-      }
-      .blanket {
-        position: absolute;
-        left: 50%;
-        top: -22px;
-        width: 190px;
-        height: 660px;
-        transform: translateX(-50%);
-        transform-origin: 50% 0;
-        z-index: 20;
-        background:
-          linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0) 18%, rgba(0,0,0,0.23) 52%, rgba(255,255,255,0.04)),
-          repeating-linear-gradient(90deg, #090a0c 0 18px, #14171d 18px 34px);
-        box-shadow: 0 24px 70px rgba(0,0,0,0.65);
-      }
-      .blanket:before, .blanket:after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 7px;
-        background: #2a313b;
-      }
-      .blanket:before { left: 16px; }
-      .blanket:after { right: 16px; }
-      .blanket-label {
-        position: absolute;
-        left: 50%;
-        top: 46%;
-        transform: translate(-50%, -50%) rotate(90deg);
-        color: #b9c0c9;
-        font-family: "Space Mono", monospace;
-        font-size: 26px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-      .countdown {
-        position: absolute;
-        left: 50%;
-        top: 80px;
-        transform: translateX(-50%);
-        z-index: 30;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 128px;
-        line-height: 1;
-        color: #ffd166;
-        text-shadow: 0 8px 0 #101318;
-      }
-      .speech {
-        position: absolute;
-        z-index: 24;
-        max-width: 300px;
-        padding: 18px 24px;
-        background: #f7f1e8;
-        color: #101318;
-        border: 5px solid #101318;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 42px;
-        line-height: 0.96;
-        text-transform: uppercase;
-        box-shadow: 10px 10px 0 #ff4d3d;
-      }
-      .speech:after {
-        content: "";
-        position: absolute;
-        bottom: -25px;
-        width: 0;
-        height: 0;
-        border-top: 26px solid #101318;
-      }
-      .speech.left { left: 355px; top: 224px; }
-      .speech.left:after { left: 26px; border-right: 22px solid rgba(0,0,0,0); }
-      .speech.right { right: 315px; top: 218px; box-shadow: -10px 10px 0 #4f8cff; }
-      .speech.right:after { right: 26px; border-left: 22px solid rgba(0,0,0,0); }
-      .burst {
-        position: absolute;
-        z-index: 22;
-        width: 200px;
-        height: 200px;
-        background: #ffd166;
-        clip-path: polygon(50% 0%, 58% 34%, 91% 18%, 68% 46%, 100% 58%, 63% 62%, 78% 95%, 50% 72%, 23% 95%, 37% 62%, 0% 58%, 32% 46%, 9% 18%, 42% 34%);
-      }
-      .burst.one { left: 360px; top: 278px; }
-      .burst.two { right: 320px; top: 285px; background: #ff4d3d; }
-      .center-call {
-        position: absolute;
-        left: 50%;
-        bottom: 45px;
-        transform: translateX(-50%);
-        padding: 14px 24px;
-        background: #ffd166;
-        color: #101318;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 48px;
-        text-transform: uppercase;
-        box-shadow: 8px 8px 0 #101318;
-      }
-      .table {
-        position: absolute;
-        left: 50%;
-        top: 55%;
-        width: 360px;
-        height: 160px;
-        transform: translate(-50%, -50%);
-        background: #32241d;
-        border: 5px solid #101318;
-        box-shadow: 13px 13px 0 rgba(0,0,0,0.3);
-      }
-      .table:before {
-        content: "";
-        position: absolute;
-        left: 26px;
-        right: 26px;
-        top: 23px;
-        height: 10px;
-        background: rgba(247,241,232,0.2);
-      }
-      .marker {
-        position: absolute;
-        width: 92px;
-        height: 18px;
-        border-radius: 999px;
-        background: #f7f1e8;
-        border: 3px solid #101318;
-      }
-      .marker:after {
-        content: "";
-        position: absolute;
-        right: -8px;
-        top: 2px;
-        border-left: 12px solid #ff4d3d;
-        border-top: 4px solid rgba(0,0,0,0);
-        border-bottom: 4px solid rgba(0,0,0,0);
-      }
-      .balloon {
-        position: absolute;
-        z-index: 8;
-        width: 92px;
-        height: 118px;
-        border-radius: 52% 52% 48% 48%;
-        background: var(--balloon);
-        border: 4px solid #101318;
-        box-shadow: inset -13px -16px 0 rgba(0,0,0,0.18), 8px 9px 0 rgba(0,0,0,0.22);
-        transform-origin: 50% 100%;
-      }
-      .balloon:before {
-        content: "";
-        position: absolute;
-        left: 20px;
-        top: 18px;
-        width: 18px;
-        height: 31px;
-        border-radius: 50%;
-        background: rgba(255,255,255,0.36);
-      }
-      .balloon:after {
-        content: "";
-        position: absolute;
-        left: 44px;
-        bottom: -54px;
-        width: 2px;
-        height: 56px;
-        background: rgba(247,241,232,0.62);
-      }
-      .balloon-name {
-        position: absolute;
-        left: 50%;
-        top: 45px;
-        transform: translateX(-50%) rotate(-10deg);
-        color: #101318;
-        font-family: "Space Mono", monospace;
-        font-size: 17px;
-        font-weight: 700;
-      }
-      .motion-dash {
-        position: absolute;
-        width: 120px;
-        height: 14px;
-        border-radius: 999px;
-        background: rgba(255, 209, 102, 0.72);
-        transform-origin: 100% 50%;
-      }
-      .zone {
-        position: absolute;
-        z-index: 2;
-        border: 5px dashed rgba(247,241,232,0.32);
-        background: rgba(34, 211, 197, 0.08);
-      }
-      .zone.one {
-        left: 290px;
-        bottom: 68px;
-        width: 300px;
-        height: 210px;
-        border-radius: 48% 52% 46% 54%;
-      }
-      .zone.two {
-        right: 290px;
-        bottom: 68px;
-        width: 300px;
-        height: 210px;
-        border-radius: 52% 48% 55% 45%;
-        background: rgba(79, 140, 255, 0.08);
-      }
-      .zone-label {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        font-family: "Space Mono", monospace;
-        font-size: 22px;
-        font-weight: 700;
-        color: rgba(247,241,232,0.55);
-        text-transform: uppercase;
-      }
-      .transition-wipe {
-        position: absolute;
-        inset: 0;
-        z-index: 80;
-        pointer-events: none;
-        overflow: hidden;
-      }
-      .wipe-panel {
-        position: absolute;
-        top: 0;
-        width: 25%;
-        height: 100%;
-        background: #ff4d3d;
-      }
-      .wipe-panel:nth-child(2) { left: 25%; background: #ffd166; }
-      .wipe-panel:nth-child(3) { left: 50%; background: #22d3c5; }
-      .wipe-panel:nth-child(4) { left: 75%; background: #4f8cff; }
-      .wipe-panel:nth-child(1) { left: 0; }
-      .final-card {
-        position: absolute;
-        right: 58px;
-        top: 58px;
-        z-index: 18;
-        width: 330px;
-        padding: 22px;
-        background: #f7f1e8;
-        color: #101318;
-        border: 5px solid #101318;
-        box-shadow: 12px 12px 0 #ff4d3d;
-        font-family: "Archivo Black", sans-serif;
-        font-size: 42px;
-        line-height: 1;
-        text-transform: uppercase;
-      }
+      html, body { width:1920px; height:1080px; margin:0; overflow:hidden; background:var(--ink); color:var(--cream); font-family:"Arial Black", sans-serif; }
+      #root { position:relative; width:1920px; height:1080px; overflow:hidden; background:radial-gradient(circle at 18% 15%, rgba(255,77,61,.22), transparent 30%), radial-gradient(circle at 85% 82%, rgba(34,211,197,.17), transparent 30%), var(--ink); }
+      .clip { position:absolute; inset:0; overflow:hidden; }
+      .scene { padding:70px 96px 76px; background:linear-gradient(135deg, rgba(255,255,255,.025), transparent 45%), var(--ink); }
+      .grid { position:absolute; inset:0; opacity:.22; background-image:linear-gradient(rgba(247,241,232,.09) 1px, transparent 1px),linear-gradient(90deg, rgba(247,241,232,.09) 1px, transparent 1px); background-size:72px 72px; }
+      .noise { position:absolute; inset:0; opacity:.28; background:radial-gradient(rgba(247,241,232,.18) .65px, transparent .8px); background-size:11px 11px; mix-blend-mode:overlay; }
+      .corner { position:absolute; width:220px; height:220px; border:8px solid var(--yellow); opacity:.92; }
+      .corner.tl { left:-80px; top:-80px; border-right:0; border-bottom:0; }
+      .corner.br { right:-80px; bottom:-80px; border-left:0; border-top:0; }
+      .eyebrow { position:relative; z-index:5; display:inline-block; padding:12px 19px 10px; background:var(--red); color:var(--ink); font:700 25px/1 "Courier New", monospace; letter-spacing:.06em; text-transform:uppercase; box-shadow:7px 7px 0 #000; }
+      h1 { position:relative; z-index:5; max-width:1140px; margin:20px 0 0; font-size:126px; line-height:.87; letter-spacing:-.035em; text-transform:uppercase; text-shadow:9px 9px 0 #000; }
+      .subhead { position:relative; z-index:5; margin-top:21px; color:var(--muted); font:700 29px/1.25 "Courier New", monospace; letter-spacing:.035em; text-transform:uppercase; }
+      .scene-count { position:absolute; z-index:6; right:96px; top:76px; color:var(--cream); font:700 30px/1 "Courier New", monospace; letter-spacing:.08em; }
+      .scene-count b { color:var(--yellow); }
+      .arena { position:absolute; z-index:3; left:96px; right:96px; top:376px; bottom:72px; overflow:hidden; border:5px solid #000; background:radial-gradient(ellipse at 50% 45%, rgba(255,209,102,.12), transparent 46%), var(--stage); box-shadow:14px 14px 0 #000, inset 0 0 0 2px rgba(247,241,232,.07); }
+      .arena:before, .arena:after { content:""; position:absolute; left:44px; right:44px; height:3px; background:rgba(247,241,232,.13); }
+      .arena:before { top:26%; } .arena:after { bottom:18%; }
+      .team-tab { position:absolute; z-index:7; top:34px; padding:14px 20px 12px; color:var(--ink); font:700 26px/1 "Courier New", monospace; letter-spacing:.08em; box-shadow:6px 6px 0 #000; }
+      .team-tab.a { left:36px; background:var(--teal); } .team-tab.b { right:36px; background:var(--blue); }
+      .rule-card { position:absolute; z-index:30; left:62px; bottom:44px; min-width:760px; max-width:980px; padding:22px 28px 19px; color:var(--cream); background:#000; border-left:14px solid var(--yellow); box-shadow:10px 10px 0 var(--red); opacity:0; }
+      .rule-card .number { display:block; margin-bottom:8px; color:var(--yellow); font:700 23px/1 "Courier New", monospace; letter-spacing:.1em; }
+      .rule-card .rule { font-size:62px; line-height:.94; letter-spacing:-.03em; text-transform:uppercase; }
+      .rule-card .hint { margin-top:10px; color:var(--muted); font:700 24px/1.2 "Courier New", monospace; text-transform:uppercase; }
+      .avatar { position:absolute; z-index:12; width:150px; height:228px; transform-origin:50% 100%; --shirt:var(--teal); --hair:#2d1c14; --skin:#f7c792; }
+      .avatar .floor-shadow { position:absolute; left:20px; bottom:-5px; width:112px; height:22px; border-radius:50%; background:rgba(0,0,0,.4); filter:blur(2px); }
+      .avatar .head { position:absolute; z-index:4; left:43px; top:6px; width:66px; height:68px; border:5px solid #000; border-radius:43% 43% 48% 48%; background:var(--skin); }
+      .avatar .hair { position:absolute; z-index:6; left:35px; top:0; width:82px; height:35px; border:5px solid #000; border-radius:40px 40px 14px 14px; background:var(--hair); }
+      .avatar .eye { position:absolute; z-index:7; top:38px; width:8px; height:11px; border-radius:50%; background:#101318; }
+      .avatar .eye.one { left:61px; } .avatar .eye.two { left:87px; }
+      .avatar .mouth { position:absolute; z-index:7; left:70px; top:55px; width:17px; height:9px; border-bottom:4px solid #101318; border-radius:0 0 15px 15px; }
+      .avatar .torso { position:absolute; z-index:3; left:27px; top:70px; width:98px; height:90px; border:5px solid #000; border-radius:24px 24px 13px 13px; background:linear-gradient(90deg, rgba(0,0,0,.12), transparent 24%, transparent 76%, rgba(0,0,0,.12)),var(--shirt); }
+      .avatar .torso:after { content:""; position:absolute; left:39px; top:15px; width:16px; height:42px; border:4px solid rgba(0,0,0,.65); border-top:0; border-bottom:0; }
+      .avatar .arm { position:absolute; z-index:2; top:83px; width:27px; height:87px; border:5px solid #000; border-radius:20px; background:var(--skin); transform-origin:50% 12px; }
+      .avatar .arm.left { left:12px; transform:rotate(16deg); } .avatar .arm.right { right:12px; transform:rotate(-16deg); }
+      .avatar .leg { position:absolute; z-index:1; top:151px; width:34px; height:72px; border:5px solid #000; border-radius:16px 16px 12px 12px; background:#3a4553; transform-origin:50% 5px; }
+      .avatar .leg.left { left:48px; transform:rotate(8deg); } .avatar .leg.right { right:48px; transform:rotate(-8deg); }
+      .avatar .shoe { position:absolute; z-index:2; bottom:-1px; width:49px; height:19px; border:5px solid #000; border-radius:12px 12px 7px 7px; background:#f7f1e8; }
+      .avatar .shoe.left { left:35px; } .avatar .shoe.right { right:35px; }
+      .avatar .name { position:absolute; z-index:10; left:50%; bottom:-37px; transform:translateX(-50%) rotate(-3deg); padding:7px 11px 6px; color:#000; background:var(--cream); border:3px solid #000; font:700 20px/1 "Courier New", monospace; white-space:nowrap; box-shadow:4px 4px 0 var(--red); }
+      .avatar.hero { scale:1.25; } .avatar.sit .leg.left { left:31px; top:163px; transform:rotate(78deg); } .avatar.sit .leg.right { right:31px; top:163px; transform:rotate(-78deg); }
+      .avatar.sit .shoe.left { left:9px; bottom:13px; } .avatar.sit .shoe.right { right:9px; bottom:13px; }
+      .blanket { position:absolute; z-index:22; left:50%; top:-32px; width:268px; height:700px; margin-left:-134px; transform-origin:50% 0; background:repeating-linear-gradient(90deg,#050607 0 20px,#161a20 20px 37px); border:7px solid #000; box-shadow:0 28px 50px rgba(0,0,0,.65); }
+      .blanket:before { content:"BLACK\A BLANKET"; white-space:pre; position:absolute; left:50%; top:46%; transform:translate(-50%,-50%) rotate(90deg); color:var(--muted); font:700 26px/1 "Courier New", monospace; letter-spacing:.12em; }
+      .countdown { position:absolute; z-index:28; left:50%; top:70px; width:800px; height:190px; margin-left:-400px; color:var(--yellow); font-size:168px; line-height:.9; letter-spacing:-.06em; text-align:center; text-shadow:9px 9px 0 #000; opacity:0; }
+      .countdown span { position:absolute; inset:0; display:block; opacity:0; }
+      .countdown #count-3 { opacity:1; }
+      .shout { position:absolute; z-index:26; top:172px; width:300px; padding:21px 20px 17px; color:#000; background:var(--cream); border:6px solid #000; font-size:60px; line-height:.88; text-align:center; box-shadow:12px 12px 0 var(--red); opacity:0; }
+      .shout:after { content:""; position:absolute; bottom:-34px; width:0; height:0; border-top:34px solid #000; }
+      #shout-left { left:24%; } #shout-left:after { left:36px; border-right:28px solid transparent; }
+      #shout-right { right:24%; box-shadow:-12px 12px 0 var(--blue); } #shout-right:after { right:36px; border-left:28px solid transparent; }
+      .impact { position:absolute; z-index:25; left:50%; top:188px; width:360px; height:360px; margin-left:-180px; background:var(--yellow); clip-path:polygon(50% 0,59% 33%,88% 13%,70% 42%,100% 50%,70% 59%,91% 88%,59% 68%,50% 100%,41% 68%,11% 88%,30% 59%,0 50%,30% 42%,12% 13%,41% 33%); opacity:0; }
+      .balloon { position:absolute; z-index:12; width:118px; height:145px; border:6px solid #000; border-radius:51% 51% 47% 47%; background:var(--balloon); box-shadow:inset -16px -20px 0 rgba(0,0,0,.14),9px 9px 0 rgba(0,0,0,.3); transform-origin:50% 100%; }
+      .balloon:before { content:""; position:absolute; left:24px; top:21px; width:20px; height:42px; border-radius:50%; background:rgba(255,255,255,.35); }
+      .balloon:after { content:""; position:absolute; left:55px; bottom:-66px; width:3px; height:66px; background:rgba(247,241,232,.7); }
+      .balloon .balloon-name { position:absolute; left:50%; top:59px; transform:translateX(-50%) rotate(-9deg); color:#000; font:700 21px/1 "Courier New", monospace; }
+      .balloon .knot { position:absolute; left:47px; bottom:-17px; width:20px; height:20px; background:var(--balloon); border-right:5px solid #000; border-bottom:5px solid #000; transform:rotate(45deg); }
+      .supply { position:absolute; z-index:4; left:50%; top:45%; width:420px; height:170px; margin-left:-210px; border:6px solid #000; background:#372821; box-shadow:13px 13px 0 rgba(0,0,0,.38); }
+      .supply:before { content:""; position:absolute; left:35px; right:35px; top:28px; height:12px; background:rgba(247,241,232,.2); }
+      .marker { position:absolute; z-index:12; width:118px; height:23px; border:5px solid #000; border-radius:20px; background:var(--cream); }
+      .marker:after { content:""; position:absolute; right:-13px; top:3px; border-left:18px solid var(--red); border-top:5px solid transparent; border-bottom:5px solid transparent; }
+      .seat-zone { position:absolute; z-index:3; bottom:53px; width:330px; height:190px; border:6px dashed rgba(247,241,232,.4); border-radius:50%; background:rgba(34,211,197,.08); }
+      .seat-zone.a { left:300px; } .seat-zone.b { right:300px; background:rgba(79,140,255,.1); }
+      .seat-zone span { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); color:rgba(247,241,232,.55); font:700 22px/1 "Courier New", monospace; text-align:center; text-transform:uppercase; }
+      .motion-line { position:absolute; z-index:5; width:160px; height:18px; border-radius:20px; background:var(--yellow); opacity:0; }
+      .wipe { z-index:80; pointer-events:none; }
+      .wipe i { position:absolute; top:0; width:25%; height:100%; background:var(--red); transform:translateY(-110%); }
+      .wipe i:nth-child(2) { left:25%; background:var(--yellow); } .wipe i:nth-child(3) { left:50%; background:var(--teal); } .wipe i:nth-child(4) { left:75%; background:var(--blue); }
+      .intro, .finale { z-index:4; display:flex; align-items:center; justify-content:center; text-align:center; }
+      .intro .burst-ring, .finale .burst-ring { position:absolute; width:900px; height:900px; border:34px solid var(--yellow); border-radius:50%; opacity:.17; }
+      .intro-copy, .final-copy { position:relative; z-index:10; }
+      .intro .eyebrow { background:var(--yellow); }
+      .intro h1 { max-width:1500px; margin:26px auto 0; font-size:177px; }
+      .intro .subhead { font-size:39px; color:var(--cream); }
+      .intro .mini-avatar { position:absolute; scale:.8; }
+      .intro .mini-avatar.one { left:13%; bottom:8%; --shirt:var(--pink); --hair:#211b36; } .intro .mini-avatar.two { right:14%; bottom:8%; --shirt:var(--blue); --hair:#86572b; }
+      .finale { background:radial-gradient(circle, rgba(255,209,102,.28), transparent 45%),var(--ink); }
+      .finale h1 { max-width:1280px; margin:18px auto 0; font-size:184px; }
+      .finale .eyebrow { background:var(--teal); }
+      .finale .subhead { font-size:34px; color:var(--cream); }
+      .confetti { position:absolute; z-index:3; width:25px; height:88px; background:var(--yellow); opacity:0; }
+
+      /* Bright, toy-like 3D game-night world. The timeline above remains unchanged. */
+      :root { --ink:#26364e; --stage:#e9f8ff; --cream:#fffaf0; --muted:#51657d; --red:#ff7b69; --yellow:#ffd166; --teal:#57d8c8; --blue:#77a7ff; --pink:#ff8ec5; --green:#79d99a; }
+      html, body { background:#dff5ff; color:var(--ink); font-family:"Trebuchet MS", Arial, sans-serif; }
+      #root { background:radial-gradient(circle at 17% 12%, rgba(255,255,255,.94) 0 9%, transparent 28%), radial-gradient(circle at 85% 84%, rgba(119,167,255,.27), transparent 31%), linear-gradient(145deg,#d8f5ff 0%,#f7efff 52%,#fff0d2 100%); }
+      .scene { background:radial-gradient(circle at 15% 75%, rgba(87,216,200,.19), transparent 28%), radial-gradient(circle at 91% 16%, rgba(255,209,102,.26), transparent 25%), linear-gradient(140deg,#dff6ff,#f6efff 64%,#fff4d8); }
+      .grid { display:none; }
+      .noise { opacity:0; }
+      .corner { width:255px; height:255px; border:0; border-radius:50%; opacity:.7; background:radial-gradient(circle at 34% 28%, rgba(255,255,255,.95) 0 7%, rgba(255,209,102,.72) 8% 35%, rgba(255,209,102,0) 70%); filter:blur(1px); }
+      .corner.tl { left:-86px; top:-94px; } .corner.br { right:-86px; bottom:-94px; }
+      .eyebrow { padding:13px 22px 12px; color:#31445c; background:var(--yellow); border:3px solid rgba(49,68,92,.22); border-radius:999px; font:800 24px/1 "Trebuchet MS", Arial, sans-serif; letter-spacing:.045em; box-shadow:0 9px 0 rgba(49,68,92,.16), 0 18px 30px rgba(49,68,92,.12); }
+      h1 { color:#273950; font-family:"Trebuchet MS", Arial, sans-serif; font-weight:900; letter-spacing:-.065em; text-shadow:0 7px 0 rgba(255,255,255,.82), 0 16px 28px rgba(39,57,80,.15); }
+      .subhead { color:#4c647a; font:800 28px/1.22 "Trebuchet MS", Arial, sans-serif; letter-spacing:.02em; text-transform:none; }
+      .scene-count { color:#526a80; font:800 30px/1 "Trebuchet MS", Arial, sans-serif; }
+      .scene-count b { color:#ff8b55; }
+      .arena { border:4px solid rgba(44,67,91,.18); border-radius:42px; background:radial-gradient(ellipse at 50% 24%, rgba(255,255,255,.96), transparent 45%), linear-gradient(180deg,#bceeff 0%,#eaf9ff 55%,#c9e8c6 55.5%,#b5ddac 100%); box-shadow:0 24px 0 rgba(57,83,108,.16), 0 34px 55px rgba(67,93,118,.22), inset 0 0 0 8px rgba(255,255,255,.56); }
+      .arena:before, .arena:after { left:0; right:0; height:8px; background:rgba(255,255,255,.54); }
+      .arena:before { top:55%; } .arena:after { bottom:8%; }
+      .team-tab { top:28px; padding:14px 23px 13px; color:#30465f; border:3px solid rgba(48,70,95,.18); border-radius:999px; font:800 24px/1 "Trebuchet MS", Arial, sans-serif; letter-spacing:.035em; box-shadow:0 7px 0 rgba(48,70,95,.16), 0 12px 22px rgba(48,70,95,.13); }
+      .team-tab.a { left:34px; background:linear-gradient(135deg,#a8fff1,#57d8c8); } .team-tab.b { right:34px; background:linear-gradient(135deg,#b9d2ff,#77a7ff); }
+      .rule-card { left:58px; bottom:38px; min-width:780px; padding:24px 30px 21px; color:#2d4058; background:rgba(255,253,247,.96); border:3px solid rgba(45,64,88,.18); border-left:15px solid var(--yellow); border-radius:26px; box-shadow:0 16px 0 rgba(45,64,88,.17), 0 28px 46px rgba(45,64,88,.2); backdrop-filter:blur(8px); }
+      .rule-card .number { color:#e86f5e; font:800 22px/1 "Trebuchet MS", Arial, sans-serif; letter-spacing:.07em; }
+      .rule-card .rule { font-family:"Trebuchet MS", Arial, sans-serif; font-weight:900; text-transform:none; }
+      .rule-card .hint { color:#587087; font:800 23px/1.18 "Trebuchet MS", Arial, sans-serif; text-transform:none; }
+      .avatar { transform-style:preserve-3d; perspective:900px; filter:drop-shadow(0 18px 12px rgba(42,69,94,.25)); }
+      .avatar .floor-shadow { left:12px; bottom:-8px; width:128px; height:25px; background:rgba(62,96,79,.23); filter:blur(5px); }
+      .avatar .head { left:40px; top:5px; width:72px; height:72px; border:0; border-radius:47% 47% 49% 49%; background:radial-gradient(circle at 31% 25%,#fff9e9 0 8%,var(--skin) 27%,#d98d58 100%); box-shadow:inset -8px -9px 12px rgba(121,67,39,.18), inset 5px 5px 7px rgba(255,255,255,.7), 0 5px 0 rgba(51,73,96,.12); transform:translateZ(24px); }
+      .avatar .hair { left:33px; top:-1px; width:86px; height:38px; border:0; border-radius:46px 46px 18px 18px; background:linear-gradient(145deg,rgba(255,255,255,.28),transparent 30%),var(--hair); box-shadow:inset -8px -7px 10px rgba(0,0,0,.2), 0 4px 0 rgba(47,61,78,.12); transform:translateZ(31px); }
+      .avatar .eye { top:38px; width:16px; height:17px; border-radius:50%; background:#fff; box-shadow:inset -2px -2px 3px rgba(37,55,76,.16), 0 1px 0 rgba(36,53,73,.18); transform:translateZ(38px); }
+      .avatar .eye:after { content:""; position:absolute; left:5px; top:6px; width:7px; height:8px; border-radius:50%; background:#2b3d52; box-shadow:1px 1px 0 rgba(255,255,255,.7); }
+      .avatar .eye.one { left:58px; } .avatar .eye.two { left:86px; }
+      .avatar .mouth { left:68px; top:58px; width:22px; height:10px; border:0; border-bottom:3px solid #9d4e55; transform:translateZ(38px); }
+      .avatar .torso { left:24px; top:70px; width:104px; height:94px; border:0; border-radius:29px 29px 19px 19px; background:linear-gradient(135deg,rgba(255,255,255,.48),transparent 31%,rgba(0,0,0,.12)),var(--shirt); box-shadow:inset -9px -10px 12px rgba(33,63,82,.18), inset 6px 6px 7px rgba(255,255,255,.35), 0 6px 0 rgba(48,69,91,.11); transform:translateZ(12px); }
+      .avatar .torso:after { left:41px; top:17px; width:15px; height:39px; border-color:rgba(43,67,87,.32); }
+      .avatar .arm { top:83px; width:26px; height:87px; border:0; border-radius:22px; background:linear-gradient(90deg,rgba(255,255,255,.46),transparent 34%,rgba(117,67,39,.14)),var(--skin); box-shadow:inset -5px -4px 6px rgba(123,72,40,.15); }
+      .avatar .leg { top:151px; width:34px; height:73px; border:0; border-radius:17px 17px 12px 12px; background:linear-gradient(90deg,#58738f,#354b65); box-shadow:inset 5px 2px 5px rgba(255,255,255,.18); }
+      .avatar .shoe { bottom:-1px; width:50px; height:20px; border:0; border-radius:16px 16px 9px 9px; background:linear-gradient(135deg,#fff,#d9e5ef); box-shadow:inset -5px -4px 5px rgba(54,76,98,.17), 0 3px 0 rgba(45,64,84,.18); }
+      .avatar .name { bottom:-39px; padding:7px 12px 6px; color:#3b536c; background:#fffdf7; border:2px solid rgba(59,83,108,.2); border-radius:999px; font:800 18px/1 "Trebuchet MS", Arial, sans-serif; box-shadow:0 5px 0 rgba(49,72,95,.16); }
+      .blanket { width:282px; margin-left:-141px; border:0; border-radius:18px; background:linear-gradient(90deg,rgba(255,255,255,.13),transparent 18% 80%,rgba(0,0,0,.2)),linear-gradient(145deg,#5f5885,#292b55 58%,#1f2443); box-shadow:inset 10px 0 17px rgba(255,255,255,.12), inset -14px -2px 22px rgba(0,0,0,.32), 0 24px 34px rgba(45,55,86,.31); }
+      .blanket:before { color:#e9e6ff; font:800 22px/1 "Trebuchet MS", Arial, sans-serif; text-shadow:none; }
+      .countdown { color:#ff7b69; font-family:"Trebuchet MS", Arial, sans-serif; text-shadow:0 7px 0 rgba(255,255,255,.8), 0 14px 20px rgba(45,64,88,.2); }
+      .shout { color:#31465e; background:#fffdf7; border:3px solid rgba(49,70,94,.2); border-radius:30px; font-family:"Trebuchet MS", Arial, sans-serif; box-shadow:0 13px 0 rgba(255,123,105,.5), 0 23px 34px rgba(45,64,88,.18); }
+      .shout:after { border-top-color:#fffdf7; } #shout-right { box-shadow:0 13px 0 rgba(119,167,255,.56), 0 23px 34px rgba(45,64,88,.18); }
+      .impact { background:radial-gradient(circle,#fff8cb 0 21%,var(--yellow) 22% 43%,rgba(255,209,102,0) 44%); clip-path:none; border-radius:50%; box-shadow:0 0 0 21px rgba(255,209,102,.28), 0 0 0 46px rgba(255,209,102,.13); }
+      .balloon { border:0; background:radial-gradient(circle at 32% 22%,rgba(255,255,255,.92) 0 7%,rgba(255,255,255,.33) 8% 17%,transparent 18%),linear-gradient(135deg,rgba(255,255,255,.32),transparent 36%),var(--balloon); box-shadow:inset -17px -19px 0 rgba(46,64,96,.18), inset 8px 8px 10px rgba(255,255,255,.3), 0 12px 0 rgba(47,69,91,.13), 0 20px 24px rgba(47,69,91,.2); }
+      .balloon:before { opacity:0; } .balloon:after { background:rgba(78,104,129,.45); }
+      .balloon .balloon-name { color:#334b64; font:800 20px/1 "Trebuchet MS", Arial, sans-serif; }
+      .balloon .knot { border:0; box-shadow:3px 3px 0 rgba(47,69,91,.18); }
+      .supply { border:0; border-radius:28px; background:linear-gradient(135deg,#ffd88b,#f5a756 50%,#cf7444); box-shadow:inset 10px 8px 9px rgba(255,255,255,.36), inset -12px -12px 14px rgba(105,57,39,.2), 0 15px 0 rgba(50,75,95,.14), 0 24px 30px rgba(50,75,95,.16); }
+      .supply:before { background:rgba(255,255,255,.52); border-radius:999px; }
+      .marker { border:0; border-radius:20px; background:linear-gradient(135deg,#fff,#dceeff); box-shadow:inset -7px -4px 6px rgba(55,76,99,.14), 0 5px 0 rgba(43,65,88,.16); }
+      .seat-zone { border:5px dashed rgba(64,112,130,.36); background:rgba(87,216,200,.2); box-shadow:inset 0 0 0 12px rgba(255,255,255,.25); }
+      .seat-zone.b { background:rgba(119,167,255,.2); }
+      .motion-line { background:linear-gradient(90deg,transparent,var(--yellow)); box-shadow:0 3px 0 rgba(45,64,88,.12); }
+      .wipe i { background:#ffad9e; } .wipe i:nth-child(2) { background:#ffe69a; } .wipe i:nth-child(3) { background:#94f0e3; } .wipe i:nth-child(4) { background:#b7ceff; }
+      .intro, .finale { background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.95),transparent 30%),radial-gradient(circle at 12% 87%,rgba(87,216,200,.24),transparent 26%),linear-gradient(145deg,#d6f5ff,#f7efff 59%,#fff0cf); }
+      .intro .burst-ring, .finale .burst-ring { border:38px solid rgba(255,209,102,.45); box-shadow:0 0 0 22px rgba(255,255,255,.35), 0 24px 50px rgba(73,100,126,.14); }
+      .intro .eyebrow { background:linear-gradient(135deg,#fff0a6,#ffd166); }
+      .intro .subhead, .finale .subhead { color:#4c647a; font-family:"Trebuchet MS", Arial, sans-serif; text-transform:none; }
+      .finale .eyebrow { background:linear-gradient(135deg,#b5fff1,#57d8c8); }
+      .confetti { width:27px; height:62px; border-radius:999px; background:linear-gradient(180deg,#ffe89e,#ffb49c); box-shadow:0 5px 0 rgba(47,67,90,.12); }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1920" data-height="1080">
-      <section id="blanket-scene" class="clip scene" data-start="0" data-duration="15" data-track-index="1">
-        <div class="scene-grid" data-layout-ignore></div>
-        <div class="ghost-word" id="ghost-blanket" style="left: -40px; bottom: -34px;">Blanket Drop</div>
-        <header class="header">
-          <div>
-            <div class="kicker">Icebreaker · Fast Reflexes · Quick Memory</div>
-            <h1>Blanket Name Game</h1>
-          </div>
-          <div class="tags">
-            <div class="tag">Split</div>
-            <div class="tag">Hide</div>
-            <div class="tag">Choose</div>
-            <div class="tag">Drop</div>
-            <div class="tag">Shout</div>
-          </div>
-        </header>
-        <main class="stage">
-          <aside class="steps">
-            <div class="steps-title">How to Play</div>
-            <div class="step" id="b-step-1"><div class="step-num">1</div><div>Split the group into two large halves.</div></div>
-            <div class="step" id="b-step-2"><div class="step-num">2</div><div>Hold up a large black blanket between the groups.</div></div>
-            <div class="step" id="b-step-3"><div class="step-num">3</div><div>Each group silently selects 1 or 2 players.</div></div>
-            <div class="step" id="b-step-4"><div class="step-num">4</div><div>On THREE, drop it. First name shouted wins.</div></div>
-          </aside>
-          <div class="arena">
-            <div class="floor-line one"></div>
-            <div class="floor-line two"></div>
-            <div class="team-label team-a-label">TEAM A</div>
-            <div class="team-label team-b-label">TEAM B</div>
-            <div class="player small b-crowd-a1" style="--shirt:#22d3c5; left:90px; top:140px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div class="player small b-crowd-a2" style="--shirt:#ffd166; left:110px; top:360px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div class="player small b-crowd-a3" style="--shirt:#ff5da8; left:230px; top:505px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div class="player small b-crowd-b1" style="--shirt:#4f8cff; right:90px; top:140px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div class="player small b-crowd-b2" style="--shirt:#5bd46d; right:120px; top:370px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div class="player small b-crowd-b3" style="--shirt:#ff4d3d; right:235px; top:505px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div></div>
-            <div id="chosen-a" class="player sitting" style="--shirt:#22d3c5; left:335px; top:312px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Maya</div></div>
-            <div id="chosen-b" class="player sitting" style="--shirt:#4f8cff; right:335px; top:312px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Noah</div></div>
-            <div id="blanket" class="blanket"><div class="blanket-label">Black Blanket</div></div>
-            <div id="countdown" class="countdown">THREE</div>
-            <div class="burst one" id="burst-left"></div>
-            <div class="burst two" id="burst-right"></div>
-            <div class="speech left" id="shout-left">Noah!</div>
-            <div class="speech right" id="shout-right">Maya!</div>
-            <div class="center-call" id="winner-call">Fastest name wins</div>
-          </div>
-        </main>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="34" data-width="1920" data-height="1080">
+      <section id="intro" class="clip intro" data-start="0" data-duration="3.2" data-track-index="1">
+        <div class="grid"></div><div class="noise"></div><div class="burst-ring"></div>
+        <div class="intro-copy"><div class="eyebrow">Cellgroup Game Night</div><h1>Games<br>Zone</h1><div class="subhead">50+ Players · 2 Games · Maximum Energy</div></div>
+        <div class="avatar mini-avatar one"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div></div>
+        <div class="avatar mini-avatar two"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div></div>
       </section>
 
-      <section id="balloon-scene" class="clip scene" data-start="15" data-duration="15" data-track-index="1">
-        <div class="scene-grid" data-layout-ignore></div>
-        <div class="ghost-word" id="ghost-balloon" style="right: -54px; bottom: -34px;">Scatter</div>
-        <header class="header">
-          <div>
-            <div class="kicker">Team Rush · Name Hunt · Sit Together</div>
-            <h1>Balloon Team Scatter</h1>
-          </div>
-          <div class="tags">
-            <div class="tag">Name</div>
-            <div class="tag">Toss</div>
-            <div class="tag">Scatter</div>
-            <div class="tag">Find</div>
-            <div class="tag">Sit</div>
-          </div>
-        </header>
-        <main class="stage">
-          <aside class="steps">
-            <div class="steps-title">How to Play</div>
-            <div class="step" id="s-step-1"><div class="step-num">1</div><div>Give every player a balloon and marker.</div></div>
-            <div class="step" id="s-step-2"><div class="step-num">2</div><div>Players write their names clearly on balloons.</div></div>
-            <div class="step" id="s-step-3"><div class="step-num">3</div><div>Toss balloons into the center and scatter them wildly.</div></div>
-            <div class="step" id="s-step-4"><div class="step-num">4</div><div>On GO, find teammates' balloons and sit in a circle.</div></div>
-          </aside>
-          <div class="arena">
-            <div class="floor-line one"></div>
-            <div class="floor-line two"></div>
-            <div class="table" id="supply-table"></div>
-            <div class="marker" id="marker-one" style="left: 560px; top: 386px; transform: rotate(-14deg);"></div>
-            <div class="marker" id="marker-two" style="left: 700px; top: 461px; transform: rotate(18deg);"></div>
-            <div class="zone one" id="zone-a"><div class="zone-label">Team A seated</div></div>
-            <div class="zone two" id="zone-b"><div class="zone-label">Team B seated</div></div>
-            <div class="motion-dash" id="dash-1" style="left: 225px; top: 288px; transform: rotate(8deg);"></div>
-            <div class="motion-dash" id="dash-2" style="right: 240px; top: 392px; transform: rotate(188deg);"></div>
-            <div class="motion-dash" id="dash-3" style="left: 440px; top: 560px; transform: rotate(-18deg);"></div>
-            <div class="player s-player" id="runner-1" style="--shirt:#22d3c5; left:116px; top:120px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Ava</div></div>
-            <div class="player s-player" id="runner-2" style="--shirt:#4f8cff; right:118px; top:150px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Leo</div></div>
-            <div class="player s-player" id="runner-3" style="--shirt:#ffd166; left:165px; top:470px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Mia</div></div>
-            <div class="player s-player" id="runner-4" style="--shirt:#ff4d3d; right:170px; top:490px;"><div class="hair"></div><div class="head"></div><div class="body"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="name-chip">Sam</div></div>
-            <div class="balloon" id="bal-1" style="--balloon:#ff5da8; left:535px; top:292px;"><div class="balloon-name">Ava</div></div>
-            <div class="balloon" id="bal-2" style="--balloon:#4f8cff; left:655px; top:312px;"><div class="balloon-name">Leo</div></div>
-            <div class="balloon" id="bal-3" style="--balloon:#5bd46d; left:590px; top:438px;"><div class="balloon-name">Mia</div></div>
-            <div class="balloon" id="bal-4" style="--balloon:#ffd166; left:755px; top:421px;"><div class="balloon-name">Sam</div></div>
-            <div class="center-call" id="go-call">GO!</div>
-            <div class="final-card" id="finish-card">First fully seated team wins</div>
-          </div>
-        </main>
+      <section id="blanket-scene" class="clip scene" data-start="3.2" data-duration="13.8" data-track-index="1">
+        <div class="grid"></div><div class="noise"></div><div class="corner tl"></div><div class="corner br"></div>
+        <div class="scene-count"><b>01</b> / 02</div><div class="eyebrow">Fast reflexes · quick memory</div><h1>Blanket<br>Name Game</h1><div class="subhead">Can you recognise your opponent first?</div>
+        <div class="arena">
+          <div class="team-tab a">Team A</div><div class="team-tab b">Team B</div><div class="impact" id="drop-impact"></div>
+          <div class="avatar" id="maya" style="left:34%; top:255px; --shirt:var(--teal); --hair:#342016;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">MAYA</div></div>
+          <div class="avatar" id="noah" style="right:34%; top:255px; --shirt:var(--blue); --hair:#15171f;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">NOAH</div></div>
+          <div class="avatar" id="crowd-a" style="left:11%; top:160px; scale:.72; --shirt:var(--yellow); --hair:#8c5b2a;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div></div>
+          <div class="avatar" id="crowd-b" style="right:11%; top:170px; scale:.72; --shirt:var(--pink); --hair:#26172e;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div></div>
+          <div class="blanket" id="blanket"></div><div class="countdown" id="countdown"><span id="count-3">3</span><span id="count-2">2</span><span id="count-1">1</span><span id="count-drop">DROP!</span></div><div class="shout" id="shout-left">NOAH!</div><div class="shout" id="shout-right">MAYA!</div>
+          <div class="rule-card" id="b-rule-1"><span class="number">Step 01</span><div class="rule">Pick 2 players</div><div class="hint">One player from each team faces the blanket.</div></div>
+          <div class="rule-card" id="b-rule-2"><span class="number">Step 02</span><div class="rule">Hide the names</div><div class="hint">Hold the black blanket between the teams.</div></div>
+          <div class="rule-card" id="b-rule-3"><span class="number">Step 03</span><div class="rule">Drop + shout!</div><div class="hint">First player to say the opponent's name wins.</div></div>
+        </div>
       </section>
 
-      <div id="game-transition" class="clip transition-wipe" data-start="14.35" data-duration="1.3" data-track-index="2" data-layout-ignore>
-        <div class="wipe-panel"></div>
-        <div class="wipe-panel"></div>
-        <div class="wipe-panel"></div>
-        <div class="wipe-panel"></div>
-      </div>
+      <section id="balloon-scene" class="clip scene" data-start="17" data-duration="13.8" data-track-index="1">
+        <div class="grid"></div><div class="noise"></div><div class="corner tl" style="border-color:var(--blue)"></div><div class="corner br" style="border-color:var(--blue)"></div>
+        <div class="scene-count"><b>02</b> / 02</div><div class="eyebrow" style="background:var(--blue)">Team rush · big laughs</div><h1>Balloon<br>Team Scatter</h1><div class="subhead">Find your people. Get seated first.</div>
+        <div class="arena">
+          <div class="supply" id="supply"></div><div class="marker" id="marker-a" style="left:43%; top:39%; transform:rotate(-15deg)"></div><div class="marker" id="marker-b" style="left:54%; top:52%; transform:rotate(18deg)"></div>
+          <div class="seat-zone a" id="zone-a"></div><div class="seat-zone b" id="zone-b"></div>
+          <div class="motion-line" id="line-1" style="left:18%; top:35%; transform:rotate(12deg)"></div><div class="motion-line" id="line-2" style="right:18%; top:40%; transform:rotate(-14deg)"></div><div class="motion-line" id="line-3" style="left:42%; bottom:22%; transform:rotate(-22deg)"></div>
+          <div class="avatar" id="ava" style="left:8%; top:128px; --shirt:var(--teal); --hair:#3a1f12;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">AVA</div></div>
+          <div class="avatar" id="leo" style="right:8%; top:128px; --shirt:var(--blue); --hair:#171717;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">LEO</div></div>
+          <div class="avatar" id="mia" style="left:16%; bottom:65px; --shirt:var(--yellow); --hair:#6e3e23;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">MIA</div></div>
+          <div class="avatar" id="sam" style="right:16%; bottom:65px; --shirt:var(--red); --hair:#2a2020;"><div class="floor-shadow"></div><div class="head"></div><div class="hair"></div><div class="eye one"></div><div class="eye two"></div><div class="mouth"></div><div class="torso"></div><div class="arm left"></div><div class="arm right"></div><div class="leg left"></div><div class="leg right"></div><div class="shoe left"></div><div class="shoe right"></div><div class="name">SAM</div></div>
+          <div class="balloon" id="balloon-a" style="--balloon:var(--pink); left:48%; top:35%"><div class="knot"></div><div class="balloon-name">AVA</div></div><div class="balloon" id="balloon-b" style="--balloon:var(--blue); left:56%; top:36%"><div class="knot"></div><div class="balloon-name">LEO</div></div><div class="balloon" id="balloon-c" style="--balloon:var(--green); left:51%; top:55%"><div class="knot"></div><div class="balloon-name">MIA</div></div><div class="balloon" id="balloon-d" style="--balloon:var(--yellow); left:61%; top:52%"><div class="knot"></div><div class="balloon-name">SAM</div></div>
+          <div class="rule-card" id="s-rule-1" style="border-left-color:var(--blue)"><span class="number" style="color:var(--blue)">Step 01</span><div class="rule">Write your name</div><div class="hint">Every player gets one balloon and marker.</div></div>
+          <div class="rule-card" id="s-rule-2" style="border-left-color:var(--blue)"><span class="number" style="color:var(--blue)">Step 02</span><div class="rule">Scatter!</div><div class="hint">Toss every balloon into the middle.</div></div>
+          <div class="rule-card" id="s-rule-3" style="border-left-color:var(--blue)"><span class="number" style="color:var(--blue)">Step 03</span><div class="rule">Find + sit</div><div class="hint">Collect your team's balloons. First team seated wins.</div></div>
+        </div>
+      </section>
+
+      <section id="finale" class="clip finale" data-start="30.8" data-duration="3.2" data-track-index="1"><div class="grid"></div><div class="noise"></div><div class="burst-ring"></div><div class="final-copy"><div class="eyebrow">Fast reflexes · teamwork · big laughs</div><h1>Ready?<br>Let's Play.</h1><div class="subhead">Cellgroup Games Zone</div></div><i class="confetti"></i><i class="confetti"></i><i class="confetti"></i><i class="confetti"></i><i class="confetti"></i><i class="confetti"></i></section>
+      <div id="wipe" class="clip wipe" data-start="16.45" data-duration=".9" data-track-index="2"><i></i><i></i><i></i><i></i></div>
     </div>
-
     <script>
       window.__timelines = window.__timelines || {};
-      const tl = gsap.timeline({ paused: true });
-
-      tl.from("#blanket-scene .kicker", { y: -28, opacity: 0, duration: 0.44, ease: "back.out(1.6)" }, 0.18);
-      tl.from("#blanket-scene h1", { x: -90, opacity: 0, duration: 0.72, ease: "expo.out" }, 0.28);
-      tl.from("#blanket-scene .tag", { y: 36, opacity: 0, scale: 0.86, duration: 0.4, stagger: 0.07, ease: "power3.out" }, 0.55);
-      tl.from("#blanket-scene .steps", { x: -70, opacity: 0, duration: 0.6, ease: "circ.out" }, 0.82);
-      tl.from("#blanket-scene .arena", { scale: 0.96, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.92);
-      tl.from("#blanket-scene .team-label", { y: -34, opacity: 0, duration: 0.36, stagger: 0.08, ease: "bounce.out" }, 1.16);
-      tl.from("#blanket-scene .player", { y: 46, opacity: 0, rotation: -4, duration: 0.52, stagger: 0.045, ease: "back.out(1.9)" }, 1.32);
-      tl.from("#blanket", { y: -720, skewX: -5, duration: 0.72, ease: "bounce.out" }, 1.55);
-      tl.from("#ghost-blanket", { x: -120, opacity: 0, duration: 1.2, ease: "sine.out" }, 0.35);
-
-      tl.to("#b-step-1", { className: "step active", duration: 0.05 }, 1.3);
-      tl.to("#chosen-a", { x: 120, y: 28, scale: 1.08, duration: 0.68, ease: "power3.inOut" }, 3.0);
-      tl.to("#chosen-b", { x: -120, y: 28, scale: 1.08, duration: 0.68, ease: "power3.inOut" }, 3.0);
-      tl.to("#b-step-1", { className: "step", duration: 0.05 }, 3.15);
-      tl.to("#b-step-2", { className: "step active", duration: 0.05 }, 3.2);
-      tl.to("#blanket", { scaleX: 1.14, duration: 0.32, ease: "sine.inOut", yoyo: true, repeat: 5 }, 3.65);
-      tl.to("#b-step-2", { className: "step", duration: 0.05 }, 5.35);
-      tl.to("#b-step-3", { className: "step active", duration: 0.05 }, 5.4);
-      tl.to([".b-crowd-a1", ".b-crowd-b2"], { rotation: 8, y: -14, duration: 0.26, yoyo: true, repeat: 3, ease: "sine.inOut" }, 5.55);
-      tl.from("#countdown", { scale: 0, opacity: 0, rotation: -9, duration: 0.38, ease: "back.out(2.4)" }, 7.15);
-      tl.to("#b-step-3", { className: "step", duration: 0.05 }, 7.5);
-      tl.to("#b-step-4", { className: "step active", duration: 0.05 }, 7.55);
-      tl.to("#countdown", { textContent: "TWO", scale: 1.06, duration: 0.16, ease: "power4.out" }, 8.0);
-      tl.to("#countdown", { textContent: "ONE", scale: 1.06, duration: 0.16, ease: "power4.out" }, 8.7);
-      tl.to("#countdown", { textContent: "DROP!", color: "#ff4d3d", duration: 0.12, ease: "none" }, 9.25);
-      tl.to("#blanket", { y: 790, rotation: 5, scaleY: 0.82, duration: 0.64, ease: "power4.in" }, 9.35);
-      tl.to("#chosen-a", { x: 162, y: 10, rotation: -7, duration: 0.24, ease: "power3.out" }, 9.65);
-      tl.to("#chosen-b", { x: -162, y: 10, rotation: 7, duration: 0.24, ease: "power3.out" }, 9.65);
-      tl.from(["#burst-left", "#burst-right"], { scale: 0, opacity: 0, rotation: -30, duration: 0.28, stagger: 0.08, ease: "back.out(2.6)" }, 9.82);
-      tl.from("#shout-left", { x: -40, y: 20, opacity: 0, scale: 0.72, duration: 0.35, ease: "back.out(2.2)" }, 9.9);
-      tl.from("#shout-right", { x: 40, y: 20, opacity: 0, scale: 0.72, duration: 0.35, ease: "elastic.out(1, 0.55)" }, 10.05);
-      tl.from("#winner-call", { y: 70, opacity: 0, scaleX: 0.75, duration: 0.48, ease: "expo.out" }, 10.65);
-      tl.to("#blanket-scene .scene-grid", { opacity: 0.28, duration: 4.5, ease: "sine.inOut" }, 2.0);
-
-      tl.fromTo(".wipe-panel", { yPercent: -110 }, { yPercent: 0, duration: 0.38, stagger: 0.055, ease: "power4.inOut" }, 14.35);
-      tl.to(".wipe-panel", { yPercent: 112, duration: 0.42, stagger: 0.055, ease: "power3.inOut" }, 15.05);
-
-      tl.from("#balloon-scene .kicker", { y: -28, opacity: 0, duration: 0.4, ease: "back.out(1.6)" }, 15.18);
-      tl.from("#balloon-scene h1", { x: -90, opacity: 0, duration: 0.66, ease: "expo.out" }, 15.3);
-      tl.from("#balloon-scene .tag", { y: 34, opacity: 0, scale: 0.86, duration: 0.36, stagger: 0.06, ease: "power3.out" }, 15.6);
-      tl.from("#balloon-scene .steps", { x: -70, opacity: 0, duration: 0.56, ease: "circ.out" }, 15.85);
-      tl.from("#balloon-scene .arena", { scale: 0.96, opacity: 0, duration: 0.62, ease: "power2.out" }, 15.96);
-      tl.from("#supply-table", { y: 70, opacity: 0, rotation: 1.5, duration: 0.5, ease: "back.out(1.8)" }, 16.32);
-      tl.from(["#marker-one", "#marker-two"], { x: -40, opacity: 0, rotation: -35, duration: 0.38, stagger: 0.1, ease: "power4.out" }, 16.52);
-      tl.from("#balloon-scene .s-player", { y: 50, opacity: 0, rotation: -5, duration: 0.46, stagger: 0.065, ease: "back.out(1.9)" }, 16.62);
-      tl.from("#balloon-scene .balloon", { scale: 0, opacity: 0, y: 40, duration: 0.45, stagger: 0.08, ease: "elastic.out(1, 0.65)" }, 16.9);
-      tl.from("#ghost-balloon", { x: 120, opacity: 0, duration: 1.2, ease: "sine.out" }, 15.5);
-
-      tl.to("#s-step-1", { className: "step active", duration: 0.05 }, 16.3);
-      tl.to("#s-step-1", { className: "step", duration: 0.05 }, 18.1);
-      tl.to("#s-step-2", { className: "step active", duration: 0.05 }, 18.15);
-      tl.to("#marker-one", { x: 28, y: 24, rotation: 8, duration: 0.48, yoyo: true, repeat: 3, ease: "sine.inOut" }, 18.4);
-      tl.to("#marker-two", { x: -22, y: 30, rotation: -12, duration: 0.48, yoyo: true, repeat: 3, ease: "sine.inOut" }, 18.45);
-      tl.to("#s-step-2", { className: "step", duration: 0.05 }, 20.05);
-      tl.to("#s-step-3", { className: "step active", duration: 0.05 }, 20.1);
-      tl.to("#bal-1", { left: 178, top: 168, rotation: -28, duration: 0.72, ease: "power4.out" }, 20.35);
-      tl.to("#bal-2", { left: 930, top: 124, rotation: 24, duration: 0.72, ease: "power4.out" }, 20.35);
-      tl.to("#bal-3", { left: 364, top: 508, rotation: 35, duration: 0.72, ease: "power4.out" }, 20.35);
-      tl.to("#bal-4", { left: 812, top: 474, rotation: -32, duration: 0.72, ease: "power4.out" }, 20.35);
-      tl.from(["#dash-1", "#dash-2", "#dash-3"], { scaleX: 0, opacity: 0, duration: 0.24, stagger: 0.08, ease: "expo.out" }, 20.46);
-      tl.from("#go-call", { y: 80, opacity: 0, scale: 0.5, rotation: -8, duration: 0.36, ease: "back.out(2.4)" }, 21.35);
-      tl.to("#s-step-3", { className: "step", duration: 0.05 }, 21.65);
-      tl.to("#s-step-4", { className: "step active", duration: 0.05 }, 21.7);
-      tl.to("#runner-1", { left: 176, top: 168, rotation: -10, duration: 0.76, ease: "power3.inOut" }, 21.95);
-      tl.to("#runner-2", { right: 218, top: 124, rotation: 9, duration: 0.76, ease: "power3.inOut" }, 21.95);
-      tl.to("#runner-3", { left: 350, top: 506, rotation: -8, duration: 0.76, ease: "power3.inOut" }, 21.95);
-      tl.to("#runner-4", { right: 372, top: 474, rotation: 11, duration: 0.76, ease: "power3.inOut" }, 21.95);
-      tl.from(["#zone-a", "#zone-b"], { scale: 0.72, opacity: 0, duration: 0.45, stagger: 0.08, ease: "back.out(1.8)" }, 23.0);
-      tl.to(["#runner-1", "#bal-1"], { left: 330, top: 492, rotation: -14, duration: 0.82, ease: "power2.inOut" }, 23.35);
-      tl.to(["#runner-3", "#bal-3"], { left: 470, top: 530, rotation: 10, duration: 0.82, ease: "power2.inOut" }, 23.35);
-      tl.to(["#runner-2", "#bal-2"], { left: 1000, top: 494, rotation: 12, duration: 0.82, ease: "power2.inOut" }, 23.35);
-      tl.to(["#runner-4", "#bal-4"], { left: 860, top: 530, rotation: -10, duration: 0.82, ease: "power2.inOut" }, 23.35);
-      tl.to(["#runner-1", "#runner-2", "#runner-3", "#runner-4"], { scale: 0.82, duration: 0.45, ease: "sine.inOut" }, 24.0);
-      tl.from("#finish-card", { x: 120, opacity: 0, rotation: 3, duration: 0.52, ease: "expo.out" }, 24.65);
-      tl.to("#finish-card", { scale: 1.04, duration: 0.3, yoyo: true, repeat: 3, ease: "sine.inOut" }, 25.3);
-      tl.to("#balloon-scene .scene-grid", { opacity: 0.28, duration: 4.2, ease: "sine.inOut" }, 16.3);
-      tl.to("#root", { backgroundColor: "#08090c", duration: 0.75, ease: "sine.inOut" }, 29.15);
-      tl.to("#balloon-scene", { opacity: 0, duration: 0.65, ease: "sine.inOut" }, 29.25);
-
+      const tl = gsap.timeline({ paused:true });
+      const fadeIn = (target, at, vars = {}) => tl.from(target, { opacity:0, duration:.48, ease:"power3.out", ...vars }, at);
+      fadeIn("#intro .eyebrow", .18, { y:-36 }); fadeIn("#intro h1", .34, { scale:.82, duration:.7, ease:"back.out(1.6)" }); fadeIn("#intro .subhead", .8, { y:22 });
+      tl.from("#intro .mini-avatar", { y:160, rotation:-8, opacity:0, duration:.65, stagger:.12, ease:"back.out(1.7)" }, .48); tl.to("#intro .mini-avatar", { y:-18, rotation:3, duration:.42, stagger:.08, yoyo:true, repeat:2, ease:"sine.inOut" }, 1.5);
+      fadeIn("#blanket-scene .eyebrow", 3.4, { y:-34 }); fadeIn("#blanket-scene h1", 3.55, { x:-120, duration:.65, ease:"expo.out" }); fadeIn("#blanket-scene .subhead", 3.9, { y:22 }); fadeIn("#blanket-scene .arena", 3.92, { scale:.96, duration:.65 });
+      tl.from("#blanket-scene .avatar", { y:90, opacity:0, rotation:-6, duration:.55, stagger:.09, ease:"back.out(1.8)" }, 4.2); tl.from("#blanket", { y:-760, rotation:-4, duration:.68, ease:"bounce.out" }, 4.15);
+      tl.to("#b-rule-1", { opacity:1, x:0, duration:.42, ease:"back.out(1.5)" }, 4.55); tl.to(["#maya", "#noah"], { y:22, scale:1.15, duration:.55, ease:"power2.inOut" }, 5.25); tl.to("#b-rule-1", { opacity:0, y:30, duration:.25 }, 6.15);
+      tl.to("#b-rule-2", { opacity:1, duration:.38, ease:"back.out(1.4)" }, 6.35); tl.to("#blanket", { scaleX:1.12, duration:.28, repeat:5, yoyo:true, ease:"sine.inOut" }, 6.85); tl.to("#b-rule-2", { opacity:0, y:30, duration:.25 }, 8.15);
+      tl.to("#b-rule-3", { opacity:1, duration:.38, ease:"back.out(1.4)" }, 8.35); tl.to("#countdown", { opacity:1, scale:1.1, duration:.28, ease:"back.out(2)" }, 8.8); tl.set("#count-3", { opacity:0 }, 9.2); tl.set("#count-2", { opacity:1 }, 9.2); tl.set("#count-2", { opacity:0 }, 9.62); tl.set("#count-1", { opacity:1 }, 9.62); tl.set("#count-1", { opacity:0 }, 10.02); tl.set("#count-drop", { opacity:1 }, 10.02); tl.to("#countdown", { color:"#ff4d3d", scale:1.22, duration:.16 }, 10.02);
+      tl.to("#blanket", { y:790, rotation:5, scaleY:.82, duration:.55, ease:"power4.in" }, 10.15); tl.to("#drop-impact", { opacity:1, scale:1.25, rotation:35, duration:.25, ease:"back.out(2.5)" }, 10.35); tl.to("#drop-impact", { opacity:0, duration:.25 }, 10.72); tl.to("#maya", { x:125, rotation:-8, duration:.25, ease:"power3.out" }, 10.4); tl.to("#noah", { x:-125, rotation:8, duration:.25, ease:"power3.out" }, 10.4);
+      tl.to("#shout-left", { opacity:1, x:-35, rotation:-4, duration:.3, ease:"back.out(2)" }, 10.55); tl.to("#shout-right", { opacity:1, x:35, rotation:4, duration:.3, ease:"back.out(2)" }, 10.67); tl.to("#b-rule-3", { boxShadow:"0 18px 0 rgba(255,209,102,.62), 0 28px 46px rgba(45,64,88,.2)", duration:.2, yoyo:true, repeat:3 }, 10.6);
+      tl.to("#wipe i", { yPercent:0, duration:.28, stagger:.06, ease:"power4.inOut" }, 16.45); tl.to("#wipe i", { yPercent:112, duration:.3, stagger:.055, ease:"power3.inOut" }, 16.82);
+      fadeIn("#balloon-scene .eyebrow", 17.15, { y:-34 }); fadeIn("#balloon-scene h1", 17.3, { x:-120, duration:.65, ease:"expo.out" }); fadeIn("#balloon-scene .subhead", 17.65, { y:22 }); fadeIn("#balloon-scene .arena", 17.68, { scale:.96, duration:.65 });
+      tl.from(["#supply", "#marker-a", "#marker-b"], { y:85, opacity:0, duration:.45, stagger:.1, ease:"back.out(1.6)" }, 18.0); tl.from("#balloon-scene .avatar", { y:90, opacity:0, rotation:-7, duration:.52, stagger:.1, ease:"back.out(1.8)" }, 18.12); tl.from("#balloon-scene .balloon", { scale:0, y:70, opacity:0, duration:.45, stagger:.09, ease:"elastic.out(1,.6)" }, 18.35);
+      tl.to("#s-rule-1", { opacity:1, duration:.38, ease:"back.out(1.5)" }, 18.7); tl.to(["#marker-a", "#marker-b"], { y:20, rotation:8, duration:.33, yoyo:true, repeat:3, ease:"sine.inOut" }, 19.2); tl.to("#s-rule-1", { opacity:0, y:30, duration:.25 }, 20.4);
+      tl.to("#s-rule-2", { opacity:1, duration:.38, ease:"back.out(1.5)" }, 20.6); tl.to("#balloon-a", { x:-570, y:-150, rotation:-28, duration:.66, ease:"power4.out" }, 21.15); tl.to("#balloon-b", { x:570, y:-170, rotation:24, duration:.66, ease:"power4.out" }, 21.15); tl.to("#balloon-c", { x:-280, y:115, rotation:34, duration:.66, ease:"power4.out" }, 21.15); tl.to("#balloon-d", { x:350, y:95, rotation:-30, duration:.66, ease:"power4.out" }, 21.15); tl.to(".motion-line", { opacity:1, scaleX:1.2, duration:.22, stagger:.09, ease:"expo.out" }, 21.28); tl.to("#s-rule-2", { opacity:0, y:30, duration:.25 }, 22.5);
+      tl.to("#s-rule-3", { opacity:1, duration:.38, ease:"back.out(1.5)" }, 22.7); tl.to(["#zone-a", "#zone-b"], { scale:1.08, duration:.28, yoyo:true, repeat:3, ease:"sine.inOut" }, 23.05); tl.to("#ava", { x:260, y:235, rotation:-12, duration:.65, ease:"power2.inOut" }, 23.35); tl.to("#mia", { x:175, y:20, rotation:8, duration:.65, ease:"power2.inOut" }, 23.35); tl.to("#leo", { x:-260, y:235, rotation:12, duration:.65, ease:"power2.inOut" }, 23.35); tl.to("#sam", { x:-175, y:20, rotation:-8, duration:.65, ease:"power2.inOut" }, 23.35); tl.to(["#ava", "#mia", "#leo", "#sam"], { scale:.78, duration:.35, ease:"power2.out" }, 24.03); tl.to("#s-rule-3", { boxShadow:"0 18px 0 rgba(87,216,200,.6), 0 28px 46px rgba(45,64,88,.2)", duration:.2, yoyo:true, repeat:3 }, 24.05);
+      fadeIn("#finale .eyebrow", 31.1, { y:-34 }); fadeIn("#finale h1", 31.25, { scale:.8, duration:.62, ease:"back.out(1.7)" }); fadeIn("#finale .subhead", 31.7, { y:22 }); tl.from("#finale .confetti", { opacity:0, duration:.2, stagger:.07, ease:"power2.out" }, 31.2); tl.to("#finale .confetti", { x:(i) => [-650,-390,-130,140,400,660][i], y:(i) => [250,360,420,330,390,260][i], rotation:(i) => i % 2 ? 180 : -180, duration:1.1, ease:"power2.out" }, 31.45);
       window.__timelines["main"] = tl;
     </script>
   </body>
