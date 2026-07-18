@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { decodeShowcaseTeams } from "@/lib/showcase-share";
 
 interface TeamMember {
   name: string;
@@ -69,12 +70,9 @@ function ShowcaseContent() {
     const timer = setTimeout(() => {
       if (rawData) {
         try {
-          const decodedString = decodeURIComponent(escape(atob(rawData)));
-          const parsed = JSON.parse(decodedString);
-          if (Array.isArray(parsed)) {
-            setTeams(parsed);
-            localStorage.setItem("player_last_teams", decodedString);
-          }
+          const parsed = decodeShowcaseTeams(rawData);
+          setTeams(parsed);
+          localStorage.setItem("player_last_teams", JSON.stringify(parsed));
         } catch (e) {
           console.error("Failed to decode team data", e);
         }

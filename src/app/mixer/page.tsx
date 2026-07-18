@@ -5,6 +5,10 @@ import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  buildShowcaseShareUrl,
+  isShowcaseQrSafe,
+} from "@/lib/showcase-share";
 
 interface Member {
   id: string;
@@ -691,8 +695,7 @@ export default function MixerPage() {
       color: t.color,
       members: t.members.map(m => ({ name: m.name, cg: m.cg }))
     }));
-    const serialized = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-    return `${window.location.origin}/showcase?t=${serialized}`;
+    return buildShowcaseShareUrl(window.location.origin, payload);
   };
 
   // Fixed routing path here: pointing directly to `/showcase` instead of `/find-my-team`
@@ -742,6 +745,11 @@ export default function MixerPage() {
       );
     }
   }, [activeTab, finalTeams, isDealing]);
+
+  const shareUrl = showShowcase && finalTeams.length > 0 && typeof window !== "undefined"
+    ? buildShareUrl()
+    : "";
+  const canRenderShareQr = isShowcaseQrSafe(shareUrl);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black pb-24">
@@ -1346,14 +1354,30 @@ export default function MixerPage() {
                     <div className="w-1.5 h-full bg-black"></div>
                   </div>
 
-                  <div className="bg-white p-2 border-4 border-black mb-2 relative z-0">
-                    <QRCodeSVG
-                      value={buildShareUrl()}
-                      size={112}
-                      level="M"
-                      marginSize={1}
-                      className="w-28 h-28 block select-none"
-                    />
+                  <div className="bg-white p-2 border-4 border-black mb-2 relative z-0 w-36 h-36 flex items-center justify-center">
+                    {canRenderShareQr ? (
+                      <QRCodeSVG
+                        value={shareUrl}
+                        size={112}
+                        level="M"
+                        marginSize={1}
+                        className="w-28 h-28 block select-none"
+                      />
+                    ) : (
+                      <div className="text-center px-2">
+                        <span className="block text-2xl mb-1" aria-hidden="true">⚠️</span>
+                        <span className="block text-[8px] font-black uppercase leading-tight">
+                          Roster too large for QR
+                        </span>
+                        <button
+                          type="button"
+                          onClick={copyShareLink}
+                          className="mt-2 bg-[#FACC15] border-2 border-black px-2 py-1 text-[8px] font-black uppercase shadow-[2px_2px_0px_#000] cursor-pointer"
+                        >
+                          Copy Link
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <span className="text-[9px] text-black font-black uppercase tracking-widest font-mono">
                     🎟️ SCAN MOBILE
