@@ -1268,25 +1268,43 @@ export default function MixerPage() {
               {/* Quality Stats Board */}
               {!isDealing && (
                 <div className="safari-mix-report">
+                  <div className="safari-mix-report-heading">
+                    <div>
+                      <p className="safari-eyebrow">Ranger&apos;s field report</p>
+                      <h3>The herds found their trail.</h3>
+                    </div>
+                    <p>Balanced across cell groups and ready for the first challenge.</p>
+                  </div>
+
                   {/* Quality rating grade metric */}
                   <div className="safari-mix-grade">
-                    <span>Balance grade</span>
-                    <strong>{getMixQualityGrade().grade}</strong>
-                    <small>{getMixQualityGrade().text}</small>
+                    <div className="safari-grade-medallion"><strong>{getMixQualityGrade().grade}</strong></div>
+                    <div>
+                      <span>Trail balance</span>
+                      <h4>{getMixQualityGrade().text}</h4>
+                      <small>{totalSameCGOverlaps() === 0 ? "No cell-group collisions" : `${totalSameCGOverlaps()} overlaps to watch`}</small>
+                    </div>
+                    <div className="safari-grade-trail" aria-hidden="true"><i /><i /><i /><i /></div>
                   </div>
 
                   <div className="safari-mix-counts">
-                    <div>
+                    <div className="is-explorers">
+                      <i aria-hidden="true" />
                       <span>Explorers</span>
-                      <span className="text-2xl brutal-font">{members.length}</span>
+                      <strong>{members.length}</strong>
+                      <small>checked in</small>
                     </div>
-                    <div>
-                      <span>Same-group overlaps</span>
-                      <span className="text-2xl brutal-font">{totalSameCGOverlaps()}</span>
+                    <div className="is-overlaps">
+                      <i aria-hidden="true" />
+                      <span>Overlaps</span>
+                      <strong>{totalSameCGOverlaps()}</strong>
+                      <small>same-group pairs</small>
                     </div>
-                    <div>
+                    <div className="is-herds">
+                      <i aria-hidden="true" />
                       <span>Animal herds</span>
-                      <span className="text-2xl brutal-font">{finalTeams.length}</span>
+                      <strong>{finalTeams.length}</strong>
+                      <small>ready to roam</small>
                     </div>
                   </div>
                 </div>
@@ -1299,8 +1317,16 @@ export default function MixerPage() {
                     <div
                       key={team.id}
                       className="team-card safari-generated-herd"
+                      data-animal={getSafariTeamProfile(team.name).animal.toLowerCase()}
                       style={{ "--team-accent": getTeamAccent(team.color, teamIndex) } as CSSProperties}
                     >
+                      <div className="safari-herd-habitat" aria-hidden="true">
+                        <i className="habitat-sun" />
+                        <i className="habitat-hill hill-one" />
+                        <i className="habitat-hill hill-two" />
+                        <i className="habitat-tree"><b /><b /><b /></i>
+                        <span className="habitat-tracks"><b /><b /><b /></span>
+                      </div>
                       {/* Team Header */}
                       <div className="safari-generated-herd-head">
                         <TeamMark name={team.name} compact />
@@ -1313,20 +1339,20 @@ export default function MixerPage() {
                       </div>
 
                       {/* Team Members List */}
-                      <ul className="p-4 bg-white text-black divide-y-2 divide-zinc-150 flex-grow">
+                      <ul className="safari-generated-roster">
                         {team.members.map((m, idx) => (
-                          <li key={m.id} className="py-2.5 flex justify-between items-center font-bold text-xs text-black">
-                            <span className="flex items-center gap-2 truncate pr-1">
-                              <span className="text-zinc-400 font-mono text-[10px]">{idx + 1}.</span>
-                              <span className="truncate">{m.name}</span>
+                          <li key={m.id}>
+                            <span className="safari-roster-name">
+                              <span>{String(idx + 1).padStart(2, "0")}</span>
+                              <b>{m.name}</b>
                             </span>
-                            <span className={`${getGroupColor(m.cg)} text-black text-[9px] px-2 py-0.5 border border-zinc-700 uppercase font-black shrink-0`}>
+                            <span className={`safari-roster-group ${getGroupColor(m.cg)}`}>
                               {m.cg}
                             </span>
                           </li>
                         ))}
                         {team.members.length === 0 && (
-                          <li className="py-6 text-center text-xs text-zinc-400 italic">No players allocated</li>
+                          <li className="is-empty">This campsite is waiting for explorers.</li>
                         )}
                       </ul>
                     </div>
