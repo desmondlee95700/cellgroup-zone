@@ -330,27 +330,21 @@ function ShowcaseContent() {
       {broadcastMode && teams.length > 0 && (
         <div className="max-w-3xl mx-auto space-y-6">
           
-          {/* Active Carousel Card Frame */}
-          <div className="brutal-box overflow-hidden shadow-[12px_12px_0px_#000] border-8 border-black rounded-3xl flex flex-col bg-white text-black min-h-[520px] transition-all duration-300 relative">
-            <div className="scanline-line"></div>
-            
-            {/* Carousel Active Bar */}
-            <div className="w-full h-3 bg-zinc-200 border-b-4 border-black overflow-hidden relative">
-              <div className="h-full bg-black animate-[scan-laser_5s_linear_infinite]"></div>
-            </div>
+          <div className="safari-card brutal-box overflow-hidden border-8 border-[#243028] rounded-3xl flex flex-col text-[#243028] min-h-[520px] transition-all duration-300 relative">
+            <div className="safari-parade-edge h-4 border-b-4 border-[#243028]" />
 
             {/* Team header banner */}
             <div className={`p-6 border-b-4 border-black text-center font-black uppercase ${teams[activeBroadcastIdx].color || "bg-yellow-400"}`}>
               <h2 className="brutal-font text-3xl sm:text-5xl tracking-wide flex items-center justify-center gap-3">
                 <span>{getTeamEmoji(teams[activeBroadcastIdx].name)}</span>
-                {teams[activeBroadcastIdx].name}
+                {getSafariTeamLabel(teams[activeBroadcastIdx].name)}
               </h2>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
                 <span className="bg-black text-[#FFFDF5] text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase inline-block shadow-[2px_2px_0px_#000]">
-                  {teams[activeBroadcastIdx].members.length} MEMBERS ALLOCATED
+                  {teams[activeBroadcastIdx].members.length} EXPLORERS
                 </span>
                 <span className="bg-[#FFFDF5] text-black text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase inline-block shadow-[2px_2px_0px_#000]">
-                  RANK #{getTeamRank(teams[activeBroadcastIdx].name)} • {String(teams[activeBroadcastIdx].score ?? 0).padStart(3, "0")} PTS
+                  RANK #{getTeamRank(teams[activeBroadcastIdx].name)} • {String(teams[activeBroadcastIdx].score ?? 0).padStart(3, "0")} PAWS
                 </span>
               </div>
             </div>
@@ -417,7 +411,7 @@ function ShowcaseContent() {
           </div>
           
           <div className="text-center font-mono text-[10px] text-zinc-500 uppercase tracking-widest animate-pulse">
-            •• AUDITORIUM ROTATOR ENGAGED •• ROTATES AUTOMATICALLY EVERY 5 SECONDS ••
+              •• SAFARI PARADE ACTIVE •• CHANGES CREWS EVERY 5 SECONDS ••
           </div>
         </div>
       )}

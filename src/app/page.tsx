@@ -15,24 +15,11 @@ const DECORATIVE_SHAPES = [
   { char: "🐾", color: "bg-[#F4B942]", x: "15%", y: "88%", rot: -20 },
 ];
 
-const DIAGNOSTIC_LOG_TEMPLATES = [
-  "BASECAMP GATES SWINGING OPEN...",
-  "CHECKING THE SAVANNA TRAIL...",
-  "CALLING THE ANIMAL CREWS...",
-  "HANGING THE PRIDE ROCK BANNER...",
-  "PACKING THE PLAYER EXPEDITION LIST...",
-  "TEAM TRAIL SHUFFLER: READY",
-  "SAFARI BASECAMP OPEN! READY FOR EXPLORERS."
-];
-
 export default function EntryLandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const bootOverlayRef = useRef<HTMLDivElement>(null);
+  const gateOverlayRef = useRef<HTMLDivElement>(null);
   
-  // Boot stages: "idle" -> "loading" -> "ready" -> "done"
-  const [bootStage, setBootStage] = useState<"idle" | "loading" | "ready" | "done">("idle");
-  const [bootProgress, setBootProgress] = useState(0);
-  const [visibleLogs, setVisibleLogs] = useState<string[]>([]);
+  const [safariStage, setSafariStage] = useState<"gathering" | "exploring">("gathering");
   
   const [soundOn, setSoundOn] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -61,39 +48,13 @@ export default function EntryLandingPage() {
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  // Retro 8-bit Sound Synthesizers using Web Audio API
-  const playSynthNote = (freq: number, duration: number, type: OscillatorType = "square") => {
+  const playCanopyOpeningSound = () => {
     if (!soundOn) return;
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-
-      gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-      console.warn("Audio Context blocked or not supported", e);
-    }
-  };
-
-  const playBootSound = () => {
-    if (!soundOn) return;
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const playNote = (freq: number, start: number, duration: number, type: OscillatorType = "square") => {
+      const playNote = (freq: number, start: number, duration: number, type: OscillatorType = "sine") => {
         const osc = ctx.createOscillator();
         const gainNode = ctx.createGain();
         osc.type = type;
@@ -107,55 +68,25 @@ export default function EntryLandingPage() {
       };
 
       const now = ctx.currentTime;
-      playNote(523.25, now, 0.12, "square"); // C5
-      playNote(659.25, now + 0.10, 0.12, "square"); // E5
-      playNote(783.99, now + 0.20, 0.12, "square"); // G5
-      playNote(1046.50, now + 0.30, 0.40, "square"); // C6
-      playNote(261.63, now, 0.40, "triangle"); // Bass C3
+      playNote(392, now, 0.18, "triangle");
+      playNote(523.25, now + 0.14, 0.18, "sine");
+      playNote(659.25, now + 0.28, 0.46, "sine");
+      playNote(196, now, 0.56, "triangle");
     } catch (e) {
       console.warn("Audio blocked", e);
     }
   };
 
-  // Trigger loading sequence
-  const startSystemLoading = () => {
-    if (bootStage !== "idle") return;
-    setBootStage("loading");
-    playSynthNote(440, 0.15, "sawtooth");
-
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 8) + 4;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        clearInterval(interval);
-        setBootStage("ready");
-        playSynthNote(880, 0.3, "sine");
-      }
-      setBootProgress(currentProgress);
-      
-      // Dynamically push logs based on progress thresholds
-      const logIdx = Math.floor((currentProgress / 100) * DIAGNOSTIC_LOG_TEMPLATES.length);
-      const uniqueLogs = DIAGNOSTIC_LOG_TEMPLATES.slice(0, Math.min(logIdx + 1, DIAGNOSTIC_LOG_TEMPLATES.length));
-      setVisibleLogs(uniqueLogs);
-      
-      // Sound tick
-      if (currentProgress % 15 === 0) {
-        playSynthNote(600 + currentProgress * 2, 0.04, "triangle");
-      }
-    }, 120);
-  };
-
-  // Entrance reveal animation for main dashboard
-  const revealDashboard = () => {
+  // Entrance reveal animation for the basecamp map
+  const revealBasecamp = () => {
     const tl = gsap.timeline();
     tl.fromTo(
-      ".terminal-header",
+      ".safari-signboard",
       { scale: 0.9, y: -45, opacity: 0 },
       { scale: 1, y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.2)" }
     );
     tl.fromTo(
-      ".terminal-screen-wrapper",
+      ".safari-map-surface",
       { scale: 0.95, opacity: 0 },
       { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" },
       "-=0.2"
@@ -168,53 +99,55 @@ export default function EntryLandingPage() {
     );
   };
 
-  // Final PRESS START sequence (Shakes/flashes and moves to dashboard)
-  const handlePressStart = () => {
-    if (!bootOverlayRef.current) return;
+  // A grass-and-canopy wipe opens the reserve and reveals the expedition map.
+  const enterSafariReserve = () => {
+    if (!gateOverlayRef.current) return;
 
-    playBootSound();
+    playCanopyOpeningSound();
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motionDuration = reducedMotion ? 0 : 0.52;
 
-    const shakeTl = gsap.timeline({
+    const reserveTl = gsap.timeline({
       onComplete: () => {
-        setBootStage("done");
-        setTimeout(revealDashboard, 50);
+        setSafariStage("exploring");
+        setTimeout(revealBasecamp, 50);
       },
     });
 
-    // Retro screen glitch shake effect
-    shakeTl.to(bootOverlayRef.current, {
-      x: "random(-20, 20)",
-      y: "random(-20, 20)",
-      duration: 0.05,
-      repeat: 12,
-      yoyo: true,
-    });
-
-    // Glitched flash background colors
-    shakeTl.to(bootOverlayRef.current, {
-      backgroundColor: "#F59E0B",
-      duration: 0.1,
-    }, "<");
-    shakeTl.to(bootOverlayRef.current, {
-      backgroundColor: "#38BDF8",
-      duration: 0.1,
-    });
-    shakeTl.to(bootOverlayRef.current, {
-      backgroundColor: "#4ADE80",
-      duration: 0.1,
-    });
-    shakeTl.to(bootOverlayRef.current, {
+    reserveTl
+      .to(gateOverlayRef.current.querySelector(".safari-foreground-fronds-left"), {
+        xPercent: -68,
+        rotation: -4,
+        duration: motionDuration,
+        ease: "power2.inOut",
+      })
+      .to(
+        gateOverlayRef.current.querySelector(".safari-foreground-fronds-right"),
+        {
+          xPercent: 68,
+          rotation: 4,
+          duration: motionDuration,
+          ease: "power2.inOut",
+        },
+        "<"
+      )
+      .to(gateOverlayRef.current.querySelector(".safari-welcome-sign"), {
       opacity: 0,
-      scale: 1.15,
-      duration: 0.25,
-      ease: "power2.inOut",
-    });
+      y: -38,
+      duration: reducedMotion ? 0 : 0.32,
+      ease: "power2.in",
+    }, "<+=0.1")
+      .to(gateOverlayRef.current, {
+        opacity: 0,
+        duration: reducedMotion ? 0 : 0.18,
+        ease: "power1.out",
+      }, "<+=0.08");
   };
 
   // Floating background shape animations
   useGSAP(
     () => {
-      if (bootStage === "done") {
+      if (safariStage === "exploring") {
         gsap.utils.toArray<HTMLElement>(".floating-element").forEach((el, index) => {
           gsap.to(el, {
             y: "+=35",
@@ -227,7 +160,7 @@ export default function EntryLandingPage() {
         });
       }
     },
-    { dependencies: [bootStage], scope: containerRef }
+    { dependencies: [safariStage], scope: containerRef }
   );
 
   return (
@@ -242,98 +175,74 @@ export default function EntryLandingPage() {
         </div>
       )}
 
-      {/* Retro 8-Bit Boot Screen Cabinet */}
-      {bootStage !== "done" && (
+      {/* Illustrated safari reserve arrival */}
+      {safariStage !== "exploring" && (
         <div
-          ref={bootOverlayRef}
-          className="safari-world fixed inset-0 z-50 flex flex-col items-center justify-center p-6"
+          ref={gateOverlayRef}
+          className="safari-arrival-stage fixed inset-0 z-50 flex items-center justify-center overflow-hidden p-6"
         >
-          {/* Main Bezel Container */}
-          <div className="safari-expedition-pass max-w-xl w-full text-center space-y-6 border-8 border-[#243028] rounded-3xl p-6 md:p-8 shadow-[12px_12px_0px_#243028] relative">
-            <div className="screw top-3 left-3"></div>
-            <div className="screw top-3 right-3"></div>
-            <div className="screw bottom-3 left-3"></div>
-            <div className="screw bottom-3 right-3"></div>
-            
-            <div className="space-y-2">
-              <span className="bg-[#F4B942] text-[#243028] font-black px-3 py-1 border-2 border-[#243028] text-xs uppercase tracking-widest inline-block transform -rotate-1 shadow-[2px_2px_0px_#243028]">
-                GATES OPEN
-              </span>
-              <h1 className="safari-title-text brutal-font text-5xl sm:text-6xl text-[#243028] uppercase tracking-wider select-none">
-                ANIMAL KINGDOM
-              </h1>
-              <p className="text-[#4b573b] font-mono text-xs uppercase tracking-widest">
-                SAFARI BASECAMP • 50+ EXPLORERS
-              </p>
-            </div>
-
-            {/* Diagnostic Boot Code Terminal Box */}
-            <div className="brutal-box p-5 bg-[#1D4A35] text-[#FFF3C4] text-left space-y-3 shadow-[8px_8px_0px_#243028] border-4 border-[#243028] font-mono text-xs min-h-[160px] relative overflow-hidden">
-              <div className="flex justify-between items-center border-b border-[#6ca160] pb-2">
-                <span className="text-[#B7DF77] font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#B7DF77] animate-pulse"></span>
-                  GATE_STATUS: {bootStage.toUpperCase()}
-                </span>
-                <span className="text-[#b7df77]/70 font-black">TRAIL: READY</span>
-              </div>
-              
-              <div className="space-y-1 text-zinc-300">
-                {bootStage === "idle" && (
-                  <p className="text-[#5CC8E8] animate-pulse">&gt; TAP &quot;OPEN BASECAMP&quot; TO START THE EXPEDITION...</p>
-                )}
-                {visibleLogs.map((log, index) => (
-                  <p key={index} className={index === visibleLogs.length - 1 ? "text-[#B7DF77] font-bold" : "text-[#e7e0b7]"}>
-                    &gt; {log}
-                  </p>
-                ))}
-              </div>
-            </div>
-
-            {/* Loading / Ready Button Control panel */}
-            <div className="pt-2">
-              {bootStage === "idle" && (
-                <button
-                  onClick={startSystemLoading}
-                  className="safari-paw-button w-full brutal-font text-2xl bg-[#5CC8E8] text-[#243028] hover:bg-[#8eddf0] border-4 border-[#243028] p-4 uppercase transition-all duration-100 shadow-[6px_6px_0px_#243028] cursor-pointer"
-                >
-                  🐾 OPEN BASECAMP
-                </button>
-              )}
-
-              {bootStage === "loading" && (
-                <div className="space-y-3">
-                  <div className="w-full h-8 bg-zinc-800 border-4 border-black p-0.5 relative shadow-[4px_4px_0px_#000]">
-                    <div
-                      className="h-full bg-[#F4B942] transition-all duration-100 ease-out"
-                      style={{ width: `${bootProgress}%` }}
-                    ></div>
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-black select-none">
-                      OPENING GATES: {bootProgress}%
-                    </span>
-                  </div>
-                  <span className="text-[#4b573b] text-[10px] font-mono block animate-pulse">FOLLOWING FRESH PAW PRINTS...</span>
-                </div>
-              )}
-
-              {bootStage === "ready" && (
-                <button
-                  onClick={handlePressStart}
-                  className="safari-paw-button w-full brutal-font text-3xl bg-[#E8614D] text-white hover:bg-[#c84738] border-4 border-[#243028] p-5 uppercase transition-all duration-100 shadow-[6px_6px_0px_#243028] cursor-pointer animate-pulse"
-                >
-                  🦁 BEGIN SAFARI
-                </button>
-              )}
-            </div>
-
-            <div className="text-[#4b573b] font-mono text-[9px] uppercase tracking-wider pt-2 select-none">
-              Trail map checked · 50+ explorers ready
-            </div>
+          <div className="safari-reserve-vista" aria-hidden="true">
+            <svg viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" role="presentation">
+              <defs>
+                <linearGradient id="safari-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#63c8e7" />
+                  <stop offset="62%" stopColor="#f4b942" />
+                  <stop offset="100%" stopColor="#f9d778" />
+                </linearGradient>
+                <linearGradient id="safari-hill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#6d974c" />
+                  <stop offset="100%" stopColor="#315b39" />
+                </linearGradient>
+              </defs>
+              <rect width="1440" height="700" fill="url(#safari-sky)" />
+              <circle className="safari-vista-sun" cx="1040" cy="215" r="112" fill="#fff3c4" stroke="#243028" strokeWidth="8" />
+              <g className="safari-vista-birds" fill="none" stroke="#243028" strokeWidth="8" strokeLinecap="round">
+                <path d="M790 168q17-16 34 0q17-16 34 0" />
+                <path d="M880 130q13-12 26 0q13-12 26 0" />
+                <path d="M1180 144q12-11 24 0q12-11 24 0" />
+              </g>
+              <path d="M0 410 C190 320 330 415 490 355 S785 374 930 340 S1210 378 1440 286 V700H0Z" fill="#86a94e" stroke="#243028" strokeWidth="8" />
+              <path d="M0 485 C175 415 370 492 535 420 S820 485 1030 407 S1285 462 1440 400 V700H0Z" fill="url(#safari-hill)" stroke="#243028" strokeWidth="8" />
+              <g className="safari-vista-acacia" fill="#243028">
+                <path d="M236 494h44l-12-205h-24Z" />
+                <path d="M181 310c17-75 110-90 143-35c64-47 138 5 107 65c-23 45-80 24-105 21c-39 34-138 11-145-51Z" />
+                <path d="M1260 478h29l-7-142h-16Z" />
+                <path d="M1197 350c15-55 83-71 113-31c48-32 104 5 82 50c-17 34-61 19-83 17c-29 25-104 8-112-36Z" />
+              </g>
+              <g className="safari-vista-herd" fill="#243028">
+                <path d="M865 499c0-37 37-57 74-41c21-34 80-22 83 25c27 3 38 20 36 42h-22v29h-15v-29h-46v29h-15v-29h-29v29h-15v-29h-22Z" />
+                <path d="M1069 523c0-47 40-75 86-67l8-112h18l7 112h33v-45h12v45h17v68h-24v30h-15v-30h-84v30h-15v-30Z" />
+                <circle cx="1174" cy="323" r="19" />
+                <path d="M1210 345l13-28m-5 29l19-22" fill="none" stroke="#243028" strokeWidth="7" strokeLinecap="round" />
+              </g>
+              <path d="M0 565c184-74 338-10 512-59c228-64 377 66 616 7c141-35 229-24 312-1v188H0Z" fill="#1d4a35" stroke="#243028" strokeWidth="8" />
+            </svg>
           </div>
+
+          <div className="safari-foreground-fronds safari-foreground-fronds-left" aria-hidden="true" />
+          <div className="safari-foreground-fronds safari-foreground-fronds-right" aria-hidden="true" />
+
+          <section className="safari-welcome-sign" aria-labelledby="reserve-title">
+            <div className="safari-sign-rope safari-sign-rope-left" aria-hidden="true" />
+            <div className="safari-sign-rope safari-sign-rope-right" aria-hidden="true" />
+            <div className="safari-ranger-plaque">
+              <p className="safari-ranger-kicker">CELLGROUP GAMES PRESENTS</p>
+              <h1 id="reserve-title" className="safari-reserve-title brutal-font">ANIMAL KINGDOM</h1>
+              <div className="safari-sign-divider" aria-hidden="true"><span /> <span /> <span /></div>
+              <p className="safari-reserve-subtitle">SAFARI BASECAMP FOR 50+ EXPLORERS</p>
+              <button
+                onClick={enterSafariReserve}
+                className="safari-reserve-button brutal-font"
+              >
+                ENTER THE RESERVE <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </section>
         </div>
       )}
 
-      {/* Floating game sticker badges in background */}
-      {bootStage === "done" &&
+      {/* Floating animal markers in the basecamp sky */}
+      {safariStage === "exploring" &&
         DECORATIVE_SHAPES.map((shape, idx) => (
           <div
             key={idx}
@@ -348,16 +257,13 @@ export default function EntryLandingPage() {
           </div>
         ))}
 
-      {/* Main Console Cabinet Layout */}
-      {bootStage === "done" && (
+      {/* Safari Basecamp map */}
+      {safariStage === "exploring" && (
         <div className="max-w-6xl w-full space-y-8 z-10">
           
-          {/* Physical Console Header Cabinet Panel */}
-          <header className="terminal-header brutal-box p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#243028] border-4 border-[#243028] relative">
-            <div className="screw top-3 left-3"></div>
-            <div className="screw top-3 right-3"></div>
-            <div className="screw bottom-3 left-3"></div>
-            <div className="screw bottom-3 right-3"></div>
+          <header className="safari-signboard brutal-box p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#243028] border-4 border-[#243028] relative">
+            <span className="safari-leaf-marker left-4 top-4" aria-hidden="true">🌿</span>
+            <span className="safari-leaf-marker right-4 top-4" aria-hidden="true">🦒</span>
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-2">
               <div className="flex items-center gap-4">
@@ -374,25 +280,8 @@ export default function EntryLandingPage() {
                 </div>
               </div>
 
-              {/* Physical LED indicators and interactive console buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3 bg-black p-3 border-2 border-zinc-700 rounded-xl shadow-[inner_0_2px_4px_rgba(0,0,0,0.5)]">
-                <div className="flex items-center gap-2 px-1">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="w-2.5 h-2.5 rounded-full led-red led-glow-red"></span>
-                    <span className="text-[8px] text-zinc-500 font-bold uppercase">ERR</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="w-2.5 h-2.5 rounded-full led-yellow led-glow-yellow"></span>
-                    <span className="text-[8px] text-zinc-500 font-bold uppercase">LINK</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5">
-                    <span className="w-2.5 h-2.5 rounded-full led-green led-glow-green"></span>
-                    <span className="text-[8px] text-zinc-500 font-bold uppercase">SYS</span>
-                  </div>
-                </div>
-                
-                <div className="w-px h-6 bg-zinc-800 mx-1 hidden sm:block"></div>
-                
+              <div className="flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-[#FFF3C4] bg-[#245b3f] p-3 shadow-[3px_3px_0px_#143525]">
+                <span className="font-mono text-[9px] font-black uppercase tracking-wider text-[#B7DF77]">🌿 Trail ready</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSoundOn(!soundOn)}
@@ -402,35 +291,32 @@ export default function EntryLandingPage() {
                   </button>
                   <button
                     onClick={() => {
-                      setBootStage("idle");
-                      setBootProgress(0);
-                      setVisibleLogs([]);
-                      showToast("🔄 LOBBY REBOOTED!");
+                      setSafariStage("gathering");
+                      showToast("Back to the reserve entrance.");
                     }}
                     className="bg-[#E8614D] text-white font-black text-[10px] px-3 py-1.5 border-2 border-[#243028] hover:bg-[#c84738] uppercase shadow-[2px_2px_0px_#243028] cursor-pointer"
                   >
-                    REBOOT
+                    Return
                   </button>
                 </div>
               </div>
             </div>
           </header>
 
-          {/* Scrolling LED Marquee Ticker */}
-          <div className="w-full bg-[#143525] text-[#FFF3C4] border-4 border-[#243028] overflow-hidden select-none relative shadow-[6px_6px_0px_#243028] flex items-stretch">
+          <div className="safari-trail-strip w-full overflow-hidden select-none relative flex items-stretch">
             <div className="relative z-10 shrink-0 flex items-center gap-3 bg-[#F4B942] text-[#243028] px-4 py-3 border-r-4 border-[#243028] font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider">
               <span className="w-2.5 h-2.5 bg-[#B7DF77] rounded-full"></span>
               {roster.length > 0 ? `${roster.length} explorers checked in` : "Basecamp open"}
             </div>
             <div className="min-w-0 overflow-hidden py-3">
-              <div className="animate-marquee whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
+              <div className="animate-trail-procession whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
               {roster.length > 0 ? (
                 Array(6)
                   .fill(roster)
                   .flat()
                   .map((name, i) => (
                     <span key={i} className="flex items-center gap-3">
-                      <span className="w-2.5 h-2.5 bg-[#4ADE80] rounded-full led-glow-green"></span>
+                      <span aria-hidden="true">🐾</span>
                       {name} ON THE TRAIL
                     </span>
                   ))
@@ -445,7 +331,7 @@ export default function EntryLandingPage() {
                   .flat()
                   .map((text, i) => (
                     <span key={i} className="flex items-center gap-3">
-                      <span className="w-2.5 h-2.5 bg-[#EF4444] rounded-full led-glow-red animate-pulse"></span>
+                      <span aria-hidden="true">🌿</span>
                       {text}
                     </span>
                   ))
@@ -454,13 +340,12 @@ export default function EntryLandingPage() {
             </div>
           </div>
 
-          {/* Core Panel Grid: Center Bezel Board & Sidebar Controls */}
+          {/* Basecamp trail map and explorer check-in */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Left: Main Dashboard Center Screen (8 Cols) */}
-            <main className="lg:col-span-8 space-y-8 terminal-screen-wrapper">
+            <main className="lg:col-span-8 space-y-8 safari-map-surface">
               
-              {/* Central Cabinet screen container */}
               <div className="safari-card brutal-box text-[#243028] p-6 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
                 <div className="fold-corner-orange"></div>
                 <div className="space-y-6">

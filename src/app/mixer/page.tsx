@@ -869,25 +869,21 @@ export default function MixerPage() {
       {/* Main Content Space */}
       {!isAuthenticated ? (
         <main className="max-w-md mx-auto px-6 py-20">
-          {/* Bezel locked screen style */}
-          <div className="arcade-bezel bg-[#27272A] p-6 shadow-[12px_12px_0px_#000] border-8 border-black rounded-3xl relative text-center text-black">
-            <div className="screw top-3 left-3"></div>
-            <div className="screw top-3 right-3"></div>
-            <div className="screw bottom-3 left-3"></div>
-            <div className="screw bottom-3 right-3"></div>
+          <div className="safari-ranger-gate p-6 relative text-center text-[#243028]">
+            <span className="safari-leaf-marker top-3 left-3" aria-hidden="true">🌿</span>
+            <span className="safari-leaf-marker top-3 right-3" aria-hidden="true">🦜</span>
 
-            <div className="brutal-box p-6 bg-[#EF4444] text-white border-4 border-black shadow-[6px_6px_0px_#000] relative rounded-2xl">
-              <div className="scanline-line"></div>
-              <h2 className="brutal-font text-2xl mb-1 uppercase text-black brutal-text-glow-yellow">
-                🔒 ACCESS RESTRICTED
+            <div className="brutal-box p-6 bg-[#E8614D] text-white border-4 border-[#243028] shadow-[6px_6px_0px_#243028] relative rounded-2xl">
+              <h2 className="brutal-font text-2xl mb-1 uppercase text-[#243028]">
+                🧭 RANGER GATE
               </h2>
-              <p className="text-[10px] font-black text-black/80 mb-6 uppercase tracking-wider">
-                ENTER AUTHORIZATION PASSCODE TO ACCESS SYSTEM INTERFACES
+              <p className="text-[10px] font-black text-[#243028]/80 mb-6 uppercase tracking-wider">
+                Enter the ranger passcode to form the animal crews
               </p>
 
               <form onSubmit={handleVerifyPasscode} className="space-y-4 text-left">
                 <div>
-                  <label className="block text-[10px] font-black uppercase mb-1 text-black">DECRYPT KEY</label>
+                  <label className="block text-[10px] font-black uppercase mb-1 text-black">RANGER PASSCODE</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -923,14 +919,14 @@ export default function MixerPage() {
                   type="submit"
                   className="w-full brutal-box bg-black text-[#FACC15] hover:text-[#fff] font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-zinc-800 shadow-[4px_4px_0px_#000] cursor-pointer"
                 >
-                  DECRYPT & MOUNT SYSTEM 🔓
+                  OPEN THE RANGER TRAIL 🔓
                 </button>
               </form>
             </div>
             
             <div className="mt-6">
-              <Link href="/" className="text-xs font-black uppercase hover:underline text-white font-mono">
-                ← Return to Lobby Landing
+              <Link href="/" className="text-xs font-black uppercase hover:underline text-[#243028] font-mono">
+                ← Return to Safari Basecamp
               </Link>
             </div>
           </div>
@@ -1156,7 +1152,7 @@ export default function MixerPage() {
           {activeTab === "roster" && (
             <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-b-3xl border-4 border-black min-h-[500px]">
               <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
-                <h3 className="brutal-font text-lg md:text-xl uppercase text-black">ACTIVE ROSTER LEDGER</h3>
+                <h3 className="brutal-font text-lg md:text-xl uppercase text-black">EXPLORER FIELD LIST</h3>
                 <span className="text-[9px] bg-black text-[#FFFDF5] font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider font-mono">
                   BALANCED SHUFFLER QUEUE
                 </span>
@@ -1235,25 +1231,24 @@ export default function MixerPage() {
 
               {/* Dealing simulation screen overlay */}
               {isDealing && (
-                <div className="brutal-box p-8 bg-black text-white text-center shadow-[8px_8px_0px_#000] border-4 border-black rounded-3xl relative overflow-hidden">
-                  <div className="scanline-line"></div>
-                  <h4 className="brutal-font text-2xl text-[#FACC15] mb-2 uppercase animate-bounce">DEALING ACTIVE...</h4>
+                <div className="brutal-box p-8 bg-[#1D4A35] text-[#FFF3C4] text-center shadow-[8px_8px_0px_#243028] border-4 border-[#243028] rounded-3xl relative overflow-hidden">
+                  <h4 className="brutal-font text-2xl text-[#F4B942] mb-2 uppercase animate-bounce">HERDS ARE GATHERING...</h4>
                   <div className="flex justify-center items-center gap-4 my-6">
-                    <div className="w-16 h-24 bg-[#F59E0B] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[-12deg] flex items-center justify-center animate-pulse">
-                      <span className="text-black font-black text-3xl">🃏</span>
+                    <div className="w-16 h-24 bg-[#F2A85B] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform rotate-[-12deg] flex items-center justify-center animate-pulse">
+                      <span className="text-[#243028] font-black text-3xl">🦁</span>
                     </div>
-                    <div className="w-16 h-24 bg-[#38BDF8] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform translate-y-[-10px] flex items-center justify-center scale-105">
-                      <span className="text-black font-black text-3xl">🎲</span>
+                    <div className="w-16 h-24 bg-[#5CC8E8] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform translate-y-[-10px] flex items-center justify-center scale-105">
+                      <span className="text-[#243028] font-black text-3xl">🐘</span>
                     </div>
-                    <div className="w-16 h-24 bg-[#FACC15] border-4 border-black rounded-lg shadow-[4px_4px_0px_#000] transform rotate-[12deg] flex items-center justify-center animate-pulse">
-                      <span className="text-black font-black text-3xl">⚡</span>
+                    <div className="w-16 h-24 bg-[#B7DF77] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform rotate-[12deg] flex items-center justify-center animate-pulse">
+                      <span className="text-[#243028] font-black text-3xl">🦒</span>
                     </div>
                   </div>
                   <p className="font-bold text-lg text-[#FFFDF5]">
-                    Dealing <span className="text-[#38BDF8] font-black uppercase underline">{members[dealIndex]?.name || "slots..."}</span>
+                    Placing <span className="text-[#B7DF77] font-black uppercase underline">{members[dealIndex]?.name || "explorers..."}</span>
                   </p>
-                  <p className="text-[10px] font-mono text-zinc-500 mt-2 uppercase tracking-wider">
-                    GreedyDealer is allocating buckets based on cell group collision grids
+                  <p className="text-[10px] font-mono text-[#B7DF77]/75 mt-2 uppercase tracking-wider">
+                    The herd guide is balancing each animal crew
                   </p>
                 </div>
               )}
@@ -1391,16 +1386,12 @@ export default function MixerPage() {
             
             {/* Header section ticket layout */}
             <div className="safari-expedition-pass brutal-box text-[#243028] p-5 rounded-3xl shadow-[12px_12px_0px_#243028] border-8 border-[#243028] flex flex-col items-center gap-4 relative">
-              {/* Mechanical panel details */}
-              <div className="screw top-3 left-3"></div>
-              <div className="screw top-3 right-3"></div>
-              <div className="screw bottom-3 left-3"></div>
-              <div className="screw bottom-3 right-3"></div>
+              <span className="safari-leaf-marker top-3 left-3" aria-hidden="true">🌿</span>
+              <span className="safari-leaf-marker top-3 right-3" aria-hidden="true">🦜</span>
 
-              {/* Cabinet Top bar */}
               <div className="flex justify-between items-center w-full border-b-4 border-black pb-3">
                 <span className="font-mono text-xs text-green-650 uppercase tracking-widest flex items-center gap-2 font-black">
-                  <span className="w-3 h-3 rounded-full bg-green-500 led-glow-green animate-pulse"></span>
+                  <span className="safari-live-dot"></span>
                   • LIVE FROM THE SAVANNA STAGE
                 </span>
                 <button
@@ -1419,7 +1410,7 @@ export default function MixerPage() {
                   <span className="bg-black text-[#FFFDF5] text-[10px] font-black px-3 py-1 border-2 border-black uppercase tracking-widest inline-block shadow-[2px_2px_0px_#000]">
                     WILDLIFE GAMES • LIVE STANDINGS
                   </span>
-                  <h2 className="brutal-font text-3xl sm:text-4xl text-black brutal-text-glow-yellow uppercase tracking-wider select-none leading-none">
+                  <h2 className="safari-title-text brutal-font text-3xl sm:text-4xl text-[#243028] uppercase tracking-wider select-none leading-none">
                     ANIMAL KINGDOM
                   </h2>
                   <p className="font-bold text-zinc-700 text-xs leading-relaxed max-w-xl">

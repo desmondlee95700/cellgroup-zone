@@ -177,13 +177,11 @@ export default function GamesPage() {
         </div>
       ))}
 
-      {/* Console Header Panel */}
+      {/* Hand-painted trail sign */}
       <header className="gsap-reveal max-w-5xl mx-auto mt-8 px-4 sm:px-6 relative z-20">
-        <div className="terminal-header brutal-box p-6 sm:p-8 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
-          <div className="screw top-3 left-3"></div>
-          <div className="screw top-3 right-3"></div>
-          <div className="screw bottom-3 left-3"></div>
-          <div className="screw bottom-3 right-3"></div>
+        <div className="safari-signboard brutal-box p-6 sm:p-8 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
+          <span className="safari-leaf-marker top-4 left-4" aria-hidden="true">🌿</span>
+          <span className="safari-leaf-marker top-4 right-4" aria-hidden="true">🦜</span>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <Link
@@ -198,16 +196,8 @@ export default function GamesPage() {
               SAFARI MISSIONS
             </h1>
 
-            {/* LED Status Panel */}
-            <div className="flex items-center gap-2.5 bg-black p-2.5 border border-zinc-800 rounded-lg">
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="w-2 h-2 rounded-full led-green led-glow-green"></span>
-                <span className="text-[6px] text-[#B7DF77] font-bold uppercase">TRAIL</span>
-              </div>
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="w-2 h-2 rounded-full led-yellow led-glow-yellow animate-pulse"></span>
-                <span className="text-[6px] text-[#B7DF77] font-bold uppercase">REEL</span>
-              </div>
+            <div className="rounded-full border-2 border-[#FFF3C4] bg-[#245b3f] px-3 py-2 font-mono text-[8px] font-black uppercase tracking-wider text-[#B7DF77]">
+              🐾 trail guide
             </div>
           </div>
         </div>
@@ -242,7 +232,7 @@ export default function GamesPage() {
             </button>
           </div>
 
-          {/* Interactive Steps Manual Console Board */}
+          {/* Illustrated mission trail */}
           <article className="group relative z-20">
             <div className="bg-[#1D4A35] border-4 border-[#243028] border-b-0 py-5 px-6 flex items-center justify-between shadow-[8px_0px_0px_#243028] rounded-t-2xl">
               <div>
@@ -303,7 +293,7 @@ export default function GamesPage() {
                 </div>
               </div>
 
-              {/* Console Footpad Controllers */}
+              {/* Trail navigation */}
               <div className="flex justify-between items-center gap-4 border-t-2 border-black pt-4 mt-2">
                 <button
                   disabled={activeStep === 0}
@@ -338,14 +328,14 @@ export default function GamesPage() {
           {/* Interactive Game Illustration Device Card */}
           <div className="brutal-box bg-white text-black p-6 rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] relative">
             <h3 className="brutal-font text-lg uppercase mb-4 text-black border-b-2 border-black pb-2">
-              🛠️ TACTILE SCHEMATIC SIMULATOR
+              🐾 FIELD CAMP SIMULATOR
             </h3>
 
             {activeTab === "blanket" ? (
               // Blanket game schematic drop simulator
               <div className="space-y-4">
                 <p className="text-xs font-bold text-zinc-600 uppercase">
-                  Click the console button below to drop the blanket partition and simulate matching reflex speed:
+                  Drop the safari hide to see who spots the explorer first:
                 </p>
                 <div className="h-44 border-4 border-black rounded-2xl bg-[#FFFDF5] relative overflow-hidden flex items-center justify-around p-4 shadow-[inner_0_4px_8px_rgba(0,0,0,0.1)]">
                   {/* Player Left */}
@@ -376,7 +366,7 @@ export default function GamesPage() {
                   {/* Win text indicator overlay */}
                   {blanketDropped && (
                     <div className="absolute inset-0 bg-[#4ADE80]/80 z-20 flex flex-col items-center justify-center animate-in fade-in zoom-in-75 duration-200">
-                      <span className="brutal-font text-2xl uppercase tracking-wider text-black brutal-text-glow-yellow">
+                      <span className="brutal-font text-2xl uppercase tracking-wider text-black">
                         &quot;ALEX!&quot; 📢
                       </span>
                       <span className="text-[10px] font-mono font-black uppercase text-black/80 mt-1">
@@ -469,43 +459,41 @@ export default function GamesPage() {
       <section className="gsap-reveal max-w-5xl mx-auto px-4 sm:px-6 pb-24 relative z-10" aria-labelledby="video-briefing-title">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
           <div>
-            <p className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] text-[#FACC15] mb-2">
-              Stage briefing / 34 seconds
+            <p className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-[0.22em] text-[#B7DF77] mb-2">
+              Campfire briefing / 34 seconds
             </p>
             <h2 id="video-briefing-title" className="brutal-font text-3xl sm:text-5xl uppercase text-white leading-none">
-              Watch before<br className="sm:hidden" /> the whistle
+              Watch before<br className="sm:hidden" /> the safari starts
             </h2>
           </div>
           <div className="self-start sm:self-auto bg-[#FACC15] text-black border-4 border-black shadow-[5px_5px_0px_#000] px-4 py-3 font-mono text-xs font-black uppercase tracking-wider -rotate-1">
-            ▶ GAME REEL LOADED
+            ▶ SAFARI REEL
           </div>
         </div>
 
-        <div className="border-4 border-black bg-[#38BDF8] p-3 sm:p-5 shadow-[12px_12px_0px_#000] relative">
+        <div className="safari-reel-frame relative">
           <div className="absolute -top-4 right-5 bg-[#EF4444] text-white border-4 border-black px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider shadow-[3px_3px_0px_#000]">
-            ● Now playing
+            ● Campfire reel
           </div>
 
           <div className="grid lg:grid-cols-[minmax(0,1.65fr)_minmax(270px,0.75fr)] gap-5 items-stretch">
-            <div className="bg-black border-4 border-black shadow-[6px_6px_0px_#000]">
-              <div className="flex items-center justify-between gap-3 bg-[#18181B] px-3 py-2 border-b-2 border-zinc-700 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-300">
-                <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#EF4444] animate-pulse"></span> Cellgroup games zone</span>
-                <span className="text-[#FACC15]">16:9 / HD</span>
+            <div className="rounded-xl bg-[#143525] p-2">
+              <div className="flex items-center justify-between gap-3 px-3 py-2 font-mono text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-[#FFF3C4]">
+                <span className="flex items-center gap-2"><span aria-hidden="true">🌿</span> Animal Kingdom tales</span>
+                <span className="text-[#B7DF77]">16:9 / HD</span>
               </div>
-              <div className="crt-overlay relative aspect-video bg-black">
-                <video
-                  className="w-full h-full object-contain block relative z-0"
-                  controls
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  aria-label="Cellgroup Games Zone introduction video"
-                >
-                  <source src="/assets/videos/games-demo.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
+              <video
+                className="w-full aspect-video object-contain block"
+                controls
+                autoPlay
+                loop
+                muted
+                playsInline
+                aria-label="Animal Kingdom safari games introduction video"
+              >
+                <source src="/assets/videos/games-demo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
 
             <aside className="bg-[#FFFDF5] text-black border-4 border-black p-5 sm:p-6 flex flex-col justify-between relative overflow-hidden">
