@@ -1106,7 +1106,7 @@ body {
 .safari-field-horizon {
   position: absolute;
   z-index: 0;
-  top: 12rem;
+  top: 16rem;
   right: 0;
   left: 0;
   height: 24rem;
@@ -1214,9 +1214,44 @@ body {
   padding: clamp(3rem, 7vw, 6.5rem) clamp(.5rem, 2vw, 2rem) 3.5rem;
 }
 
-.safari-field-hero > div:first-child { max-width: 52rem; }
-.safari-field-hero h1 { margin: 0; max-width: 12ch; font-size: clamp(3rem, 6.7vw, 6.2rem); line-height: .9; letter-spacing: -.04em; text-shadow: 4px 4px 0 #fff3c4; }
-.safari-field-hero > div:first-child > p:last-child { max-width: 43rem; margin: 1.2rem 0 0; font-size: clamp(1rem, 1.5vw, 1.18rem); font-weight: 750; line-height: 1.55; }
+.safari-field-hero > div:first-child {
+  position: relative;
+  z-index: 2;
+  isolation: isolate;
+  max-width: 52rem;
+  padding: 1.6rem 2rem 1.8rem;
+}
+
+.safari-field-hero > div:first-child::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -.35rem -.8rem -.5rem -1rem;
+  border: 5px solid var(--safari-ink);
+  border-radius: 3.5rem 7rem 4.5rem 2.5rem;
+  background: rgba(255, 243, 196, .96);
+  box-shadow: 9px 9px 0 rgba(36, 48, 40, .88);
+  transform: rotate(-.45deg);
+}
+
+.safari-field-hero h1 {
+  max-width: 14ch;
+  margin: 0;
+  font-size: clamp(2.8rem, 5.4vw, 4.9rem);
+  line-height: .94;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  text-shadow: 3px 3px 0 #f4b942;
+}
+
+.safari-field-hero > div:first-child > p:last-child {
+  max-width: 40rem;
+  margin: 1.05rem 0 0;
+  color: #143525;
+  font-size: clamp(.98rem, 1.25vw, 1.1rem);
+  font-weight: 800;
+  line-height: 1.55;
+}
 
 .safari-field-binoculars {
   position: relative;
@@ -1466,7 +1501,9 @@ body {
   .safari-field-nav { grid-template-columns: auto 1fr; border-radius: 1.35rem; }
   .safari-field-brand { justify-self: end; }
   .safari-field-brand span, .safari-field-open { display: none; }
-  .safari-field-hero { grid-template-columns: 1fr; min-height: auto; padding-top: 4rem; }
+  .safari-field-hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem .25rem 3rem; }
+  .safari-field-hero > div:first-child { padding: 1.35rem 1.25rem 1.5rem; }
+  .safari-field-hero > div:first-child::before { inset: -.25rem; border-radius: 2.2rem 4rem 3rem 1.8rem; }
   .safari-field-binoculars { display: none; }
   .safari-mission-picker [role="tablist"] { grid-template-columns: 1fr; }
   .safari-journal-heading { align-items: flex-start; }
@@ -1477,7 +1514,8 @@ body {
   .safari-field-back { padding: .55rem .65rem; font-size: .58rem; }
   .safari-field-brand-mark { width: 2.7rem; }
   .safari-field-brand strong { font-size: .78rem; }
-  .safari-field-hero h1 { font-size: clamp(2.7rem, 14vw, 4rem); }
+  .safari-field-hero h1 { font-size: clamp(2.3rem, 11vw, 3.35rem); }
+  .safari-field-hero > div:first-child > p:last-child { font-size: .9rem; }
   .safari-mission-picker button { grid-template-columns: 3.7rem minmax(0, 1fr); }
   .safari-mission-picker button > b { display: none; }
   .safari-mission-badge { width: 3.7rem; }
