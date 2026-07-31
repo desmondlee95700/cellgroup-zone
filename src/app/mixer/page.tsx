@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import gsap from "gsap";
@@ -28,11 +29,11 @@ interface Team {
 const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
 
 const SCORE_AWARDS = [
-  { label: "−10", delta: -10, title: "Mud pit penalty minus 10 paw points" },
-  { label: "+10", delta: 10, title: "Trail find plus 10 paw points" },
-  { label: "+25", delta: 25, title: "Wild spirit plus 25 paw points" },
-  { label: "+60", delta: 60, title: "Trailblazer plus 60 paw points" },
-  { label: "+100", delta: 100, title: "Crown hunt plus 100 paw points" },
+  { label: "−10", delta: -10, title: "Penalty minus 10 points" },
+  { label: "+10", delta: 10, title: "Trail find plus 10 points" },
+  { label: "+25", delta: 25, title: "Team spirit plus 25 points" },
+  { label: "+60", delta: 60, title: "Runner-up plus 60 points" },
+  { label: "+100", delta: 100, title: "Round win plus 100 points" },
 ] as const;
 
 const SCORE_TARGET = 300;
@@ -47,7 +48,7 @@ function ScoreAwardControls({
   compact?: boolean;
 }) {
   return (
-    <div className={`grid grid-cols-5 gap-2 ${compact ? "p-2.5" : "p-3"}`}>
+    <div className={`safari-score-awards${compact ? " is-compact" : ""}`}>
       {SCORE_AWARDS.map((award) => (
         <button
           key={award.delta}
@@ -55,15 +56,7 @@ function ScoreAwardControls({
           title={award.title}
           aria-label={`${award.title} for ${team.name}`}
           onClick={() => onAward(team.id, award.delta)}
-          className={`tactile-btn-active border-2 border-black font-mono font-black shadow-[3px_3px_0px_#000] transition-colors focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#38BDF8] ${
-            compact ? "px-1 py-2 text-[9px]" : "px-2 py-3 text-[10px]"
-          } ${
-            award.delta < 0
-              ? "bg-[#E8614D] text-white hover:bg-[#c84738]"
-              : award.delta === 100
-                ? "bg-[#F4B942] text-[#243028] hover:bg-[#ffd96b]"
-                : "bg-[#FFF3C4] text-[#243028] hover:bg-[#B7DF77]"
-          }`}
+          className={`${award.delta < 0 ? "is-negative" : ""}${award.delta === 100 ? " is-major" : ""}`}
         >
           {award.label}
         </button>
@@ -98,6 +91,8 @@ const CG_COLORS = [
   'bg-[#E8614D]',
 ];
 
+const TEAM_ACCENTS = ["#F4B942", "#5CC8E8", "#F2A85B", "#E8614D", "#B7DF77", "#79C8B5"];
+
 const getGroupColor = (name: string) => {
   if (!name) return 'bg-[#FFFDF5]';
   let hash = 0;
@@ -108,7 +103,22 @@ const getGroupColor = (name: string) => {
   return CG_COLORS[index];
 };
 
-const getTeamEmoji = (name: string) => getSafariTeamProfile(name).emoji;
+const getTeamAccent = (color: string, index: number) => {
+  const match = color?.match(/#[0-9a-fA-F]{6}/)?.[0];
+  return match ?? TEAM_ACCENTS[index % TEAM_ACCENTS.length];
+};
+
+function TeamMark({ name, compact = false }: { name: string; compact?: boolean }) {
+  const profile = getSafariTeamProfile(name);
+
+  return (
+    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true">
+      <i />
+      <b>{profile.animal.slice(0, 1)}</b>
+      <i />
+    </span>
+  );
+}
 
 export default function MixerPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +162,7 @@ export default function MixerPage() {
   // Notification Toast state
   const [toastMessage, setToastMessage] = useState("");
 
-  // Synthesize retro chiptune sound effects
+  // Synthesize lightweight trail-call sound effects
   const playSynthSound = (freq: number, duration: number, type: OscillatorType = "sine") => {
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -744,7 +754,7 @@ export default function MixerPage() {
     try {
       navigator.clipboard.writeText(buildShareUrl());
       playSuccessChirp();
-      showToast("Player Share Link Copied! 🔗");
+      showToast("Explorer share link copied!");
     } catch (e) {
       console.error(e);
       showToast("Failed to generate share link!");
@@ -769,10 +779,10 @@ export default function MixerPage() {
   // Calculate rating grade
   const getMixQualityGrade = () => {
     const overlaps = totalSameCGOverlaps();
-    if (overlaps === 0) return { grade: "🌟 S-TIER", text: "PERFECT DISPERSION", color: "bg-[#22C55E]" };
-    if (overlaps <= 2) return { grade: "🟢 A-TIER", text: "OPTIMALLY BALANCED", color: "bg-[#4ADE80]" };
-    if (overlaps <= 5) return { grade: "🟡 B-TIER", text: "STABLE DISPERSION", color: "bg-[#FACC15]" };
-    return { grade: "🔴 C-TIER", text: "CHAOTIC OVERLAPS", color: "bg-[#EF4444] text-white" };
+    if (overlaps === 0) return { grade: "S", text: "Perfectly dispersed" };
+    if (overlaps <= 2) return { grade: "A", text: "Beautifully balanced" };
+    if (overlaps <= 5) return { grade: "B", text: "Trail-ready balance" };
+    return { grade: "C", text: "Try another shuffle" };
   };
 
   const rankedTeams = [...finalTeams].sort((a, b) => {
@@ -810,7 +820,7 @@ export default function MixerPage() {
     } else {
       playSynthSound(190, 0.12, "sawtooth");
     }
-    showToast(`${getSafariTeamLabel(team.name)} ${delta > 0 ? "+" : ""}${delta} paw points`);
+    showToast(`${getSafariTeamLabel(team.name)} ${delta > 0 ? "+" : ""}${delta} points`);
   };
 
   const resetAllScores = () => {
@@ -839,49 +849,42 @@ export default function MixerPage() {
   const canRenderShareQr = isShowcaseQrSafe(shareUrl);
 
   return (
-    <div ref={containerRef} className="safari-world min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] pb-24">
-      {/* Header Panel */}
-      <header className="safari-canopy-header border-b-4 border-[#243028] py-10 px-6 text-center shadow-[0_6px_0px_#243028] relative z-20">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div ref={containerRef} className="safari-mixer-page min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028]">
+      <header className="safari-mixer-nav-wrap">
+        <div className="safari-mixer-nav">
           <Link
             href="/"
-            className="brutal-box bg-[#FFF3C4] text-[#243028] font-black uppercase text-sm px-5 py-2.5 border-2 border-[#243028] hover:bg-[#F4B942] transition-all shadow-[2px_2px_0px_#243028] active:translate-y-0.5"
+            className="safari-mixer-back"
           >
-            ← ESC BACK
+            Back to basecamp
           </Link>
-          <h1 className="safari-title-text brutal-font text-3xl md:text-5xl text-[#FFF3C4] uppercase tracking-wider select-none">
-            🐾 ANIMAL KINGDOM SHUFFLER
+          <h1 className="safari-mixer-brand">
+            <span className="safari-mixer-brand-mark" aria-hidden="true"><i /><i /><i /></span>
+            <span><small>Animal Kingdom</small> Ranger Registration Camp</span>
           </h1>
           {isAuthenticated && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleClearRoster}
-                disabled={members.length === 0}
-                className="brutal-box bg-red-500 text-white font-black uppercase text-xs md:text-sm px-4 py-2.5 border-2 border-black hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
-              >
-                Clear Roster ❌
-              </button>
-            </div>
+            <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
+              Clear roster
+            </button>
           )}
         </div>
       </header>
 
       {/* Main Content Space */}
       {!isAuthenticated ? (
-        <main className="max-w-md mx-auto px-6 py-20">
-          <div className="safari-ranger-gate p-6 relative text-center text-[#243028]">
-            <span className="safari-leaf-marker top-3 left-3" aria-hidden="true">🌿</span>
-            <span className="safari-leaf-marker top-3 right-3" aria-hidden="true">🦜</span>
+        <main className="safari-gate-clearing">
+          <div className="safari-ranger-lodge">
+            <div className="safari-lodge-sun" aria-hidden="true" />
+            <div className="safari-lodge-tree" aria-hidden="true"><i /><i /><i /></div>
 
-            <div className="brutal-box p-6 bg-[#E8614D] text-white border-4 border-[#243028] shadow-[6px_6px_0px_#243028] relative rounded-2xl">
-              <h2 className="brutal-font text-2xl mb-1 uppercase text-[#243028]">
-                🧭 RANGER GATE
-              </h2>
-              <p className="text-[10px] font-black text-[#243028]/80 mb-6 uppercase tracking-wider">
-                Enter the ranger passcode to form the animal crews
+            <div className="safari-gate-pass">
+              <p className="safari-eyebrow">Staff trail entrance</p>
+              <h2>Open the registration lodge</h2>
+              <p className="safari-gate-intro">
+                Enter the ranger passcode to check in explorers and form balanced animal herds.
               </p>
 
-              <form onSubmit={handleVerifyPasscode} className="space-y-4 text-left">
+              <form onSubmit={handleVerifyPasscode} className="safari-gate-form">
                 <div>
                   <label className="block text-[10px] font-black uppercase mb-1 text-black">RANGER PASSCODE</label>
                   <div className="relative">
@@ -895,7 +898,7 @@ export default function MixerPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 brutal-box bg-white border border-black hover:bg-gray-100 text-[9px] text-black font-black px-2 py-0.5 uppercase"
+                      className="safari-password-toggle"
                     >
                       {showPassword ? "Hide" : "Show"}
                     </button>
@@ -917,37 +920,43 @@ export default function MixerPage() {
 
                 <button
                   type="submit"
-                  className="w-full brutal-box bg-black text-[#FACC15] hover:text-[#fff] font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-zinc-800 shadow-[4px_4px_0px_#000] cursor-pointer"
+                  className="safari-open-lodge"
                 >
-                  OPEN THE RANGER TRAIL 🔓
+                  Open registration lodge
                 </button>
               </form>
-            </div>
-            
-            <div className="mt-6">
-              <Link href="/" className="text-xs font-black uppercase hover:underline text-[#243028] font-mono">
-                ← Return to Safari Basecamp
-              </Link>
             </div>
           </div>
         </main>
       ) : (
-        <main className="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <main className="safari-mixer-workspace">
+          <section className="safari-mixer-hero">
+            <div>
+              <p className="safari-eyebrow">Morning roll call</p>
+              <h2>Gather every explorer. Build every herd.</h2>
+              <p>Check in the room, balance the crews, then send the live points ceremony to the big screen.</p>
+            </div>
+            <div className="safari-mixer-hero-counts" aria-label="Registration summary">
+              <span><strong>{members.length}</strong> explorers</span>
+              <span><strong>{cellGroups.length}</strong> cell groups</span>
+              <span><strong>{finalTeams.length}</strong> animal herds</span>
+            </div>
+          </section>
         
         {/* Left Side: Setup Command Center Modules (5 cols) */}
-        <section className="lg:col-span-5 space-y-8">
+        <section className="safari-mixer-setup">
           
           {/* Module 1: Member Intake Panel */}
-          <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
-            <div className="fold-corner-orange"></div>
-            <h2 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#F59E0B] border-b-2 border-black pb-2">
-              1. EXPLORER CHECK-IN
-            </h2>
+          <div className="safari-registration-lodge">
+            <div className="safari-lodge-awning" aria-hidden="true" />
+            <div className="safari-section-heading">
+              <span>01</span><div><p>Registration lodge</p><h2>Explorer check-in</h2></div>
+            </div>
             
             {/* Quick Add Form */}
             <form onSubmit={handleAddMember} className="space-y-4 mb-6">
               <div>
-                <label className="block text-[10px] font-black uppercase mb-1">PLAYER DETAILS (NAME)</label>
+                <label className="block text-[10px] font-black uppercase mb-1">Explorer name</label>
                 <input
                   type="text"
                   placeholder="e.g. John Doe"
@@ -958,7 +967,7 @@ export default function MixerPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black uppercase mb-1">CELL GROUP SLOT</label>
+                  <label className="block text-[10px] font-black uppercase mb-1">Home cell group</label>
                   <select
                     value={inputCG || cellGroups[0] || ""}
                     onChange={(e) => setInputCG(e.target.value)}
@@ -974,7 +983,7 @@ export default function MixerPage() {
                     type="submit"
                     className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5"
                   >
-                    ADD SLOT +
+                    Check in explorer
                   </button>
                 </div>
               </div>
@@ -982,7 +991,7 @@ export default function MixerPage() {
 
             <div className="border-t-4 border-black pt-4">
               <div className="flex justify-between items-center mb-3">
-                <label className="block text-[10px] font-black uppercase">MANAGE LOCAL CELL GROUPS</label>
+                <label className="block text-[10px] font-black uppercase">Cell-group trail markers</label>
                 <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
                   {cellGroups.length} GROUPS
                 </span>
@@ -1020,7 +1029,7 @@ export default function MixerPage() {
                   onClick={addCellGroup}
                   className="brutal-box bg-white text-black font-black uppercase text-[10px] px-3 py-2 border-2 border-black hover:bg-gray-100 shadow-[2px_2px_0px_#000] cursor-pointer"
                 >
-                  CREATE
+                  Add group
                 </button>
               </div>
             </div>
@@ -1031,13 +1040,13 @@ export default function MixerPage() {
                 onClick={() => setShowBulkModal(true)}
                 className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
               >
-                📥 BULK EXCEL/SHEETS IMPORT
+                Import a full roster
               </button>
             </div>
 
             {/* Google Form Auto-Sync */}
             <div className="mt-4 pt-4 border-t-4 border-black">
-              <label className="block text-[10px] font-black uppercase mb-1">📡 GOOGLE FORM AUTO-SYNC</label>
+              <label className="block text-[10px] font-black uppercase mb-1">Google Form trail sync</label>
               <p className="text-[9px] font-bold text-zinc-500 mb-2 uppercase leading-relaxed">
                 In your response sheet: File → Share → Publish to web → &quot;Form Responses 1&quot; as CSV. Paste that link once — it&apos;s remembered.
               </p>
@@ -1053,22 +1062,21 @@ export default function MixerPage() {
                 disabled={isSyncing || !sheetUrl.trim()}
                 className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
               >
-                {isSyncing ? "SYNCING... 📡" : "🔄 SYNC FROM GOOGLE FORM"}
+                {isSyncing ? "Syncing responses..." : "Sync Google Form responses"}
               </button>
             </div>
           </div>
 
           {/* Module 2: Shuffler Configuration Panel */}
-          <div className="brutal-box p-6 bg-[#FACC15] text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
-            <div className="fold-corner-orange"></div>
-            <h2 className="brutal-font text-xl md:text-2xl mb-6 uppercase text-black border-b-2 border-black pb-2">
-              2. HERD SETTINGS
-            </h2>
+          <div className="safari-herd-trail">
+            <div className="safari-section-heading">
+              <span>02</span><div><p>Herd-forming trail</p><h2>Choose the expedition shape</h2></div>
+            </div>
             
             <div className="space-y-6">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] font-black uppercase">TARGET SPLIT QUANTITY</label>
+                  <label className="text-[10px] font-black uppercase">How many animal herds?</label>
                   <span className="brutal-font text-base bg-black text-[#FACC15] px-3 py-1 border-2 border-black font-mono">
                     {groupCount} TEAMS
                   </span>
@@ -1084,12 +1092,12 @@ export default function MixerPage() {
                 />
                 <div className="flex justify-between text-[9px] font-mono font-bold mt-1 uppercase text-black">
                   <span>MIN: 2</span>
-                  <span>MAX: {members.length || 2} PLATES</span>
+                  <span>MAX: {members.length || 2} HERDS</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black uppercase mb-2">NOMENCLATURE PRESETS</label>
+                <label className="block text-[10px] font-black uppercase mb-2">Herd naming trail</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(["numbers", "colors", "heroes"] as const).map(preset => (
                     <button
@@ -1101,7 +1109,7 @@ export default function MixerPage() {
                           : "bg-white text-black hover:bg-gray-100"
                       }`}
                     >
-                      {preset === "colors" ? "🌈 Colors" : preset === "heroes" ? "🦸 Heroes" : "🔢 Numbers"}
+                      {preset === "colors" ? "Animal realm" : preset === "heroes" ? "Adventure" : "Numbered"}
                     </button>
                   ))}
                 </div>
@@ -1112,18 +1120,20 @@ export default function MixerPage() {
                 disabled={members.length < 2 || isDealing}
                 className="w-full brutal-font text-lg bg-black text-[#FACC15] hover:text-[#fff] hover:bg-zinc-950 py-4 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000] cursor-pointer active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000]"
               >
-                {isDealing ? "FORMING HERDS... 🐾" : "FORM ANIMAL CREWS 🐾"}
+                {isDealing ? "Guides are forming herds..." : "Form balanced animal herds"}
               </button>
             </div>
           </div>
         </section>
 
         {/* Right Side: Roster ledger and shuffler boards (7 cols) */}
-        <section className="lg:col-span-7 space-y-6">
+        <section className="safari-ranger-ledger">
           
           {/* Tab Navigation knobs */}
-          <div className="flex gap-2 relative z-10">
+          <div className="safari-ledger-tabs" role="tablist" aria-label="Ranger ledger views">
             <button
+              role="tab"
+              aria-selected={activeTab === "roster"}
               onClick={() => setActiveTab("roster")}
               className={`brutal-font text-base sm:text-lg px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] cursor-pointer ${
                 activeTab === "roster"
@@ -1131,9 +1141,11 @@ export default function MixerPage() {
                   : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-2 h-13"
               }`}
             >
-              Roster ({members.length} players)
+              Explorer ledger ({members.length})
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "teams"}
               onClick={() => {
                 if (finalTeams.length > 0) setActiveTab("teams");
               }}
@@ -1144,17 +1156,17 @@ export default function MixerPage() {
                   : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-2 h-13"
               }`}
             >
-              Safari crews 🐾
+              Animal herds ({finalTeams.length})
             </button>
           </div>
 
           {/* Roster Ledger sheet Tab */}
           {activeTab === "roster" && (
-            <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-b-3xl border-4 border-black min-h-[500px]">
+            <div className="safari-ledger-sheet">
               <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
-                <h3 className="brutal-font text-lg md:text-xl uppercase text-black">EXPLORER FIELD LIST</h3>
+                <h3 className="brutal-font text-lg md:text-xl uppercase text-black">Today&apos;s ranger ledger</h3>
                 <span className="text-[9px] bg-black text-[#FFFDF5] font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider font-mono">
-                  BALANCED SHUFFLER QUEUE
+                  Ready for herd forming
                 </span>
               </div>
 
@@ -1171,9 +1183,9 @@ export default function MixerPage() {
                     <thead>
                       <tr className="bg-black text-[#FFFDF5] border-b-4 border-black">
                         <th className="p-3.5 font-black uppercase text-left w-12 font-mono">#</th>
-                        <th className="p-3.5 font-black uppercase">PLAYER SLOTS</th>
-                        <th className="p-3.5 font-black uppercase">CELL LEAD</th>
-                        <th className="p-3.5 font-black uppercase text-right w-24">COMMANDS</th>
+                        <th className="p-3.5 font-black uppercase">Explorer</th>
+                        <th className="p-3.5 font-black uppercase">Home group</th>
+                        <th className="p-3.5 font-black uppercase text-right w-24">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y-2 divide-black bg-[#FFFDF5]">
@@ -1205,17 +1217,17 @@ export default function MixerPage() {
 
           {/* Shuffler Results tab */}
           {activeTab === "teams" && finalTeams.length > 0 && (
-            <div className="space-y-6">
+            <div className="safari-herd-results">
               
-              {/* Output Actions dashboard Belt */}
-              <div className="brutal-box p-4 bg-white text-black shadow-[6px_6px_0px_#000] rounded-2xl border-4 border-black flex flex-wrap gap-4 items-center justify-between">
-                <span className="font-black text-xs uppercase tracking-wider">EXPORT TEAMS DATA:</span>
+              {/* Herd handoff actions */}
+              <div className="safari-herd-actions">
+                <span className="font-black text-xs uppercase tracking-wider">The herds are ready for the savanna</span>
                 <div className="flex gap-2.5 flex-wrap">
                   <button
                     onClick={copyShareLink}
                     className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs px-4 py-2.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
                   >
-                    🔗 Copy Share Link
+                    Copy explorer link
                   </button>
                   <button
                     onClick={() => {
@@ -1224,24 +1236,24 @@ export default function MixerPage() {
                     }}
                     className="brutal-box bg-[#FACC15] text-black font-black uppercase text-xs px-4 py-2.5 border-2 border-black hover:bg-[#eab308] shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer"
                   >
-                    📺 Showcase Presentation
+                    Open points ceremony
                   </button>
                 </div>
               </div>
 
               {/* Dealing simulation screen overlay */}
               {isDealing && (
-                <div className="brutal-box p-8 bg-[#1D4A35] text-[#FFF3C4] text-center shadow-[8px_8px_0px_#243028] border-4 border-[#243028] rounded-3xl relative overflow-hidden">
-                  <h4 className="brutal-font text-2xl text-[#F4B942] mb-2 uppercase animate-bounce">HERDS ARE GATHERING...</h4>
+                <div className="safari-herds-gathering">
+                  <h4>Herds are gathering...</h4>
                   <div className="flex justify-center items-center gap-4 my-6">
                     <div className="w-16 h-24 bg-[#F2A85B] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform rotate-[-12deg] flex items-center justify-center animate-pulse">
-                      <span className="text-[#243028] font-black text-3xl">🦁</span>
+                      <span className="text-[#243028] font-black text-3xl">L</span>
                     </div>
                     <div className="w-16 h-24 bg-[#5CC8E8] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform translate-y-[-10px] flex items-center justify-center scale-105">
-                      <span className="text-[#243028] font-black text-3xl">🐘</span>
+                      <span className="text-[#243028] font-black text-3xl">E</span>
                     </div>
                     <div className="w-16 h-24 bg-[#B7DF77] border-4 border-[#243028] rounded-[45%] shadow-[4px_4px_0px_#243028] transform rotate-[12deg] flex items-center justify-center animate-pulse">
-                      <span className="text-[#243028] font-black text-3xl">🦒</span>
+                      <span className="text-[#243028] font-black text-3xl">G</span>
                     </div>
                   </div>
                   <p className="font-bold text-lg text-[#FFFDF5]">
@@ -1255,25 +1267,25 @@ export default function MixerPage() {
 
               {/* Quality Stats Board */}
               {!isDealing && (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="safari-mix-report">
                   {/* Quality rating grade metric */}
-                  <div className={`md:col-span-5 brutal-box p-4 shadow-[6px_6px_0px_#000] border-4 border-black rounded-2xl flex flex-col justify-center items-center text-black font-bold text-center ${getMixQualityGrade().color}`}>
-                    <span className="text-[10px] uppercase font-black text-black/70 tracking-widest font-mono">MIX RATING MATCH</span>
-                    <span className="text-3xl brutal-font tracking-tighter mt-1">{getMixQualityGrade().grade}</span>
-                    <span className="text-[8px] font-mono font-black border border-black px-1.5 py-0.5 uppercase tracking-wide bg-black text-[#FFFDF5] mt-1.5">{getMixQualityGrade().text}</span>
+                  <div className="safari-mix-grade">
+                    <span>Balance grade</span>
+                    <strong>{getMixQualityGrade().grade}</strong>
+                    <small>{getMixQualityGrade().text}</small>
                   </div>
 
-                  <div className="md:col-span-7 brutal-box p-4 bg-[#C084FC] text-black shadow-[6px_6px_0px_#000] border-4 border-black rounded-2xl grid grid-cols-3 gap-2 text-center font-bold items-center">
+                  <div className="safari-mix-counts">
                     <div>
-                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">SLOTS</span>
+                      <span>Explorers</span>
                       <span className="text-2xl brutal-font">{members.length}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">COLLISION</span>
+                      <span>Same-group overlaps</span>
                       <span className="text-2xl brutal-font">{totalSameCGOverlaps()}</span>
                     </div>
                     <div>
-                      <span className="block text-[8px] uppercase font-black text-purple-950 font-mono">TEAMS</span>
+                      <span>Animal herds</span>
                       <span className="text-2xl brutal-font">{finalTeams.length}</span>
                     </div>
                   </div>
@@ -1282,19 +1294,21 @@ export default function MixerPage() {
 
               {/* Teams cards Deck Grid */}
               {!isDealing && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {finalTeams.map((team) => (
+                <div className="safari-herd-camp-grid">
+                  {finalTeams.map((team, teamIndex) => (
                     <div
                       key={team.id}
-                      className="team-card brutal-box shadow-[8px_8px_0px_#000] rounded-2xl border-4 border-black overflow-hidden flex flex-col justify-between"
+                      className="team-card safari-generated-herd"
+                      style={{ "--team-accent": getTeamAccent(team.color, teamIndex) } as CSSProperties}
                     >
                       {/* Team Header */}
-                      <div className={`p-4 border-b-4 border-black flex justify-between items-center ${team.color}`}>
-                        <h4 className="brutal-font text-base md:text-lg uppercase tracking-tight flex items-center gap-1.5 truncate">
-                          <span>{getTeamEmoji(team.name)}</span> {team.name}
+                      <div className="safari-generated-herd-head">
+                        <TeamMark name={team.name} compact />
+                        <h4>
+                          <small>Herd {teamIndex + 1}</small>{getSafariTeamLabel(team.name)}
                         </h4>
-                        <span className="bg-black text-[#FFFDF5] text-[9px] font-mono font-black px-2.5 py-1 border border-black uppercase tracking-wider shrink-0 shadow-[1px_1px_0px_#000]">
-                          {team.members.length} P
+                        <span>
+                          {team.members.length} explorers
                         </span>
                       </div>
 
@@ -1327,8 +1341,8 @@ export default function MixerPage() {
 
       {/* Bulk Import Modal dialog box */}
       {showBulkModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl brutal-box bg-white text-black p-6 md:p-8 shadow-[12px_12px_0px_#000] border-4 border-black rounded-3xl relative">
+        <div className="safari-modal-backdrop">
+          <div className="safari-import-tent" role="dialog" aria-modal="true" aria-labelledby="import-roster-title">
             <button
               onClick={() => {
                 setShowBulkModal(false);
@@ -1338,8 +1352,8 @@ export default function MixerPage() {
             >
               ×
             </button>
-            <h3 className="brutal-font text-xl md:text-2xl mb-3 uppercase text-[#38BDF8] border-b-2 border-black pb-2">
-              📥 IMPORT ROSTER SPREADSHEET
+            <h3 id="import-roster-title" className="brutal-font text-xl md:text-2xl mb-3 uppercase text-[#243028] border-b-2 border-black pb-2">
+              Bring in the explorer manifest
             </h3>
             
             <p className="text-[10px] font-bold text-zinc-500 mb-4 leading-relaxed uppercase">
@@ -1372,7 +1386,7 @@ export default function MixerPage() {
                 onClick={handleBulkImport}
                 className="brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs px-5 py-3 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer"
               >
-                Parse & Import 🚀
+                Import explorers
               </button>
             </div>
           </div>
@@ -1381,13 +1395,13 @@ export default function MixerPage() {
 
       {/* Presentation Showcase Modal Overlay (Ticket style) */}
       {showShowcase && finalTeams.length > 0 && (
-        <div className="safari-world fixed inset-0 z-50 overflow-y-auto p-4 md:p-10 flex flex-col justify-between selection:bg-[#F4B942] selection:text-[#243028]">
+        <div className="safari-control-overlay">
           <div className="max-w-7xl mx-auto w-full space-y-6">
             
             {/* Header section ticket layout */}
             <div className="safari-expedition-pass brutal-box text-[#243028] p-5 rounded-3xl shadow-[12px_12px_0px_#243028] border-8 border-[#243028] flex flex-col items-center gap-4 relative">
-              <span className="safari-leaf-marker top-3 left-3" aria-hidden="true">🌿</span>
-              <span className="safari-leaf-marker top-3 right-3" aria-hidden="true">🦜</span>
+              <span className="safari-leaf-marker top-3 left-3" aria-hidden="true" />
+              <span className="safari-leaf-marker top-3 right-3" aria-hidden="true" />
 
               <div className="flex justify-between items-center w-full border-b-4 border-black pb-3">
                 <span className="font-mono text-xs text-green-650 uppercase tracking-widest flex items-center gap-2 font-black">
@@ -1458,7 +1472,7 @@ export default function MixerPage() {
                     )}
                   </div>
                   <span className="text-[9px] text-black font-black uppercase tracking-widest font-mono">
-                    🐾 SCAN THE TRAIL
+                    Scan the trail
                   </span>
                   <span className="text-[6px] text-zinc-500 font-mono mt-1">ADMIT ONE // SERIAL: CG-9957</span>
                 </div>
@@ -1473,26 +1487,26 @@ export default function MixerPage() {
               <div className="safari-scoreboard-header flex flex-col gap-4 border-b-4 border-[#243028] px-5 py-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center border-2 border-[#FFFDF5] bg-[#FACC15] text-xl text-black shadow-[3px_3px_0px_#38BDF8]">
-                    🦁
+                    <span aria-hidden="true">L</span>
                   </span>
                   <div>
                     <p className="font-mono text-[9px] font-black uppercase tracking-[0.28em] text-[#38BDF8]">
                       Safari ranger control / audience trail
                     </p>
                     <h3 id="live-scoreboard-title" className="brutal-font text-xl uppercase tracking-wide sm:text-2xl">
-                      Safari crown scoreboard
+                      Pride Rock points ceremony
                     </h3>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="border-2 border-[#FFFDF5] bg-[#FACC15] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_#38BDF8]">
-                    First to {SCORE_TARGET} paws
+                    First to {SCORE_TARGET} points
                   </span>
                   <p aria-live="polite" className="border-2 border-[#FFFDF5] bg-[#27272A] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider">
                     {topScore > 0
                       ? leadMargin > 0
                         ? `👑 ${getSafariTeamLabel(rankedTeams[0]?.name ?? "")} leads by ${leadMargin}`
-                        : `🐾 Trails tied • ${topScore} paws`
+                        : `Trails tied • ${topScore} points`
                       : "● Trail ready • Safari 01"}
                   </p>
                   <button
@@ -1517,7 +1531,7 @@ export default function MixerPage() {
                   <p className="font-mono text-[9px] font-black uppercase tracking-wider">
                     {hasChampion
                       ? `🏁 ${getSafariTeamLabel(leaderTeam?.name ?? "")} reached the pride rock`
-                      : `${Math.max(0, SCORE_TARGET - topScore)} paws to the crown`}
+                      : `${Math.max(0, SCORE_TARGET - topScore)} points to the crown`}
                   </p>
                 </div>
 
@@ -1533,7 +1547,7 @@ export default function MixerPage() {
                         </span>
                         <p className="font-mono text-[9px] font-black uppercase tracking-[0.25em]">Pride rock</p>
                         <h4 className="mt-1 pr-24 brutal-font text-3xl uppercase leading-none tracking-wide sm:text-4xl">
-                          {getTeamEmoji(leaderTeam.name)} {getSafariTeamLabel(leaderTeam.name)}
+                          <TeamMark name={leaderTeam.name} compact /> {getSafariTeamLabel(leaderTeam.name)}
                         </h4>
                       </div>
 
@@ -1550,7 +1564,7 @@ export default function MixerPage() {
                           <span className="brutal-font text-7xl leading-[0.82] tracking-wider text-[#FACC15] sm:text-8xl xl:text-9xl">
                             {String(topScore).padStart(3, "0")}
                           </span>
-                          <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#B7DF77]">PAW PTS</span>
+                          <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#B7DF77]">POINTS</span>
                         </div>
                         <div className="safari-trail-progress mt-5 h-7 overflow-hidden border-4 border-[#243028]">
                           <div
@@ -1566,7 +1580,7 @@ export default function MixerPage() {
 
                       <div className="border-t-4 border-black bg-[#FFFDF5]">
                         <p className="border-b-2 border-black bg-[#38BDF8] px-3 py-2 text-center font-mono text-[8px] font-black uppercase tracking-[0.24em]">
-                          Award paws to {getSafariTeamLabel(leaderTeam.name)}
+                          Award points to {getSafariTeamLabel(leaderTeam.name)}
                         </p>
                         <ScoreAwardControls team={leaderTeam} onAward={updateTeamScore} />
                       </div>
@@ -1589,14 +1603,14 @@ export default function MixerPage() {
                               <div className="min-w-0">
                                 <p className="font-mono text-[8px] font-black uppercase tracking-[0.2em]">On the trail</p>
                                 <h4 className="truncate brutal-font text-lg uppercase tracking-wide">
-                                  {getTeamEmoji(team.name)} {getSafariTeamLabel(team.name)}
+                                  <TeamMark name={team.name} compact /> {getSafariTeamLabel(team.name)}
                                 </h4>
                               </div>
                             </div>
 
                             <div className="flex flex-col justify-center bg-[#18181B] p-4 text-[#FFFDF5]">
                               <div className="mb-2 flex items-center justify-between font-mono text-[8px] font-black uppercase tracking-wider text-zinc-400">
-                                <span>{gapToLeader === 0 ? "Level with pride leader" : `${gapToLeader} paws behind`}</span>
+                                <span>{gapToLeader === 0 ? "Level with pride leader" : `${gapToLeader} points behind`}</span>
                                 <span>{Math.round(targetProgress)}% to crown</span>
                               </div>
                               <div className="h-5 overflow-hidden border-2 border-zinc-600 bg-black">
@@ -1615,7 +1629,7 @@ export default function MixerPage() {
                               <span className="brutal-font text-5xl leading-none tracking-wider text-[#FACC15]">
                                 {String(score).padStart(3, "0")}
                               </span>
-                              <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#B7DF77]">PAW</span>
+                              <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#B7DF77]">PTS</span>
                             </div>
                           </div>
 
@@ -1672,7 +1686,7 @@ export default function MixerPage() {
                       #{getTeamRank(team.id)}
                     </span>
                     <h3 className="brutal-font tracking-wide truncate flex items-center justify-center gap-2">
-                      <span>{getTeamEmoji(team.name)}</span> {team.name}
+                      <TeamMark name={team.name} compact /> {getSafariTeamLabel(team.name)}
                     </h3>
                     <span className="bg-black text-[#FFFDF5] text-[9px] font-mono px-2.5 py-0.5 border border-black uppercase font-black mt-2 inline-block shadow-[1px_1px_0px_#000]">
                       {team.members.length} PLAYERS
@@ -1719,7 +1733,7 @@ export default function MixerPage() {
       {toastMessage && (
         <div className="fixed bottom-8 right-8 z-50 animate-bounce">
           <div className="brutal-box bg-[#FACC15] text-black font-black uppercase text-xs px-6 py-4 border-4 border-black shadow-[6px_6px_0px_#000] rounded-xl">
-            ⚡ {toastMessage}
+            {toastMessage}
           </div>
         </div>
       )}
