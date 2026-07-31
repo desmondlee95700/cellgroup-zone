@@ -1214,37 +1214,30 @@ body {
   padding: clamp(3rem, 7vw, 6.5rem) clamp(.5rem, 2vw, 2rem) 3.5rem;
 }
 
-.safari-field-hero > div:first-child {
+.safari-field-hero-panel {
   position: relative;
-  z-index: 2;
-  isolation: isolate;
-  max-width: 52rem;
+  z-index: 4;
+  width: min(48rem, 100%);
   padding: 1.6rem 2rem 1.8rem;
-}
-
-.safari-field-hero > div:first-child::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: -.35rem -.8rem -.5rem -1rem;
   border: 5px solid var(--safari-ink);
   border-radius: 3.5rem 7rem 4.5rem 2.5rem;
-  background: rgba(255, 243, 196, .96);
-  box-shadow: 9px 9px 0 rgba(36, 48, 40, .88);
-  transform: rotate(-.45deg);
+  background: #fff3c4;
+  box-shadow: 10px 10px 0 var(--safari-ink);
 }
 
-.safari-field-hero h1 {
-  max-width: 14ch;
+.safari-field-title {
+  display: grid;
   margin: 0;
-  font-size: clamp(2.8rem, 5.4vw, 4.9rem);
-  line-height: .94;
-  letter-spacing: -.035em;
-  text-wrap: balance;
+  color: #243028;
+  font-size: clamp(2.5rem, 4.35vw, 4.2rem);
+  line-height: .98;
+  letter-spacing: -.025em;
   text-shadow: 3px 3px 0 #f4b942;
 }
 
-.safari-field-hero > div:first-child > p:last-child {
+.safari-field-title span { display: block; }
+
+.safari-field-intro {
   max-width: 40rem;
   margin: 1.05rem 0 0;
   color: #143525;
@@ -1502,8 +1495,7 @@ body {
   .safari-field-brand { justify-self: end; }
   .safari-field-brand span, .safari-field-open { display: none; }
   .safari-field-hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem .25rem 3rem; }
-  .safari-field-hero > div:first-child { padding: 1.35rem 1.25rem 1.5rem; }
-  .safari-field-hero > div:first-child::before { inset: -.25rem; border-radius: 2.2rem 4rem 3rem 1.8rem; }
+  .safari-field-hero-panel { padding: 1.35rem 1.25rem 1.5rem; border-radius: 2.2rem 4rem 3rem 1.8rem; }
   .safari-field-binoculars { display: none; }
   .safari-mission-picker [role="tablist"] { grid-template-columns: 1fr; }
   .safari-journal-heading { align-items: flex-start; }
@@ -1514,8 +1506,8 @@ body {
   .safari-field-back { padding: .55rem .65rem; font-size: .58rem; }
   .safari-field-brand-mark { width: 2.7rem; }
   .safari-field-brand strong { font-size: .78rem; }
-  .safari-field-hero h1 { font-size: clamp(2.3rem, 11vw, 3.35rem); }
-  .safari-field-hero > div:first-child > p:last-child { font-size: .9rem; }
+  .safari-field-title { font-size: clamp(2.15rem, 10vw, 3.1rem); }
+  .safari-field-intro { font-size: .9rem; }
   .safari-mission-picker button { grid-template-columns: 3.7rem minmax(0, 1fr); }
   .safari-mission-picker button > b { display: none; }
   .safari-mission-badge { width: 3.7rem; }

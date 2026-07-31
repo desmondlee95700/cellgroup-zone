@@ -158,10 +158,10 @@ export default function GamesPage() {
       </nav>
 
       <header className="safari-field-hero field-reveal">
-        <div>
+        <div className="safari-field-hero-panel">
           <p className="safari-eyebrow">TODAY&apos;S WILD CHALLENGES</p>
-          <h1 className="brutal-font">Lead the room into the wild.</h1>
-          <p>Pick an expedition, brief every explorer, then test the action before the real game begins.</p>
+          <h1 className="safari-field-title brutal-font"><span>Lead the room</span><span>into the wild.</span></h1>
+          <p className="safari-field-intro">Pick an expedition, brief every explorer, then test the action before the real game begins.</p>
         </div>
         <div className="safari-field-binoculars" aria-hidden="true">
           <span /><span /><i /><b />
