@@ -228,6 +228,53 @@ h1, h2, h3, .brutal-font {
   box-shadow: 2px 2px 0px #000;
 }
 
+/* Live scoreboard feedback */
+.score-reel {
+  position: relative;
+  overflow: hidden;
+}
+
+.score-reel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.08),
+    transparent 46%,
+    rgba(0, 0, 0, 0.45) 48%,
+    rgba(0, 0, 0, 0.45) 52%,
+    transparent 54%
+  );
+}
+
+.score-pop {
+  animation: score-pop 0.5s cubic-bezier(0.2, 0.9, 0.25, 1.35);
+}
+
+.score-leader-card {
+  animation: leader-signal 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes score-pop {
+  0% { transform: scale(0.86) rotate(-1deg); filter: brightness(1); }
+  45% { transform: scale(1.09) rotate(1deg); filter: brightness(1.65); }
+  100% { transform: scale(1) rotate(0); filter: brightness(1); }
+}
+
+@keyframes leader-signal {
+  from { box-shadow: 6px 6px 0 #000; }
+  to { box-shadow: 6px 6px 0 #000, 0 0 0 5px #FACC15, 0 0 22px rgba(250, 204, 21, 0.9); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-pop,
+  .score-leader-card {
+    animation: none;
+  }
+}
+
 /* Ticket tear styling with rounded side notches */
 .ticket-tear {
   position: relative;
@@ -333,5 +380,4 @@ h1, h2, h3, .brutal-font {
   88% { clip: rect(87px, 9999px, 23px, 0); }
   100% { clip: rect(14px, 9999px, 56px, 0); }
 }
-
 

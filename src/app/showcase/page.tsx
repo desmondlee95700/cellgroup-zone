@@ -16,7 +16,10 @@ interface TeamData {
   name: string;
   members: TeamMember[];
   color: string;
+  score?: number;
 }
+
+const SCORE_TARGET = 300;
 
 const CG_COLORS = [
   'bg-[#38BDF8]', // Blue
@@ -162,6 +165,17 @@ function ShowcaseContent() {
   }, [teams, broadcastMode]);
 
   const cleanQuery = filterQuery.trim().toLowerCase();
+  const rankedTeams = [...teams].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const topScore = rankedTeams[0]?.score ?? 0;
+  const runnerUpScore = rankedTeams[1]?.score ?? 0;
+  const leadMargin = Math.max(0, topScore - runnerUpScore);
+  const leaderTeam = rankedTeams[0];
+  const challengerTeams = rankedTeams.slice(1);
+  const leaderTargetProgress = Math.min(100, (topScore / SCORE_TARGET) * 100);
+
+  const getTeamRank = (teamName: string) => {
+    return rankedTeams.findIndex((team) => team.name === teamName) + 1;
+  };
 
   return (
     <div ref={containerRef} className="space-y-8">
@@ -220,6 +234,108 @@ function ShowcaseContent() {
         </div>
       )}
 
+      {/* Audience-first live standings board */}
+      {teams.length > 0 && (
+        <section
+          aria-labelledby="audience-standings-title"
+          className="brutal-box overflow-hidden rounded-3xl border-8 border-black bg-[#FFFDF5] text-black shadow-[12px_12px_0px_#000]"
+        >
+          <div className="flex flex-col gap-4 border-b-4 border-black bg-[#FACC15] px-5 py-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <span className="mb-2 inline-block border-2 border-black bg-black px-2 py-1 font-mono text-[8px] font-black uppercase tracking-[0.25em] text-[#38BDF8] shadow-[2px_2px_0px_#FFFDF5]">
+                Live from the games floor
+              </span>
+              <h2 id="audience-standings-title" className="brutal-font text-3xl uppercase tracking-wide sm:text-5xl">
+                Point arena
+              </h2>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="border-4 border-black bg-black px-4 py-3 font-mono text-[9px] font-black uppercase tracking-wider text-[#FACC15] shadow-[4px_4px_0px_#38BDF8]">
+                First to {SCORE_TARGET}
+              </span>
+              <div className="border-4 border-black bg-[#FFFDF5] px-4 py-3 font-mono text-[9px] font-black uppercase tracking-wider shadow-[4px_4px_0px_#000]">
+                {topScore > 0
+                  ? leadMargin > 0
+                    ? `👑 ${rankedTeams[0]?.name} leads by ${leadMargin}`
+                    : `⚔️ Tie at the top • ${topScore} points`
+                  : "● Scores armed • Waiting for round 01"}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 bg-[#FFFDF5] p-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)] md:p-6">
+            {leaderTeam && (
+              <article className={`overflow-hidden border-4 border-black bg-[#18181B] shadow-[8px_8px_0px_#000] ${topScore > 0 ? "score-leader-card" : ""}`}>
+                <div className={`relative border-b-4 border-black p-5 ${leaderTeam.color || "bg-yellow-400 text-black"}`}>
+                  <span className="absolute right-4 top-4 border-2 border-black bg-[#FFFDF5] px-3 py-1 font-mono text-[8px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
+                    {topScore >= SCORE_TARGET ? "Champion" : topScore > 0 ? "Current leader" : "Starting grid"}
+                  </span>
+                  <span className="mb-6 flex h-16 w-16 items-center justify-center border-4 border-black bg-[#FFFDF5] brutal-font text-4xl shadow-[4px_4px_0px_#000]">1</span>
+                  <p className="font-mono text-[8px] font-black uppercase tracking-[0.25em]">Score to beat</p>
+                  <h3 className="mt-1 pr-24 brutal-font text-3xl uppercase tracking-wide sm:text-4xl">
+                    {getTeamEmoji(leaderTeam.name)} {leaderTeam.name}
+                  </h3>
+                </div>
+                <div className="p-5 text-[#FFFDF5] md:p-7">
+                  <div className="score-reel flex items-end justify-between border-4 border-zinc-600 bg-black px-5 py-5 shadow-[inset_0_0_0_3px_#27272A]">
+                    <span className="brutal-font text-7xl leading-[0.82] tracking-wider text-[#FACC15] sm:text-8xl xl:text-9xl">
+                      {String(topScore).padStart(3, "0")}
+                    </span>
+                    <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#38BDF8]">PTS</span>
+                  </div>
+                  <div className="mt-5 h-7 overflow-hidden border-4 border-zinc-600 bg-black">
+                    <div className={`h-full border-r-4 border-black ${leaderTeam.color || "bg-yellow-400"}`} style={{ width: `${leaderTargetProgress}%` }} />
+                  </div>
+                  <div className="mt-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-wider">
+                    <span>{Math.round(leaderTargetProgress)}% of target</span>
+                    <span>{leadMargin > 0 ? `+${leadMargin} ahead` : "Tied at top"}</span>
+                  </div>
+                </div>
+              </article>
+            )}
+
+            <div className="space-y-4">
+              {challengerTeams.map((team, rankIndex) => {
+                const score = team.score ?? 0;
+                const targetProgress = Math.min(100, (score / SCORE_TARGET) * 100);
+                const gapToLeader = Math.max(0, topScore - score);
+
+                return (
+                  <article key={team.name} className="overflow-hidden border-4 border-black bg-white shadow-[6px_6px_0px_#000]">
+                    <div className="grid grid-cols-1 md:grid-cols-[180px_minmax(0,1fr)_180px]">
+                      <div className={`flex items-center gap-3 border-b-4 border-black p-4 md:border-b-0 md:border-r-4 ${team.color || "bg-yellow-400 text-black"}`}>
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-black bg-[#FFFDF5] brutal-font text-2xl shadow-[3px_3px_0px_#000]">{rankIndex + 2}</span>
+                        <div className="min-w-0">
+                          <p className="font-mono text-[7px] font-black uppercase tracking-[0.2em]">Challenger</p>
+                          <h3 className="truncate brutal-font text-base uppercase tracking-wide">{getTeamEmoji(team.name)} {team.name.replace(/^Team\s+/i, "")}</h3>
+                        </div>
+                      </div>
+                      <div className="flex flex-col justify-center bg-[#18181B] p-4 text-[#FFFDF5]">
+                        <div className="mb-2 flex justify-between font-mono text-[8px] font-black uppercase tracking-wider text-zinc-400">
+                          <span>{gapToLeader === 0 ? "Level with leader" : `${gapToLeader} behind`}</span>
+                          <span>{Math.round(targetProgress)}%</span>
+                        </div>
+                        <div className="h-5 overflow-hidden border-2 border-zinc-600 bg-black">
+                          <div className={`h-full border-r-2 border-black ${team.color || "bg-yellow-400"}`} style={{ width: `${targetProgress}%` }} />
+                        </div>
+                      </div>
+                      <div className="score-reel flex items-end justify-between border-t-4 border-black bg-black px-4 py-4 text-[#FFFDF5] md:border-l-4 md:border-t-0">
+                        <span className="brutal-font text-5xl leading-none tracking-wider text-[#FACC15]">{String(score).padStart(3, "0")}</span>
+                        <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#38BDF8]">PTS</span>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t-4 border-black bg-[#38BDF8] px-5 py-3 text-center font-mono text-[8px] font-black uppercase tracking-[0.16em]">
+            Round win +100 <span aria-hidden="true">◆</span> Runner-up +60 <span aria-hidden="true">◆</span> Team spirit +25 <span aria-hidden="true">◆</span> Penalty −10
+          </div>
+        </section>
+      )}
+
       {/* RENDER MODE A: Auditorium Broadcast Carousel (Giant Center Cards) */}
       {broadcastMode && teams.length > 0 && (
         <div className="max-w-3xl mx-auto space-y-6">
@@ -239,9 +355,14 @@ function ShowcaseContent() {
                 <span>{getTeamEmoji(teams[activeBroadcastIdx].name)}</span>
                 {teams[activeBroadcastIdx].name}
               </h2>
-              <span className="bg-black text-[#FFFDF5] text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase mt-3 inline-block shadow-[2px_2px_0px_#000]">
-                {teams[activeBroadcastIdx].members.length} MEMBERS ALLOCATED
-              </span>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <span className="bg-black text-[#FFFDF5] text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase inline-block shadow-[2px_2px_0px_#000]">
+                  {teams[activeBroadcastIdx].members.length} MEMBERS ALLOCATED
+                </span>
+                <span className="bg-[#FFFDF5] text-black text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase inline-block shadow-[2px_2px_0px_#000]">
+                  RANK #{getTeamRank(teams[activeBroadcastIdx].name)} • {String(teams[activeBroadcastIdx].score ?? 0).padStart(3, "0")} PTS
+                </span>
+              </div>
             </div>
 
             {/* Large layout member list */}
@@ -314,7 +435,7 @@ function ShowcaseContent() {
       {/* RENDER MODE B: Standard Grid View */}
       {!broadcastMode && teams.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {teams.map((team, idx) => (
+          {rankedTeams.map((team, idx) => (
             <div
               key={idx}
               className="showcase-team-card brutal-box overflow-hidden shadow-[8px_8px_0px_#000] rounded-2xl border-4 border-black flex flex-col bg-white hover:-translate-y-1 hover:shadow-[12px_12px_0px_#000] transition-all duration-200"
@@ -325,9 +446,14 @@ function ShowcaseContent() {
                   <span>{getTeamEmoji(team.name)}</span>
                   {team.name}
                 </h3>
-                <span className="bg-black text-[#FFFDF5] text-[10px] px-2 py-0.5 border border-black uppercase font-bold mt-1 inline-block shadow-[1px_1px_0px_#000]">
-                  {team.members.length} players
-                </span>
+                <div className="mt-2 flex items-center justify-center gap-2">
+                  <span className="bg-black text-[#FFFDF5] text-[10px] px-2 py-0.5 border border-black uppercase font-bold inline-block shadow-[1px_1px_0px_#000]">
+                    #{idx + 1} rank
+                  </span>
+                  <span className="bg-[#FFFDF5] text-black text-[10px] px-2 py-0.5 border border-black uppercase font-bold inline-block shadow-[1px_1px_0px_#000]">
+                    {String(team.score ?? 0).padStart(3, "0")} pts
+                  </span>
+                </div>
               </div>
 
               {/* Members lists */}

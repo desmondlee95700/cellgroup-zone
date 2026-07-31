@@ -21,9 +21,55 @@ interface Team {
   name: string;
   members: Member[];
   color: string;
+  score?: number;
 }
 
 const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
+
+const SCORE_AWARDS = [
+  { label: "−10", delta: -10, title: "Penalty minus 10 points" },
+  { label: "+10", delta: 10, title: "Adjustment plus 10 points" },
+  { label: "+25", delta: 25, title: "Team spirit plus 25 points" },
+  { label: "+60", delta: 60, title: "Runner-up plus 60 points" },
+  { label: "+100", delta: 100, title: "Round win plus 100 points" },
+] as const;
+
+const SCORE_TARGET = 300;
+
+function ScoreAwardControls({
+  team,
+  onAward,
+  compact = false,
+}: {
+  team: Team;
+  onAward: (teamId: number, delta: number) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`grid grid-cols-5 gap-2 ${compact ? "p-2.5" : "p-3"}`}>
+      {SCORE_AWARDS.map((award) => (
+        <button
+          key={award.delta}
+          type="button"
+          title={award.title}
+          aria-label={`${award.title} for ${team.name}`}
+          onClick={() => onAward(team.id, award.delta)}
+          className={`tactile-btn-active border-2 border-black font-mono font-black shadow-[3px_3px_0px_#000] transition-colors focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#38BDF8] ${
+            compact ? "px-1 py-2 text-[9px]" : "px-2 py-3 text-[10px]"
+          } ${
+            award.delta < 0
+              ? "bg-[#EF4444] text-white hover:bg-red-600"
+              : award.delta === 100
+                ? "bg-[#FACC15] text-black hover:bg-yellow-300"
+                : "bg-white text-black hover:bg-[#38BDF8]"
+          }`}
+        >
+          {award.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const TEAM_COLOR_PALETTES = [
   "bg-[#FACC15] text-black", // Yellow
@@ -100,6 +146,7 @@ export default function MixerPage() {
   const [sheetUrl, setSheetUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
   const [showShowcase, setShowShowcase] = useState(false);
+  const [showTeamRosters, setShowTeamRosters] = useState(false);
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
@@ -110,6 +157,7 @@ export default function MixerPage() {
   const [isDealing, setIsDealing] = useState(false);
   const [dealIndex, setDealIndex] = useState(-1);
   const [activeTab, setActiveTab] = useState<"roster" | "teams">("roster");
+  const [scoreFlashTeamId, setScoreFlashTeamId] = useState<number | null>(null);
   
   // Notification Toast state
   const [toastMessage, setToastMessage] = useState("");
@@ -639,6 +687,7 @@ export default function MixerPage() {
       name: teamNames[i],
       members: [],
       color: TEAM_COLOR_PALETTES[i % TEAM_COLOR_PALETTES.length],
+      score: 0,
     }));
 
     const findSmallestGroupForMember = (targetCG: string): Team => {
@@ -693,6 +742,7 @@ export default function MixerPage() {
     const payload = finalTeams.map(t => ({
       name: t.name,
       color: t.color,
+      score: t.score ?? 0,
       members: t.members.map(m => ({ name: m.name, cg: m.cg }))
     }));
     return buildShowcaseShareUrl(window.location.origin, payload);
@@ -733,6 +783,53 @@ export default function MixerPage() {
     if (overlaps <= 2) return { grade: "🟢 A-TIER", text: "OPTIMALLY BALANCED", color: "bg-[#4ADE80]" };
     if (overlaps <= 5) return { grade: "🟡 B-TIER", text: "STABLE DISPERSION", color: "bg-[#FACC15]" };
     return { grade: "🔴 C-TIER", text: "CHAOTIC OVERLAPS", color: "bg-[#EF4444] text-white" };
+  };
+
+  const rankedTeams = [...finalTeams].sort((a, b) => {
+    const scoreDifference = (b.score ?? 0) - (a.score ?? 0);
+    return scoreDifference !== 0 ? scoreDifference : a.id - b.id;
+  });
+
+  const topScore = rankedTeams[0]?.score ?? 0;
+  const runnerUpScore = rankedTeams[1]?.score ?? 0;
+  const leadMargin = Math.max(0, topScore - runnerUpScore);
+  const leaderTeam = rankedTeams[0];
+  const challengerTeams = rankedTeams.slice(1);
+  const leaderTargetProgress = Math.min(100, (topScore / SCORE_TARGET) * 100);
+  const hasChampion = topScore >= SCORE_TARGET;
+
+  const getTeamRank = (teamId: number) => {
+    return rankedTeams.findIndex((team) => team.id === teamId) + 1;
+  };
+
+  const updateTeamScore = (teamId: number, delta: number) => {
+    const team = finalTeams.find((entry) => entry.id === teamId);
+    if (!team) return;
+
+    const nextScore = Math.max(0, (team.score ?? 0) + delta);
+    setFinalTeams((currentTeams) =>
+      currentTeams.map((entry) =>
+        entry.id === teamId ? { ...entry, score: nextScore } : entry
+      )
+    );
+    setScoreFlashTeamId(teamId);
+    window.setTimeout(() => setScoreFlashTeamId(null), 520);
+
+    if (delta > 0) {
+      playSynthSound(520 + Math.min(delta, 100) * 3, 0.12, "square");
+    } else {
+      playSynthSound(190, 0.12, "sawtooth");
+    }
+    showToast(`${team.name} ${delta > 0 ? "+" : ""}${delta} points`);
+  };
+
+  const resetAllScores = () => {
+    if (!window.confirm("Reset every team score to zero?")) return;
+    setFinalTeams((currentTeams) =>
+      currentTeams.map((team) => ({ ...team, score: 0 }))
+    );
+    playSynthSound(220, 0.18, "triangle");
+    showToast("Scoreboard reset. New round ready!");
   };
 
   // GSAP animations for active parts
@@ -1300,10 +1397,10 @@ export default function MixerPage() {
       {/* Presentation Showcase Modal Overlay (Ticket style) */}
       {showShowcase && finalTeams.length > 0 && (
         <div className="fixed inset-0 bg-[#18181B] bg-grid-pattern-dark z-50 overflow-y-auto p-6 md:p-12 flex flex-col justify-between selection:bg-black selection:text-[#FACC15]">
-          <div className="max-w-7xl mx-auto w-full space-y-8">
+          <div className="max-w-7xl mx-auto w-full space-y-6">
             
             {/* Header section ticket layout */}
-            <div className="brutal-box bg-[#FFFDF5] text-black p-6 md:p-8 rounded-3xl shadow-[12px_12px_0px_#000] border-8 border-black flex flex-col items-center gap-6 relative">
+            <div className="brutal-box bg-[#FFFDF5] text-black p-5 rounded-3xl shadow-[12px_12px_0px_#000] border-8 border-black flex flex-col items-center gap-4 relative">
               {/* Mechanical panel details */}
               <div className="screw top-3 left-3"></div>
               <div className="screw top-3 right-3"></div>
@@ -1311,7 +1408,7 @@ export default function MixerPage() {
               <div className="screw bottom-3 right-3"></div>
 
               {/* Cabinet Top bar */}
-              <div className="flex justify-between items-center w-full border-b-4 border-black pb-4 mb-2">
+              <div className="flex justify-between items-center w-full border-b-4 border-black pb-3">
                 <span className="font-mono text-xs text-green-650 uppercase tracking-widest flex items-center gap-2 font-black">
                   <span className="w-3 h-3 rounded-full bg-green-500 led-glow-green animate-pulse"></span>
                   • TRANSMITTING STAGE BROADCAST DECK
@@ -1327,23 +1424,23 @@ export default function MixerPage() {
                 </button>
               </div>
 
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8 w-full">
-                <div className="space-y-4 max-w-2xl text-center md:text-left">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                <div className="space-y-3 max-w-2xl text-center md:text-left">
                   <span className="bg-black text-[#FFFDF5] text-[10px] font-black px-3 py-1 border-2 border-black uppercase tracking-widest inline-block shadow-[2px_2px_0px_#000]">
                     AUDITORIUM SCREEN OVERLAY 📺
                   </span>
-                  <h2 className="brutal-font text-4xl sm:text-6xl text-black brutal-text-glow-yellow uppercase tracking-wider select-none leading-none">
-                    TEAM DISTRIBUTIONS
+                  <h2 className="brutal-font text-3xl sm:text-4xl text-black brutal-text-glow-yellow uppercase tracking-wider select-none leading-none">
+                    LIVE POINT ARENA
                   </h2>
-                  <p className="font-bold text-zinc-700 text-sm leading-relaxed max-w-xl">
-                    Cell Group shuffles complete. Review allocations below or scan the ticket QR code to launch search highlighting on your own phone device!
+                  <p className="font-bold text-zinc-700 text-xs leading-relaxed max-w-xl">
+                    Teams are locked in. Award points from the live control board, then scan the ticket to share the current standings and player allocations.
                   </p>
                 </div>
 
                 {/* QR Code Ticket Frame */}
-                <div className="ticket-tear brutal-box p-6 bg-[#FFFDF5] text-black border-4 border-black shadow-[6px_6px_0px_#000] flex flex-col items-center justify-center shrink-0 relative overflow-visible rounded-2xl w-52">
+                <div className="ticket-tear brutal-box p-3 bg-[#FFFDF5] text-black border-4 border-black shadow-[5px_5px_0px_#000] flex flex-col items-center justify-center shrink-0 relative overflow-visible rounded-2xl w-36">
                   {/* Decorative Ticket Barcode */}
-                  <div className="w-full flex justify-between h-4 px-2 mb-2 bg-white border border-zinc-200 py-0.5">
+                  <div className="w-full flex justify-between h-3 px-2 mb-1 bg-white border border-zinc-200 py-0.5">
                     <div className="w-1 h-full bg-black"></div>
                     <div className="w-2 h-full bg-black"></div>
                     <div className="w-0.5 h-full bg-black"></div>
@@ -1354,14 +1451,14 @@ export default function MixerPage() {
                     <div className="w-1.5 h-full bg-black"></div>
                   </div>
 
-                  <div className="bg-white p-2 border-4 border-black mb-2 relative z-0 w-36 h-36 flex items-center justify-center">
+                  <div className="bg-white p-1.5 border-4 border-black mb-1.5 relative z-0 w-24 h-24 flex items-center justify-center">
                     {canRenderShareQr ? (
                       <QRCodeSVG
                         value={shareUrl}
-                        size={112}
+                        size={80}
                         level="M"
                         marginSize={1}
-                        className="w-28 h-28 block select-none"
+                        className="w-20 h-20 block select-none"
                       />
                     ) : (
                       <div className="text-center px-2">
@@ -1387,8 +1484,201 @@ export default function MixerPage() {
               </div>
             </div>
 
+            {/* Live point control board */}
+            <section
+              aria-labelledby="live-scoreboard-title"
+              className="brutal-box overflow-hidden rounded-3xl border-8 border-black bg-[#FACC15] text-black shadow-[12px_12px_0px_#000]"
+            >
+              <div className="flex flex-col gap-4 border-b-4 border-black bg-black px-5 py-4 text-[#FFFDF5] md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center border-2 border-[#FFFDF5] bg-[#FACC15] text-xl text-black shadow-[3px_3px_0px_#38BDF8]">
+                    ⚡
+                  </span>
+                  <div>
+                    <p className="font-mono text-[9px] font-black uppercase tracking-[0.28em] text-[#38BDF8]">
+                      Score master / audience output
+                    </p>
+                    <h3 id="live-scoreboard-title" className="brutal-font text-xl uppercase tracking-wide sm:text-2xl">
+                      Zone cup scoreboard
+                    </h3>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="border-2 border-[#FFFDF5] bg-[#FACC15] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_#38BDF8]">
+                    First to {SCORE_TARGET}
+                  </span>
+                  <p aria-live="polite" className="border-2 border-[#FFFDF5] bg-[#27272A] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider">
+                    {topScore > 0
+                      ? leadMargin > 0
+                        ? `👑 ${rankedTeams[0]?.name} leads by ${leadMargin}`
+                        : `⚔️ Tie at the top • ${topScore} pts`
+                      : "● Board armed • Round 01"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={resetAllScores}
+                    className="tactile-btn-active border-2 border-[#FFFDF5] bg-[#EF4444] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_#FFFDF5] transition-transform hover:bg-red-600 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#38BDF8]"
+                  >
+                    Reset board
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-[#FFFDF5] p-4 md:p-6">
+                <div className="mb-5 flex flex-col gap-3 border-4 border-black bg-[#FACC15] px-4 py-3 shadow-[5px_5px_0px_#000] sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-lg text-[#FACC15]">🏆</span>
+                    <div>
+                      <p className="font-mono text-[8px] font-black uppercase tracking-[0.24em]">Championship target</p>
+                      <p className="brutal-font text-lg uppercase">{SCORE_TARGET} points takes the title</p>
+                    </div>
+                  </div>
+                  <p className="font-mono text-[9px] font-black uppercase tracking-wider">
+                    {hasChampion
+                      ? `🏁 ${leaderTeam?.name} cleared the target`
+                      : `${Math.max(0, SCORE_TARGET - topScore)} points remain to match point`}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)]">
+                  {leaderTeam && (
+                    <article className={`relative flex min-h-[500px] flex-col overflow-hidden border-4 border-black bg-[#18181B] shadow-[8px_8px_0px_#000] ${topScore > 0 ? "score-leader-card" : ""}`}>
+                      <div className={`relative border-b-4 border-black p-5 ${leaderTeam.color || "bg-yellow-400 text-black"}`}>
+                        <span className="absolute right-4 top-4 border-2 border-black bg-[#FFFDF5] px-3 py-1 font-mono text-[8px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#000]">
+                          {hasChampion ? "Champion" : topScore > 0 ? "Current leader" : "Starting grid"}
+                        </span>
+                        <span className="mb-5 flex h-16 w-16 items-center justify-center border-4 border-black bg-[#FFFDF5] brutal-font text-4xl shadow-[4px_4px_0px_#000]">
+                          1
+                        </span>
+                        <p className="font-mono text-[9px] font-black uppercase tracking-[0.25em]">Pole position</p>
+                        <h4 className="mt-1 pr-24 brutal-font text-3xl uppercase leading-none tracking-wide sm:text-4xl">
+                          {getTeamEmoji(leaderTeam.name)} {leaderTeam.name}
+                        </h4>
+                      </div>
+
+                      <div className="flex flex-1 flex-col justify-center p-5 text-[#FFFDF5] md:p-7">
+                        <div className="mb-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-[0.28em] text-zinc-400">
+                          <span>Score to beat</span>
+                          <span className="text-[#38BDF8]">Live feed</span>
+                        </div>
+                        <div
+                          aria-live="polite"
+                          aria-label={`${leaderTeam.name} has ${topScore} points`}
+                          className={`score-reel flex items-end justify-between border-4 border-zinc-600 bg-black px-5 py-5 shadow-[inset_0_0_0_3px_#27272A] ${scoreFlashTeamId === leaderTeam.id ? "score-pop" : ""}`}
+                        >
+                          <span className="brutal-font text-7xl leading-[0.82] tracking-wider text-[#FACC15] sm:text-8xl xl:text-9xl">
+                            {String(topScore).padStart(3, "0")}
+                          </span>
+                          <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#38BDF8]">PTS</span>
+                        </div>
+                        <div className="mt-5 h-7 overflow-hidden border-4 border-zinc-600 bg-zinc-900">
+                          <div
+                            className={`h-full border-r-4 border-black transition-[width] duration-500 ${leaderTeam.color || "bg-yellow-400"}`}
+                            style={{ width: `${leaderTargetProgress}%` }}
+                          />
+                        </div>
+                        <div className="mt-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-wider">
+                          <span>{Math.round(leaderTargetProgress)}% of title target</span>
+                          <span>{leadMargin > 0 ? `+${leadMargin} ahead` : "Tied at top"}</span>
+                        </div>
+                      </div>
+
+                      <div className="border-t-4 border-black bg-[#FFFDF5]">
+                        <p className="border-b-2 border-black bg-[#38BDF8] px-3 py-2 text-center font-mono text-[8px] font-black uppercase tracking-[0.24em]">
+                          Award points to {leaderTeam.name}
+                        </p>
+                        <ScoreAwardControls team={leaderTeam} onAward={updateTeamScore} />
+                      </div>
+                    </article>
+                  )}
+
+                  <div className="space-y-4">
+                    {challengerTeams.map((team, challengerIndex) => {
+                      const score = team.score ?? 0;
+                      const targetProgress = Math.min(100, (score / SCORE_TARGET) * 100);
+                      const gapToLeader = Math.max(0, topScore - score);
+
+                      return (
+                        <article key={team.id} className="overflow-hidden border-4 border-black bg-white shadow-[6px_6px_0px_#000]">
+                          <div className="grid grid-cols-1 md:grid-cols-[190px_minmax(0,1fr)_190px]">
+                            <div className={`flex items-center gap-3 border-b-4 border-black p-4 md:border-b-0 md:border-r-4 ${team.color || "bg-yellow-400 text-black"}`}>
+                              <span className="flex h-12 w-12 shrink-0 items-center justify-center border-3 border-black bg-[#FFFDF5] brutal-font text-2xl shadow-[3px_3px_0px_#000]">
+                                {challengerIndex + 2}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="font-mono text-[8px] font-black uppercase tracking-[0.2em]">Challenger</p>
+                                <h4 className="truncate brutal-font text-lg uppercase tracking-wide">
+                                  {getTeamEmoji(team.name)} {team.name.replace(/^Team\s+/i, "")}
+                                </h4>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col justify-center bg-[#18181B] p-4 text-[#FFFDF5]">
+                              <div className="mb-2 flex items-center justify-between font-mono text-[8px] font-black uppercase tracking-wider text-zinc-400">
+                                <span>{gapToLeader === 0 ? "Level with leader" : `${gapToLeader} behind leader`}</span>
+                                <span>{Math.round(targetProgress)}% to target</span>
+                              </div>
+                              <div className="h-5 overflow-hidden border-2 border-zinc-600 bg-black">
+                                <div
+                                  className={`h-full border-r-2 border-black transition-[width] duration-500 ${team.color || "bg-yellow-400"}`}
+                                  style={{ width: `${targetProgress}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            <div
+                              aria-live="polite"
+                              aria-label={`${team.name} has ${score} points`}
+                              className={`score-reel flex items-end justify-between border-t-4 border-black bg-black px-4 py-4 text-[#FFFDF5] md:border-l-4 md:border-t-0 ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}
+                            >
+                              <span className="brutal-font text-5xl leading-none tracking-wider text-[#FACC15]">
+                                {String(score).padStart(3, "0")}
+                              </span>
+                              <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#38BDF8]">PTS</span>
+                            </div>
+                          </div>
+
+                          <div className="border-t-4 border-black bg-zinc-100">
+                            <ScoreAwardControls team={team} onAward={updateTeamScore} compact />
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t-4 border-black bg-[#38BDF8] px-5 py-4 md:flex-row md:items-center md:justify-between">
+                <span className="w-fit border-2 border-black bg-black px-2 py-1 font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#FFFDF5] shadow-[2px_2px_0px_#FACC15]">
+                  Recommended scoring rhythm
+                </span>
+                <p className="font-mono text-[9px] font-black uppercase tracking-wider md:text-right">
+                  Round win +100 <span aria-hidden="true">◆</span> Runner-up +60 <span aria-hidden="true">◆</span> Team spirit +25 <span aria-hidden="true">◆</span> Penalty −10
+                </p>
+              </div>
+            </section>
+
+            {/* Secondary roster drawer keeps the main screen score-first */}
+            <div className="brutal-box flex flex-col gap-4 rounded-2xl border-4 border-black bg-[#FFFDF5] p-4 text-black shadow-[7px_7px_0px_#000] sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-mono text-[8px] font-black uppercase tracking-[0.25em] text-zinc-500">Secondary deck</p>
+                <h3 className="brutal-font text-xl uppercase">Player rosters</h3>
+              </div>
+              <p className="max-w-xl text-xs font-bold text-zinc-600">
+                Keep the projector focused on points. Open allocations only when players need to confirm their team.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowTeamRosters((visible) => !visible)}
+                aria-expanded={showTeamRosters}
+                className="tactile-btn-active shrink-0 border-2 border-black bg-[#38BDF8] px-5 py-3 font-mono text-[9px] font-black uppercase tracking-wider shadow-[3px_3px_0px_#000] hover:bg-sky-300 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#FACC15]"
+              >
+                {showTeamRosters ? "Hide rosters ↑" : `View ${members.length} players ↓`}
+              </button>
+            </div>
+
             {/* Showcase teams grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {showTeamRosters && <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {finalTeams.map((team, idx) => (
                 <div
                   key={idx}
@@ -1397,11 +1687,22 @@ export default function MixerPage() {
                   {/* Header card with team color */}
                   <div className={`p-5 border-b-4 border-black text-center font-black uppercase text-xl relative ${team.color || "bg-yellow-400 text-black"}`}>
                     <div className="absolute inset-x-0 top-0 h-1 bg-black/10"></div>
+                    <span className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center border-2 border-black bg-[#FFFDF5] font-mono text-[10px] font-black shadow-[2px_2px_0px_#000]">
+                      #{getTeamRank(team.id)}
+                    </span>
                     <h3 className="brutal-font tracking-wide truncate flex items-center justify-center gap-2">
                       <span>{getTeamEmoji(team.name)}</span> {team.name}
                     </h3>
                     <span className="bg-black text-[#FFFDF5] text-[9px] font-mono px-2.5 py-0.5 border border-black uppercase font-black mt-2 inline-block shadow-[1px_1px_0px_#000]">
                       {team.members.length} PLAYERS
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-b-4 border-black bg-[#18181B] px-5 py-3 text-[#FFFDF5]">
+                    <span className="font-mono text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400">Score total</span>
+                    <span className={`brutal-font text-3xl leading-none text-[#FACC15] ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}>
+                      {String(team.score ?? 0).padStart(3, "0")}
+                      <span className="ml-1 font-mono text-[8px] text-[#38BDF8]">PTS</span>
                     </span>
                   </div>
 
@@ -1427,7 +1728,7 @@ export default function MixerPage() {
                   </ul>
                 </div>
               ))}
-            </div>
+            </div>}
 
           </div>
         </div>
