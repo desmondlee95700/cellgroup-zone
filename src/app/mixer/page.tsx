@@ -9,6 +9,7 @@ import {
   buildShowcaseShareUrl,
   isShowcaseQrSafe,
 } from "@/lib/showcase-share";
+import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
 
 interface Member {
   id: string;
@@ -27,11 +28,11 @@ interface Team {
 const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
 
 const SCORE_AWARDS = [
-  { label: "−10", delta: -10, title: "Penalty minus 10 points" },
-  { label: "+10", delta: 10, title: "Adjustment plus 10 points" },
-  { label: "+25", delta: 25, title: "Team spirit plus 25 points" },
-  { label: "+60", delta: 60, title: "Runner-up plus 60 points" },
-  { label: "+100", delta: 100, title: "Round win plus 100 points" },
+  { label: "−10", delta: -10, title: "Mud pit penalty minus 10 paw points" },
+  { label: "+10", delta: 10, title: "Trail find plus 10 paw points" },
+  { label: "+25", delta: 25, title: "Wild spirit plus 25 paw points" },
+  { label: "+60", delta: 60, title: "Trailblazer plus 60 paw points" },
+  { label: "+100", delta: 100, title: "Crown hunt plus 100 paw points" },
 ] as const;
 
 const SCORE_TARGET = 300;
@@ -58,10 +59,10 @@ function ScoreAwardControls({
             compact ? "px-1 py-2 text-[9px]" : "px-2 py-3 text-[10px]"
           } ${
             award.delta < 0
-              ? "bg-[#EF4444] text-white hover:bg-red-600"
+              ? "bg-[#E8614D] text-white hover:bg-[#c84738]"
               : award.delta === 100
-                ? "bg-[#FACC15] text-black hover:bg-yellow-300"
-                : "bg-white text-black hover:bg-[#38BDF8]"
+                ? "bg-[#F4B942] text-[#243028] hover:bg-[#ffd96b]"
+                : "bg-[#FFF3C4] text-[#243028] hover:bg-[#B7DF77]"
           }`}
         >
           {award.label}
@@ -72,14 +73,14 @@ function ScoreAwardControls({
 }
 
 const TEAM_COLOR_PALETTES = [
-  "bg-[#FACC15] text-black", // Yellow
-  "bg-[#38BDF8] text-black", // Blue
-  "bg-[#F59E0B] text-black", // Orange
-  "bg-[#F87171] text-black", // Red
-  "bg-[#C084FC] text-black", // Purple
-  "bg-[#4ADE80] text-black", // Green
-  "bg-[#F472B6] text-black", // Pink
-  "bg-[#2DD4BF] text-black", // Teal
+  "bg-[#F4B942] text-[#243028]", // Lion gold
+  "bg-[#5CC8E8] text-[#243028]", // River blue
+  "bg-[#F2A85B] text-[#243028]", // Cheetah orange
+  "bg-[#E8614D] text-[#243028]", // Flamingo coral
+  "bg-[#B7DF77] text-[#243028]", // Fresh leaf
+  "bg-[#2E7D4D] text-[#FFF3C4]", // Canopy
+  "bg-[#E6D27A] text-[#243028]", // Savanna grass
+  "bg-[#79C8B5] text-[#243028]", // Lagoon
 ];
 
 function generateId(): string {
@@ -87,14 +88,14 @@ function generateId(): string {
 }
 
 const CG_COLORS = [
-  'bg-[#38BDF8]', // Blue
-  'bg-[#FACC15]', // Yellow
-  'bg-[#F59E0B]', // Orange
-  'bg-[#4ADE80]', // Green
-  'bg-[#F472B6]', // Pink
-  'bg-[#C084FC]', // Purple
-  'bg-[#2DD4BF]', // Teal
-  'bg-[#F87171]', // Red
+  'bg-[#5CC8E8]',
+  'bg-[#F4B942]',
+  'bg-[#F2A85B]',
+  'bg-[#B7DF77]',
+  'bg-[#E6D27A]',
+  'bg-[#79C8B5]',
+  'bg-[#D8A56F]',
+  'bg-[#E8614D]',
 ];
 
 const getGroupColor = (name: string) => {
@@ -107,18 +108,7 @@ const getGroupColor = (name: string) => {
   return CG_COLORS[index];
 };
 
-const getTeamEmoji = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("yellow")) return "🟡";
-  if (lower.includes("blue")) return "🔵";
-  if (lower.includes("orange")) return "🟠";
-  if (lower.includes("red")) return "🔴";
-  if (lower.includes("purple")) return "🟣";
-  if (lower.includes("green")) return "🟢";
-  if (lower.includes("pink")) return "🌸";
-  if (lower.includes("teal")) return "💎";
-  return "🎮";
-};
+const getTeamEmoji = (name: string) => getSafariTeamProfile(name).emoji;
 
 export default function MixerPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -820,7 +810,7 @@ export default function MixerPage() {
     } else {
       playSynthSound(190, 0.12, "sawtooth");
     }
-    showToast(`${team.name} ${delta > 0 ? "+" : ""}${delta} points`);
+    showToast(`${getSafariTeamLabel(team.name)} ${delta > 0 ? "+" : ""}${delta} paw points`);
   };
 
   const resetAllScores = () => {
@@ -829,7 +819,7 @@ export default function MixerPage() {
       currentTeams.map((team) => ({ ...team, score: 0 }))
     );
     playSynthSound(220, 0.18, "triangle");
-    showToast("Scoreboard reset. New round ready!");
+    showToast("Safari trail reset. A fresh expedition is ready!");
   };
 
   // GSAP animations for active parts
@@ -849,18 +839,18 @@ export default function MixerPage() {
   const canRenderShareQr = isShowcaseQrSafe(shareUrl);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black pb-24">
+    <div ref={containerRef} className="safari-world min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] pb-24">
       {/* Header Panel */}
-      <header className="bg-[#18181B] border-b-4 border-black py-10 px-6 text-center shadow-[0_6px_0px_#000] relative z-20">
+      <header className="safari-canopy-header border-b-4 border-[#243028] py-10 px-6 text-center shadow-[0_6px_0px_#243028] relative z-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <Link
             href="/"
-            className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-sm px-5 py-2.5 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5"
+            className="brutal-box bg-[#FFF3C4] text-[#243028] font-black uppercase text-sm px-5 py-2.5 border-2 border-[#243028] hover:bg-[#F4B942] transition-all shadow-[2px_2px_0px_#243028] active:translate-y-0.5"
           >
             ← ESC BACK
           </Link>
-          <h1 className="brutal-font text-3xl md:text-5xl text-[#FACC15] uppercase tracking-wider select-none">
-            🎲 DIGITAL TEAM SHUFFLER
+          <h1 className="safari-title-text brutal-font text-3xl md:text-5xl text-[#FFF3C4] uppercase tracking-wider select-none">
+            🐾 ANIMAL KINGDOM SHUFFLER
           </h1>
           {isAuthenticated && (
             <div className="flex gap-2">
@@ -955,7 +945,7 @@ export default function MixerPage() {
           <div className="brutal-box p-6 bg-white text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
             <div className="fold-corner-orange"></div>
             <h2 className="brutal-font text-xl md:text-2xl mb-4 uppercase text-[#F59E0B] border-b-2 border-black pb-2">
-              1. MEMBER INTAKE
+              1. EXPLORER CHECK-IN
             </h2>
             
             {/* Quick Add Form */}
@@ -1076,7 +1066,7 @@ export default function MixerPage() {
           <div className="brutal-box p-6 bg-[#FACC15] text-black shadow-[8px_8px_0px_#000] rounded-3xl border-4 border-black relative">
             <div className="fold-corner-orange"></div>
             <h2 className="brutal-font text-xl md:text-2xl mb-6 uppercase text-black border-b-2 border-black pb-2">
-              2. CONFIG MIXER
+              2. HERD SETTINGS
             </h2>
             
             <div className="space-y-6">
@@ -1126,7 +1116,7 @@ export default function MixerPage() {
                 disabled={members.length < 2 || isDealing}
                 className="w-full brutal-font text-lg bg-black text-[#FACC15] hover:text-[#fff] hover:bg-zinc-950 py-4 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000] cursor-pointer active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000]"
               >
-                {isDealing ? "MIXING & DEALING... 🎲" : "SPLIT TEAMS NOW 🎲"}
+                {isDealing ? "FORMING HERDS... 🐾" : "FORM ANIMAL CREWS 🐾"}
               </button>
             </div>
           </div>
@@ -1158,7 +1148,7 @@ export default function MixerPage() {
                   : "bg-gray-300 text-gray-600 hover:bg-gray-200 mt-2 h-13"
               }`}
             >
-              Shuffler Results 🚀
+              Safari crews 🐾
             </button>
           </div>
 
@@ -1396,11 +1386,11 @@ export default function MixerPage() {
 
       {/* Presentation Showcase Modal Overlay (Ticket style) */}
       {showShowcase && finalTeams.length > 0 && (
-        <div className="fixed inset-0 bg-[#18181B] bg-grid-pattern-dark z-50 overflow-y-auto p-6 md:p-12 flex flex-col justify-between selection:bg-black selection:text-[#FACC15]">
+        <div className="safari-world fixed inset-0 z-50 overflow-y-auto p-4 md:p-10 flex flex-col justify-between selection:bg-[#F4B942] selection:text-[#243028]">
           <div className="max-w-7xl mx-auto w-full space-y-6">
             
             {/* Header section ticket layout */}
-            <div className="brutal-box bg-[#FFFDF5] text-black p-5 rounded-3xl shadow-[12px_12px_0px_#000] border-8 border-black flex flex-col items-center gap-4 relative">
+            <div className="safari-expedition-pass brutal-box text-[#243028] p-5 rounded-3xl shadow-[12px_12px_0px_#243028] border-8 border-[#243028] flex flex-col items-center gap-4 relative">
               {/* Mechanical panel details */}
               <div className="screw top-3 left-3"></div>
               <div className="screw top-3 right-3"></div>
@@ -1411,7 +1401,7 @@ export default function MixerPage() {
               <div className="flex justify-between items-center w-full border-b-4 border-black pb-3">
                 <span className="font-mono text-xs text-green-650 uppercase tracking-widest flex items-center gap-2 font-black">
                   <span className="w-3 h-3 rounded-full bg-green-500 led-glow-green animate-pulse"></span>
-                  • TRANSMITTING STAGE BROADCAST DECK
+                  • LIVE FROM THE SAVANNA STAGE
                 </span>
                 <button
                   onClick={() => {
@@ -1420,20 +1410,20 @@ export default function MixerPage() {
                   }}
                   className="brutal-box bg-[#EF4444] text-white font-black text-xs px-5 py-2.5 border-4 border-black shadow-[3px_3px_0px_#000] hover:bg-red-600 uppercase flex items-center gap-1 active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                 >
-                  🚪 CLOSE DECK
+                  🧭 CLOSE SAFARI
                 </button>
               </div>
 
               <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
                 <div className="space-y-3 max-w-2xl text-center md:text-left">
                   <span className="bg-black text-[#FFFDF5] text-[10px] font-black px-3 py-1 border-2 border-black uppercase tracking-widest inline-block shadow-[2px_2px_0px_#000]">
-                    AUDITORIUM SCREEN OVERLAY 📺
+                    WILDLIFE GAMES • LIVE STANDINGS
                   </span>
                   <h2 className="brutal-font text-3xl sm:text-4xl text-black brutal-text-glow-yellow uppercase tracking-wider select-none leading-none">
-                    LIVE POINT ARENA
+                    ANIMAL KINGDOM
                   </h2>
                   <p className="font-bold text-zinc-700 text-xs leading-relaxed max-w-xl">
-                    Teams are locked in. Award points from the live control board, then scan the ticket to share the current standings and player allocations.
+                    Teams are on the trail. Award paw points from ranger control, then share the live Safari Crown standings.
                   </p>
                 </div>
 
@@ -1477,7 +1467,7 @@ export default function MixerPage() {
                     )}
                   </div>
                   <span className="text-[9px] text-black font-black uppercase tracking-widest font-mono">
-                    🎟️ SCAN MOBILE
+                    🐾 SCAN THE TRAIL
                   </span>
                   <span className="text-[6px] text-zinc-500 font-mono mt-1">ADMIT ONE // SERIAL: CG-9957</span>
                 </div>
@@ -1487,105 +1477,105 @@ export default function MixerPage() {
             {/* Live point control board */}
             <section
               aria-labelledby="live-scoreboard-title"
-              className="brutal-box overflow-hidden rounded-3xl border-8 border-black bg-[#FACC15] text-black shadow-[12px_12px_0px_#000]"
+                    className="safari-scoreboard brutal-box overflow-hidden rounded-3xl border-8 border-[#243028] text-[#243028] shadow-[12px_12px_0px_#243028]"
             >
-              <div className="flex flex-col gap-4 border-b-4 border-black bg-black px-5 py-4 text-[#FFFDF5] md:flex-row md:items-center md:justify-between">
+              <div className="safari-scoreboard-header flex flex-col gap-4 border-b-4 border-[#243028] px-5 py-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center border-2 border-[#FFFDF5] bg-[#FACC15] text-xl text-black shadow-[3px_3px_0px_#38BDF8]">
-                    ⚡
+                    🦁
                   </span>
                   <div>
                     <p className="font-mono text-[9px] font-black uppercase tracking-[0.28em] text-[#38BDF8]">
-                      Score master / audience output
+                      Safari ranger control / audience trail
                     </p>
                     <h3 id="live-scoreboard-title" className="brutal-font text-xl uppercase tracking-wide sm:text-2xl">
-                      Zone cup scoreboard
+                      Safari crown scoreboard
                     </h3>
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="border-2 border-[#FFFDF5] bg-[#FACC15] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_#38BDF8]">
-                    First to {SCORE_TARGET}
+                    First to {SCORE_TARGET} paws
                   </span>
                   <p aria-live="polite" className="border-2 border-[#FFFDF5] bg-[#27272A] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider">
                     {topScore > 0
                       ? leadMargin > 0
-                        ? `👑 ${rankedTeams[0]?.name} leads by ${leadMargin}`
-                        : `⚔️ Tie at the top • ${topScore} pts`
-                      : "● Board armed • Round 01"}
+                        ? `👑 ${getSafariTeamLabel(rankedTeams[0]?.name ?? "")} leads by ${leadMargin}`
+                        : `🐾 Trails tied • ${topScore} paws`
+                      : "● Trail ready • Safari 01"}
                   </p>
                   <button
                     type="button"
                     onClick={resetAllScores}
                     className="tactile-btn-active border-2 border-[#FFFDF5] bg-[#EF4444] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-white shadow-[3px_3px_0px_#FFFDF5] transition-transform hover:bg-red-600 focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-[#38BDF8]"
                   >
-                    Reset board
+                    Reset trail
                   </button>
                 </div>
               </div>
 
-              <div className="bg-[#FFFDF5] p-4 md:p-6">
-                <div className="mb-5 flex flex-col gap-3 border-4 border-black bg-[#FACC15] px-4 py-3 shadow-[5px_5px_0px_#000] sm:flex-row sm:items-center sm:justify-between">
+              <div className="safari-board-surface p-4 md:p-6">
+                <div className="safari-target-ribbon mb-5 flex flex-col gap-3 border-4 border-[#243028] px-4 py-3 shadow-[5px_5px_0px_#243028] sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-lg text-[#FACC15]">🏆</span>
                     <div>
-                      <p className="font-mono text-[8px] font-black uppercase tracking-[0.24em]">Championship target</p>
-                      <p className="brutal-font text-lg uppercase">{SCORE_TARGET} points takes the title</p>
+                      <p className="font-mono text-[8px] font-black uppercase tracking-[0.24em]">Safari crown target</p>
+                      <p className="brutal-font text-lg uppercase">{SCORE_TARGET} paw points earns the crown</p>
                     </div>
                   </div>
                   <p className="font-mono text-[9px] font-black uppercase tracking-wider">
                     {hasChampion
-                      ? `🏁 ${leaderTeam?.name} cleared the target`
-                      : `${Math.max(0, SCORE_TARGET - topScore)} points remain to match point`}
+                      ? `🏁 ${getSafariTeamLabel(leaderTeam?.name ?? "")} reached the pride rock`
+                      : `${Math.max(0, SCORE_TARGET - topScore)} paws to the crown`}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)]">
                   {leaderTeam && (
-                    <article className={`relative flex min-h-[500px] flex-col overflow-hidden border-4 border-black bg-[#18181B] shadow-[8px_8px_0px_#000] ${topScore > 0 ? "score-leader-card" : ""}`}>
+                    <article className={`safari-leader-card relative flex min-h-[500px] flex-col overflow-hidden border-4 border-[#243028] ${topScore > 0 ? "score-leader-card" : ""}`}>
                       <div className={`relative border-b-4 border-black p-5 ${leaderTeam.color || "bg-yellow-400 text-black"}`}>
                         <span className="absolute right-4 top-4 border-2 border-black bg-[#FFFDF5] px-3 py-1 font-mono text-[8px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#000]">
-                          {hasChampion ? "Champion" : topScore > 0 ? "Current leader" : "Starting grid"}
+                          {hasChampion ? "Safari crown" : topScore > 0 ? "Pride leader" : "Trailhead"}
                         </span>
                         <span className="mb-5 flex h-16 w-16 items-center justify-center border-4 border-black bg-[#FFFDF5] brutal-font text-4xl shadow-[4px_4px_0px_#000]">
                           1
                         </span>
-                        <p className="font-mono text-[9px] font-black uppercase tracking-[0.25em]">Pole position</p>
+                        <p className="font-mono text-[9px] font-black uppercase tracking-[0.25em]">Pride rock</p>
                         <h4 className="mt-1 pr-24 brutal-font text-3xl uppercase leading-none tracking-wide sm:text-4xl">
-                          {getTeamEmoji(leaderTeam.name)} {leaderTeam.name}
+                          {getTeamEmoji(leaderTeam.name)} {getSafariTeamLabel(leaderTeam.name)}
                         </h4>
                       </div>
 
                       <div className="flex flex-1 flex-col justify-center p-5 text-[#FFFDF5] md:p-7">
                         <div className="mb-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-[0.28em] text-zinc-400">
                           <span>Score to beat</span>
-                          <span className="text-[#38BDF8]">Live feed</span>
+                          <span className="text-[#B7DF77]">Live trail</span>
                         </div>
                         <div
                           aria-live="polite"
                           aria-label={`${leaderTeam.name} has ${topScore} points`}
-                          className={`score-reel flex items-end justify-between border-4 border-zinc-600 bg-black px-5 py-5 shadow-[inset_0_0_0_3px_#27272A] ${scoreFlashTeamId === leaderTeam.id ? "score-pop" : ""}`}
+                          className={`safari-score-reel score-reel flex items-end justify-between border-4 px-5 py-5 shadow-[inset_0_0_0_3px_#143525] ${scoreFlashTeamId === leaderTeam.id ? "score-pop" : ""}`}
                         >
                           <span className="brutal-font text-7xl leading-[0.82] tracking-wider text-[#FACC15] sm:text-8xl xl:text-9xl">
                             {String(topScore).padStart(3, "0")}
                           </span>
-                          <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#38BDF8]">PTS</span>
+                          <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#B7DF77]">PAW PTS</span>
                         </div>
-                        <div className="mt-5 h-7 overflow-hidden border-4 border-zinc-600 bg-zinc-900">
+                        <div className="safari-trail-progress mt-5 h-7 overflow-hidden border-4 border-[#243028]">
                           <div
                             className={`h-full border-r-4 border-black transition-[width] duration-500 ${leaderTeam.color || "bg-yellow-400"}`}
                             style={{ width: `${leaderTargetProgress}%` }}
                           />
                         </div>
                         <div className="mt-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-wider">
-                          <span>{Math.round(leaderTargetProgress)}% of title target</span>
-                          <span>{leadMargin > 0 ? `+${leadMargin} ahead` : "Tied at top"}</span>
+                          <span>{Math.round(leaderTargetProgress)}% to crown</span>
+                          <span>{leadMargin > 0 ? `+${leadMargin} trail lead` : "Tied at the rock"}</span>
                         </div>
                       </div>
 
                       <div className="border-t-4 border-black bg-[#FFFDF5]">
                         <p className="border-b-2 border-black bg-[#38BDF8] px-3 py-2 text-center font-mono text-[8px] font-black uppercase tracking-[0.24em]">
-                          Award points to {leaderTeam.name}
+                          Award paws to {getSafariTeamLabel(leaderTeam.name)}
                         </p>
                         <ScoreAwardControls team={leaderTeam} onAward={updateTeamScore} />
                       </div>
@@ -1606,17 +1596,17 @@ export default function MixerPage() {
                                 {challengerIndex + 2}
                               </span>
                               <div className="min-w-0">
-                                <p className="font-mono text-[8px] font-black uppercase tracking-[0.2em]">Challenger</p>
+                                <p className="font-mono text-[8px] font-black uppercase tracking-[0.2em]">On the trail</p>
                                 <h4 className="truncate brutal-font text-lg uppercase tracking-wide">
-                                  {getTeamEmoji(team.name)} {team.name.replace(/^Team\s+/i, "")}
+                                  {getTeamEmoji(team.name)} {getSafariTeamLabel(team.name)}
                                 </h4>
                               </div>
                             </div>
 
                             <div className="flex flex-col justify-center bg-[#18181B] p-4 text-[#FFFDF5]">
                               <div className="mb-2 flex items-center justify-between font-mono text-[8px] font-black uppercase tracking-wider text-zinc-400">
-                                <span>{gapToLeader === 0 ? "Level with leader" : `${gapToLeader} behind leader`}</span>
-                                <span>{Math.round(targetProgress)}% to target</span>
+                                <span>{gapToLeader === 0 ? "Level with pride leader" : `${gapToLeader} paws behind`}</span>
+                                <span>{Math.round(targetProgress)}% to crown</span>
                               </div>
                               <div className="h-5 overflow-hidden border-2 border-zinc-600 bg-black">
                                 <div
@@ -1629,12 +1619,12 @@ export default function MixerPage() {
                             <div
                               aria-live="polite"
                               aria-label={`${team.name} has ${score} points`}
-                              className={`score-reel flex items-end justify-between border-t-4 border-black bg-black px-4 py-4 text-[#FFFDF5] md:border-l-4 md:border-t-0 ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}
+                              className={`safari-score-reel score-reel flex items-end justify-between border-t-4 border-[#243028] px-4 py-4 text-[#FFF3C4] md:border-l-4 md:border-t-0 ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}
                             >
                               <span className="brutal-font text-5xl leading-none tracking-wider text-[#FACC15]">
                                 {String(score).padStart(3, "0")}
                               </span>
-                              <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#38BDF8]">PTS</span>
+                              <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#B7DF77]">PAW</span>
                             </div>
                           </div>
 
@@ -1650,10 +1640,10 @@ export default function MixerPage() {
 
               <div className="flex flex-col gap-3 border-t-4 border-black bg-[#38BDF8] px-5 py-4 md:flex-row md:items-center md:justify-between">
                 <span className="w-fit border-2 border-black bg-black px-2 py-1 font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#FFFDF5] shadow-[2px_2px_0px_#FACC15]">
-                  Recommended scoring rhythm
+                  Safari scoring guide
                 </span>
                 <p className="font-mono text-[9px] font-black uppercase tracking-wider md:text-right">
-                  Round win +100 <span aria-hidden="true">◆</span> Runner-up +60 <span aria-hidden="true">◆</span> Team spirit +25 <span aria-hidden="true">◆</span> Penalty −10
+                  Crown hunt +100 <span aria-hidden="true">◆</span> Trailblazer +60 <span aria-hidden="true">◆</span> Wild spirit +25 <span aria-hidden="true">◆</span> Mud pit −10
                 </p>
               </div>
             </section>

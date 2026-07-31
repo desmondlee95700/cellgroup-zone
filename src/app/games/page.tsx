@@ -16,10 +16,10 @@ export default function GamesPage() {
   const [poppedBalloons, setPoppedBalloons] = useState<boolean[]>([false, false, false, false, false, false]);
 
   const floatingShapes = [
-    { char: "🎮", color: "bg-[#FACC15]", x: "6%", y: "22%", rot: -15 },
-    { char: "🎲", color: "bg-[#38BDF8]", x: "88%", y: "28%", rot: 12 },
-    { char: "⭐", color: "bg-[#F59E0B]", x: "5%", y: "72%", rot: 8 },
-    { char: "🎈", color: "bg-[#F472B6]", x: "86%", y: "62%", rot: -10 },
+    { char: "🦁", color: "bg-[#F4B942]", x: "6%", y: "22%", rot: -15 },
+    { char: "🐘", color: "bg-[#5CC8E8]", x: "88%", y: "28%", rot: 12 },
+    { char: "🌿", color: "bg-[#B7DF77]", x: "5%", y: "72%", rot: 8 },
+    { char: "🦩", color: "bg-[#E8614D]", x: "86%", y: "62%", rot: -10 },
   ];
 
   const blanketSteps = [
@@ -160,13 +160,13 @@ export default function GamesPage() {
   return (
     <div
       ref={container}
-      className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white pb-24 relative overflow-x-hidden"
+      className="safari-world min-h-screen text-[#243028] pb-24 relative overflow-x-hidden"
     >
       {/* Floating background shapes */}
       {floatingShapes.map((shape, idx) => (
         <div
           key={idx}
-          className={`hidden md:flex floating-element fixed items-center justify-center w-14 h-14 border-4 border-black ${shape.color} rounded-xl shadow-[4px_4px_0px_#000] text-3xl z-0`}
+          className={`hidden md:flex floating-element fixed items-center justify-center w-14 h-14 border-4 border-[#243028] ${shape.color} rounded-xl shadow-[4px_4px_0px_#243028] text-3xl z-0`}
           style={{
             left: shape.x,
             top: shape.y,
@@ -179,7 +179,7 @@ export default function GamesPage() {
 
       {/* Console Header Panel */}
       <header className="gsap-reveal max-w-5xl mx-auto mt-8 px-4 sm:px-6 relative z-20">
-        <div className="terminal-header brutal-box bg-[#18181B] text-white p-6 sm:p-8 rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] relative">
+        <div className="terminal-header brutal-box p-6 sm:p-8 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
           <div className="screw top-3 left-3"></div>
           <div className="screw top-3 right-3"></div>
           <div className="screw bottom-3 left-3"></div>
@@ -188,25 +188,25 @@ export default function GamesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <Link
               href="/"
-              className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-xs px-4 py-2.5 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
+              className="brutal-box bg-[#FFF3C4] text-[#243028] font-black uppercase text-xs px-4 py-2.5 border-2 border-[#243028] hover:bg-[#F4B942] transition-all shadow-[2px_2px_0px_#243028] cursor-pointer"
             >
               ← ESC BACK
             </Link>
 
-            <h1 className="brutal-font text-3xl sm:text-5xl text-[#FACC15] drop-shadow-[3px_3px_0px_#000] uppercase tracking-wider inline-flex items-center gap-3">
-              <GameIcon className="w-10 h-8 text-[#FACC15]" />
-              GAME RULES
+            <h1 className="safari-title-text brutal-font text-3xl sm:text-5xl text-[#FFF3C4] uppercase tracking-wider inline-flex items-center gap-3">
+              <GameIcon className="w-10 h-8 text-[#F4B942]" />
+              SAFARI MISSIONS
             </h1>
 
             {/* LED Status Panel */}
             <div className="flex items-center gap-2.5 bg-black p-2.5 border border-zinc-800 rounded-lg">
               <div className="flex flex-col items-center gap-0.5">
                 <span className="w-2 h-2 rounded-full led-green led-glow-green"></span>
-                <span className="text-[6px] text-zinc-500 font-bold uppercase">SYS</span>
+                <span className="text-[6px] text-[#B7DF77] font-bold uppercase">TRAIL</span>
               </div>
               <div className="flex flex-col items-center gap-0.5">
                 <span className="w-2 h-2 rounded-full led-yellow led-glow-yellow animate-pulse"></span>
-                <span className="text-[6px] text-zinc-500 font-bold uppercase">VIDEO</span>
+                <span className="text-[6px] text-[#B7DF77] font-bold uppercase">REEL</span>
               </div>
             </div>
           </div>
@@ -224,45 +224,45 @@ export default function GamesPage() {
               onClick={() => handleTabChange("blanket")}
               className={`brutal-font text-sm sm:text-base px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] cursor-pointer whitespace-nowrap ${
                 activeTab === "blanket"
-                  ? "bg-[#FACC15] text-black h-15 -translate-y-1.5"
-                  : "bg-zinc-800 text-zinc-400 border-black hover:bg-zinc-700 hover:text-white h-13 mt-2"
+                  ? "bg-[#F4B942] text-[#243028] h-15 -translate-y-1.5"
+                  : "bg-[#2E7D4D] text-[#FFF3C4] border-[#243028] hover:bg-[#1D4A35] h-13 mt-2"
               }`}
             >
-              Blanket Name Game
+              Lion Lookout
             </button>
             <button
               onClick={() => handleTabChange("balloon")}
               className={`brutal-font text-sm sm:text-base px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] cursor-pointer whitespace-nowrap ${
                 activeTab === "balloon"
-                  ? "bg-[#38BDF8] text-black h-15 -translate-y-1.5"
-                  : "bg-zinc-800 text-zinc-400 border-black hover:bg-zinc-700 hover:text-white h-13 mt-2"
+                  ? "bg-[#5CC8E8] text-[#243028] h-15 -translate-y-1.5"
+                  : "bg-[#2E7D4D] text-[#FFF3C4] border-[#243028] hover:bg-[#1D4A35] h-13 mt-2"
               }`}
             >
-              Balloon Scatter
+              Flamingo Flock
             </button>
           </div>
 
           {/* Interactive Steps Manual Console Board */}
           <article className="group relative z-20">
-            <div className="bg-[#18181B] border-4 border-black border-b-0 py-5 px-6 flex items-center justify-between shadow-[8px_0px_0px_#000] rounded-t-2xl">
+            <div className="bg-[#1D4A35] border-4 border-[#243028] border-b-0 py-5 px-6 flex items-center justify-between shadow-[8px_0px_0px_#243028] rounded-t-2xl">
               <div>
                 <h2 className="brutal-font text-xl sm:text-2xl uppercase tracking-wider text-white">
-                  {activeTab === "blanket" ? "Blanket Name Game" : "Balloon Team Scatter"}
+                  {activeTab === "blanket" ? "Lion Lookout" : "Flamingo Flock"}
                 </h2>
                 <p className="text-zinc-400 font-bold tracking-widest text-[9px] sm:text-xs uppercase mt-0.5">
                   {activeTab === "blanket"
-                    ? "Icebreaker · Fast Reflexes · Quick Memory"
-                    : "Teamwork · Chaos · Coordination"}
+                    ? "Look · Leap · Roar"
+                    : "Flock · Find · Gather"}
                 </p>
               </div>
               <span className="font-mono text-xs font-black bg-black border border-zinc-700 text-zinc-400 px-2 py-1 rounded">
-                STAGE {activeTab === "blanket" ? "01" : "02"}
+                TRAIL {activeTab === "blanket" ? "01" : "02"}
               </span>
             </div>
 
             <div
               className={`brutal-box p-6 sm:p-8 border-4 border-black shadow-[8px_8px_0px_#000] rounded-b-3xl relative min-h-[300px] flex flex-col justify-between transition-colors duration-300 ${
-                activeTab === "blanket" ? "bg-[#FACC15]" : "bg-[#38BDF8]"
+                activeTab === "blanket" ? "bg-[#F4B942]" : "bg-[#5CC8E8]"
               }`}
             >
               {/* Corner accent decal */}
@@ -271,7 +271,7 @@ export default function GamesPage() {
               {/* Instructions Objective Header */}
               <div className="flex items-center justify-between border-b-2 border-black pb-3 mb-6">
                 <span className="text-[10px] font-black uppercase tracking-widest bg-black text-[#FFFDF5] px-2.5 py-1 border-2 border-black select-none">
-                  🎮 OBJECTIVE LOG
+                  🐾 MISSION CARD
                 </span>
                 <span className="font-mono text-xs font-black text-black">
                   STEP {activeStep + 1} / {activeSteps.length}

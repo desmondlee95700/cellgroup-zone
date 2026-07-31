@@ -7,22 +7,22 @@ import { useGSAP } from "@gsap/react";
 import GameIcon from "@/components/GameIcon";
 
 const DECORATIVE_SHAPES = [
-  { char: "⚡", color: "bg-[#FACC15]", x: "8%", y: "15%", rot: -15 },
-  { char: "🎲", color: "bg-[#F59E0B]", x: "88%", y: "20%", rot: 12 },
-  { char: "🃏", color: "bg-[#38BDF8]", x: "6%", y: "60%", rot: 10 },
-  { char: "🎈", color: "bg-[#F472B6]", x: "90%", y: "65%", rot: -8 },
-  { char: "⭐", color: "bg-[#4ADE80]", x: "80%", y: "88%", rot: 45 },
-  { char: "👾", color: "bg-[#C084FC]", x: "15%", y: "88%", rot: -20 },
+  { char: "🦁", color: "bg-[#F4B942]", x: "8%", y: "15%", rot: -15 },
+  { char: "🦒", color: "bg-[#B7DF77]", x: "88%", y: "20%", rot: 12 },
+  { char: "🐘", color: "bg-[#5CC8E8]", x: "6%", y: "60%", rot: 10 },
+  { char: "🦩", color: "bg-[#E8614D]", x: "90%", y: "65%", rot: -8 },
+  { char: "🌿", color: "bg-[#B7DF77]", x: "80%", y: "88%", rot: 45 },
+  { char: "🐾", color: "bg-[#F4B942]", x: "15%", y: "88%", rot: -20 },
 ];
 
 const DIAGNOSTIC_LOG_TEMPLATES = [
-  "LOBBY CONSOLE v2.0.5 INITIALIZING...",
-  "VERIFYING GRAPHICS OVERLAYS...",
-  "SYNCHRONIZING AUDIO BUFFER SYNTH...",
-  "CONNECTING STAGE BROADSHEET LED...",
-  "MOUNTING GAME SYSTEM ROSTER FILE...",
-  "CELL GROUP SHUFFLER GREEDY MODULE: ACTIVE",
-  "SYSTEM BOOT SUCCESSFUL! READY FOR PLAYERS."
+  "BASECAMP GATES SWINGING OPEN...",
+  "CHECKING THE SAVANNA TRAIL...",
+  "CALLING THE ANIMAL CREWS...",
+  "HANGING THE PRIDE ROCK BANNER...",
+  "PACKING THE PLAYER EXPEDITION LIST...",
+  "TEAM TRAIL SHUFFLER: READY",
+  "SAFARI BASECAMP OPEN! READY FOR EXPLORERS."
 ];
 
 export default function EntryLandingPage() {
@@ -233,11 +233,11 @@ export default function EntryLandingPage() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black py-12 px-6 flex flex-col items-center justify-center overflow-x-hidden relative"
+      className="safari-world min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] py-12 px-6 flex flex-col items-center justify-center overflow-x-hidden relative"
     >
       {/* Toast Alert popup */}
       {toastMessage && (
-        <div className="fixed top-8 z-50 brutal-box bg-[#FACC15] text-black font-black uppercase px-6 py-3 border-4 border-black text-sm shadow-[6px_6px_0px_#000] animate-bounce">
+        <div className="fixed top-8 z-50 brutal-box bg-[#F4B942] text-[#243028] font-black uppercase px-6 py-3 border-4 border-[#243028] text-sm shadow-[6px_6px_0px_#243028] animate-bounce">
           {toastMessage}
         </div>
       )}
@@ -246,44 +246,43 @@ export default function EntryLandingPage() {
       {bootStage !== "done" && (
         <div
           ref={bootOverlayRef}
-          className="fixed inset-0 bg-[#18181B] z-50 flex flex-col items-center justify-center crt-overlay p-6"
+          className="safari-world fixed inset-0 z-50 flex flex-col items-center justify-center p-6"
         >
           {/* Main Bezel Container */}
-          <div className="max-w-xl w-full text-center space-y-6 bg-[#27272A] border-8 border-black rounded-3xl p-6 md:p-8 shadow-[12px_12px_0px_#000] relative">
+          <div className="safari-expedition-pass max-w-xl w-full text-center space-y-6 border-8 border-[#243028] rounded-3xl p-6 md:p-8 shadow-[12px_12px_0px_#243028] relative">
             <div className="screw top-3 left-3"></div>
             <div className="screw top-3 right-3"></div>
             <div className="screw bottom-3 left-3"></div>
             <div className="screw bottom-3 right-3"></div>
             
             <div className="space-y-2">
-              <span className="bg-[#F59E0B] text-black font-black px-3 py-1 border-2 border-black text-xs uppercase tracking-widest inline-block transform -rotate-1 shadow-[2px_2px_0px_#000]">
-                SYSTEM READY
+              <span className="bg-[#F4B942] text-[#243028] font-black px-3 py-1 border-2 border-[#243028] text-xs uppercase tracking-widest inline-block transform -rotate-1 shadow-[2px_2px_0px_#243028]">
+                GATES OPEN
               </span>
-              <h1 className="brutal-font text-5xl sm:text-6xl text-[#FACC15] brutal-text-glow-yellow uppercase tracking-wider select-none">
-                ZONE GATHERING
+              <h1 className="safari-title-text brutal-font text-5xl sm:text-6xl text-[#243028] uppercase tracking-wider select-none">
+                ANIMAL KINGDOM
               </h1>
-              <p className="text-zinc-400 font-mono text-xs uppercase tracking-widest">
-                SYSTEM LOBBY CONSOLE v2.0.5
+              <p className="text-[#4b573b] font-mono text-xs uppercase tracking-widest">
+                SAFARI BASECAMP • 50+ EXPLORERS
               </p>
             </div>
 
             {/* Diagnostic Boot Code Terminal Box */}
-            <div className="brutal-box p-5 bg-black text-white text-left space-y-3 shadow-[8px_8px_0px_#000] border-4 border-black font-mono text-xs min-h-[160px] relative overflow-hidden">
-              <div className="scanline-line"></div>
-              <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                <span className="text-green-400 font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                  LOBBY_STATE: {bootStage.toUpperCase()}
+            <div className="brutal-box p-5 bg-[#1D4A35] text-[#FFF3C4] text-left space-y-3 shadow-[8px_8px_0px_#243028] border-4 border-[#243028] font-mono text-xs min-h-[160px] relative overflow-hidden">
+              <div className="flex justify-between items-center border-b border-[#6ca160] pb-2">
+                <span className="text-[#B7DF77] font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#B7DF77] animate-pulse"></span>
+                  GATE_STATUS: {bootStage.toUpperCase()}
                 </span>
-                <span className="text-zinc-500 font-black">ROOM MODE: READY</span>
+                <span className="text-[#b7df77]/70 font-black">TRAIL: READY</span>
               </div>
               
               <div className="space-y-1 text-zinc-300">
                 {bootStage === "idle" && (
-                  <p className="text-[#38BDF8] animate-pulse">&gt; CLICK &quot;INITIALIZE SYSTEM&quot; BELOW TO DEPLOY CAB...</p>
+                  <p className="text-[#5CC8E8] animate-pulse">&gt; TAP &quot;OPEN BASECAMP&quot; TO START THE EXPEDITION...</p>
                 )}
                 {visibleLogs.map((log, index) => (
-                  <p key={index} className={index === visibleLogs.length - 1 ? "text-green-400 font-bold" : "text-zinc-400"}>
+                  <p key={index} className={index === visibleLogs.length - 1 ? "text-[#B7DF77] font-bold" : "text-[#e7e0b7]"}>
                     &gt; {log}
                   </p>
                 ))}
@@ -295,9 +294,9 @@ export default function EntryLandingPage() {
               {bootStage === "idle" && (
                 <button
                   onClick={startSystemLoading}
-                  className="w-full brutal-font text-2xl bg-[#38BDF8] text-black hover:bg-sky-400 border-4 border-black p-4 uppercase transition-all duration-100 shadow-[6px_6px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000] cursor-pointer"
+                  className="safari-paw-button w-full brutal-font text-2xl bg-[#5CC8E8] text-[#243028] hover:bg-[#8eddf0] border-4 border-[#243028] p-4 uppercase transition-all duration-100 shadow-[6px_6px_0px_#243028] cursor-pointer"
                 >
-                  ⚡ INITIALIZE SYSTEM
+                  🐾 OPEN BASECAMP
                 </button>
               )}
 
@@ -305,29 +304,29 @@ export default function EntryLandingPage() {
                 <div className="space-y-3">
                   <div className="w-full h-8 bg-zinc-800 border-4 border-black p-0.5 relative shadow-[4px_4px_0px_#000]">
                     <div
-                      className="h-full bg-[#FACC15] transition-all duration-100 ease-out"
+                      className="h-full bg-[#F4B942] transition-all duration-100 ease-out"
                       style={{ width: `${bootProgress}%` }}
                     ></div>
                     <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-black select-none">
-                      BOOTING CONSOLE: {bootProgress}%
+                      OPENING GATES: {bootProgress}%
                     </span>
                   </div>
-                  <span className="text-zinc-500 text-[10px] font-mono block animate-pulse">READING DRIVERS AND LOOSE MEMORIES...</span>
+                  <span className="text-[#4b573b] text-[10px] font-mono block animate-pulse">FOLLOWING FRESH PAW PRINTS...</span>
                 </div>
               )}
 
               {bootStage === "ready" && (
                 <button
                   onClick={handlePressStart}
-                  className="w-full brutal-font text-3xl bg-[#EF4444] text-white hover:bg-red-600 border-4 border-black p-5 uppercase transition-all duration-100 shadow-[6px_6px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000] cursor-pointer animate-pulse"
+                  className="safari-paw-button w-full brutal-font text-3xl bg-[#E8614D] text-white hover:bg-[#c84738] border-4 border-[#243028] p-5 uppercase transition-all duration-100 shadow-[6px_6px_0px_#243028] cursor-pointer animate-pulse"
                 >
-                  🔴 PRESS START
+                  🦁 BEGIN SAFARI
                 </button>
               )}
             </div>
 
-            <div className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider pt-2 select-none">
-              Double Bezel Cabinet Hardware · 50+ Player Sync Ready
+            <div className="text-[#4b573b] font-mono text-[9px] uppercase tracking-wider pt-2 select-none">
+              Trail map checked · 50+ explorers ready
             </div>
           </div>
         </div>
@@ -354,7 +353,7 @@ export default function EntryLandingPage() {
         <div className="max-w-6xl w-full space-y-8 z-10">
           
           {/* Physical Console Header Cabinet Panel */}
-          <header className="terminal-header brutal-box bg-[#18181B] text-white p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#000] border-4 border-black relative">
+          <header className="terminal-header brutal-box p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#243028] border-4 border-[#243028] relative">
             <div className="screw top-3 left-3"></div>
             <div className="screw top-3 right-3"></div>
             <div className="screw bottom-3 left-3"></div>
@@ -362,15 +361,15 @@ export default function EntryLandingPage() {
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-2">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#FACC15] border-4 border-black text-black rounded-xl transform -rotate-3 shadow-[4px_4px_0px_#000] hover:rotate-3 transition-transform duration-200">
+                <div className="p-3 bg-[#F4B942] border-4 border-[#243028] text-[#243028] rounded-xl transform -rotate-3 shadow-[4px_4px_0px_#243028] hover:rotate-3 transition-transform duration-200">
                   <GameIcon className="w-12 h-8" />
                 </div>
                 <div className="text-left">
-                  <h1 className="brutal-font text-3xl sm:text-5xl text-[#FACC15] drop-shadow-[3px_3px_0px_#000] uppercase tracking-wider">
-                    ZONE GATHERING
+                  <h1 className="safari-title-text brutal-font text-3xl sm:text-5xl text-[#FFF3C4] uppercase tracking-wider">
+                    ANIMAL KINGDOM
                   </h1>
-                  <p className="text-zinc-500 font-mono text-[10px] sm:text-xs tracking-widest uppercase mt-0.5">
-                    {"/// ROUND CONTROL & CHAOS GAMES SYSTEM ///"}
+                  <p className="text-[#B7DF77] font-mono text-[10px] sm:text-xs tracking-widest uppercase mt-0.5">
+                    {"/// SAFARI BASECAMP & PARTY GAMES ///"}
                   </p>
                 </div>
               </div>
@@ -397,7 +396,7 @@ export default function EntryLandingPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSoundOn(!soundOn)}
-                    className="bg-[#38BDF8] text-black font-black text-[10px] px-3 py-1.5 border-2 border-black hover:bg-sky-400 uppercase shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
+                    className="bg-[#5CC8E8] text-[#243028] font-black text-[10px] px-3 py-1.5 border-2 border-[#243028] hover:bg-[#8eddf0] uppercase shadow-[2px_2px_0px_#243028] cursor-pointer"
                   >
                     SFX: {soundOn ? "ON" : "OFF"}
                   </button>
@@ -408,7 +407,7 @@ export default function EntryLandingPage() {
                       setVisibleLogs([]);
                       showToast("🔄 LOBBY REBOOTED!");
                     }}
-                    className="bg-[#EF4444] text-white font-black text-[10px] px-3 py-1.5 border-2 border-black hover:bg-red-500 uppercase shadow-[2px_2px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
+                    className="bg-[#E8614D] text-white font-black text-[10px] px-3 py-1.5 border-2 border-[#243028] hover:bg-[#c84738] uppercase shadow-[2px_2px_0px_#243028] cursor-pointer"
                   >
                     REBOOT
                   </button>
@@ -418,11 +417,10 @@ export default function EntryLandingPage() {
           </header>
 
           {/* Scrolling LED Marquee Ticker */}
-          <div className="w-full bg-black text-[#FFFDF5] border-4 border-black overflow-hidden select-none relative shadow-[6px_6px_0px_#000] flex items-stretch">
-            <div className="scanline-line"></div>
-            <div className="relative z-10 shrink-0 flex items-center gap-3 bg-[#FACC15] text-black px-4 py-3 border-r-4 border-black font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider">
-              <span className="w-2.5 h-2.5 bg-[#22C55E] rounded-full led-glow-green"></span>
-              {roster.length > 0 ? `${roster.length} players ready` : "Lobby open"}
+          <div className="w-full bg-[#143525] text-[#FFF3C4] border-4 border-[#243028] overflow-hidden select-none relative shadow-[6px_6px_0px_#243028] flex items-stretch">
+            <div className="relative z-10 shrink-0 flex items-center gap-3 bg-[#F4B942] text-[#243028] px-4 py-3 border-r-4 border-[#243028] font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider">
+              <span className="w-2.5 h-2.5 bg-[#B7DF77] rounded-full"></span>
+              {roster.length > 0 ? `${roster.length} explorers checked in` : "Basecamp open"}
             </div>
             <div className="min-w-0 overflow-hidden py-3">
               <div className="animate-marquee whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
@@ -433,16 +431,16 @@ export default function EntryLandingPage() {
                   .map((name, i) => (
                     <span key={i} className="flex items-center gap-3">
                       <span className="w-2.5 h-2.5 bg-[#4ADE80] rounded-full led-glow-green"></span>
-                      {name} READY
+                      {name} ON THE TRAIL
                     </span>
                   ))
               ) : (
                 Array(4)
                   .fill([
-                    "SYSTEM ONLINE // CONNECTED",
-                    "LOBBY TELEMETRY STATE: WAITING FOR PLAYER REGISTRATION...",
-                    "SCAN THE PRESENTATION DECK QR CODE TO SIGN UP FOR THE MATCHUPS!",
-                    "STAGE SHUFFLER SHIELD PREPARED FOR GreedyDealer SELECTIONS..."
+                    "SAFARI TRAIL OPEN // BASECAMP CONNECTED",
+                    "WAITING FOR EXPLORERS TO CHECK IN...",
+                    "SCAN THE TRAIL PASS TO JOIN THE ANIMAL CREWS!",
+                    "TEAM TRACKER IS READY TO FORM FAIR HERDS..."
                   ])
                   .flat()
                   .map((text, i) => (
@@ -463,15 +461,15 @@ export default function EntryLandingPage() {
             <main className="lg:col-span-8 space-y-8 terminal-screen-wrapper">
               
               {/* Central Cabinet screen container */}
-              <div className="brutal-box bg-white text-black p-6 rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] relative">
+              <div className="safari-card brutal-box text-[#243028] p-6 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
                 <div className="fold-corner-orange"></div>
                 <div className="space-y-6">
                   <div className="flex justify-between items-center border-b-4 border-black pb-4">
-                    <span className="bg-black text-[#FFFDF5] text-xs font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider">
-                      DECKS & MAPS SELECTOR
+                    <span className="bg-[#243028] text-[#FFF3C4] text-xs font-black px-2.5 py-1 border-2 border-[#243028] uppercase tracking-wider">
+                      SAFARI TRAIL SELECTOR
                     </span>
                     <span className="text-xs font-mono font-black uppercase text-zinc-500">
-                      CABINET SYSTEM ACT
+                      CHOOSE YOUR ADVENTURE
                     </span>
                   </div>
 
@@ -479,16 +477,16 @@ export default function EntryLandingPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     
                     {/* Action 1: Games rules */}
-                    <div className="action-card brutal-box p-7 bg-[#FACC15] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[250px] sm:col-span-2">
+                    <div className="action-card brutal-box p-7 bg-[#F4B942] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[250px] sm:col-span-2">
                       <div className="space-y-4 max-w-xl">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          NEXT UP // STAGE 01 // OBJECTIVES
+                          SAFARI TRAIL 01 // WILD MISSIONS
                         </span>
                         <h2 className="brutal-font text-3xl sm:text-4xl uppercase tracking-tight">
-                          GAME CENTER 🕹️
+                          SAFARI GAMES 🦁
                         </h2>
                         <p className="font-bold text-sm leading-relaxed text-zinc-900">
-                          Brief the room, run Blanket Name Game and Balloon Scatter, then put the 34-second game reel on the big screen.
+                          Brief the expedition, run the two wild challenges, then play the short game reel on the big screen.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -496,22 +494,22 @@ export default function EntryLandingPage() {
                           href="/games"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          OPEN GAME RULES →
+                          EXPLORE GAME RULES →
                         </Link>
                       </div>
                     </div>
 
                     {/* Action 2: Showcase Board */}
-                    <div className="action-card brutal-box p-6 bg-[#F472B6] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
+                    <div className="action-card brutal-box p-6 bg-[#B7DF77] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
                       <div className="space-y-3">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          STAGE 03 // SHOWCASE
+                          TRAIL 03 // PRIDE ROCK
                         </span>
                         <h2 className="brutal-font text-2xl uppercase tracking-tight">
-                          SHOW BOARDS 📺
+                          SAFARI CROWN 📺
                         </h2>
                         <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Put live team assignments and player names on the room display when everyone is ready to see them.
+                          Put live animal-team standings and player names on the room display.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -519,22 +517,22 @@ export default function EntryLandingPage() {
                           href="/showcase"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          OPEN SHOW BOARD →
+                          OPEN CROWN BOARD →
                         </Link>
                       </div>
                     </div>
 
                     {/* Action 3: Player Mixer controller */}
-                    <div className="action-card brutal-box p-6 bg-[#38BDF8] text-black rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#000] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
+                    <div className="action-card brutal-box p-6 bg-[#5CC8E8] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
                       <div className="space-y-3">
                         <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          STAGE 02 // MIX ENGINE
+                          TRAIL 02 // HERD MAKER
                         </span>
                         <h2 className="brutal-font text-2xl uppercase tracking-tight">
-                          TEAM MASTER CONSOLE 🎲
+                          HERD MAKER 🐘
                         </h2>
                         <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Build fair teams, avoid cell-group collisions, and prepare the live board before the next round.
+                          Build fair herds, avoid cell-group collisions, and ready the live Safari Crown board.
                         </p>
                       </div>
                       <div className="pt-4">
@@ -542,7 +540,7 @@ export default function EntryLandingPage() {
                           href="/mixer"
                           className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
                         >
-                          OPEN TEAM MIXER →
+                          FORM ANIMAL CREWS →
                         </Link>
                       </div>
                     </div>
@@ -555,35 +553,35 @@ export default function EntryLandingPage() {
             {/* Right: Live room status and registration (4 Cols) */}
             <aside className="lg:col-span-4 space-y-8">
               {/* Lobby Live Roster Player Ticket List */}
-              <div className="brutal-box p-6 bg-white text-black rounded-3xl border-4 border-black shadow-[8px_8px_0px_#000] relative">
+              <div className="safari-card brutal-box p-6 text-[#243028] rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
                 <div className="fold-corner-blue"></div>
                 <div className="space-y-5">
-                  <div className="bg-[#18181B] text-white border-4 border-black p-4 shadow-[4px_4px_0px_#000]">
+                  <div className="bg-[#1D4A35] text-[#FFF3C4] border-4 border-[#243028] p-4 shadow-[4px_4px_0px_#243028]">
                     <div className="flex items-center justify-between gap-3 font-mono text-[10px] font-black uppercase tracking-wider">
-                      <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#22C55E] led-glow-green"></span> Room status</span>
-                      <span className="text-[#FACC15]">Round 01</span>
+                      <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#B7DF77]"></span> Basecamp status</span>
+                      <span className="text-[#F4B942]">Trail 01</span>
                     </div>
-                    <p className="brutal-font text-3xl text-[#FACC15] mt-3 leading-none">{roster.length}</p>
-                    <p className="font-mono text-[10px] text-zinc-400 uppercase mt-1">Players checked in</p>
+                    <p className="brutal-font text-3xl text-[#F4B942] mt-3 leading-none">{roster.length}</p>
+                    <p className="font-mono text-[10px] text-[#B7DF77] uppercase mt-1">Explorers checked in</p>
                   </div>
 
                   <div className="border-b-2 border-black pb-2 flex justify-between items-center">
                     <span className="text-[10px] font-black uppercase tracking-wider bg-black text-[#FFFDF5] px-2 py-0.5 border border-black">
-                      LIVE ROSTER
+                      LIVE EXPEDITION
                     </span>
-                    <span className="text-xs font-mono font-bold text-[#0284C7]">READY</span>
+                    <span className="text-xs font-mono font-bold text-[#2E7D4D]">ON TRAIL</span>
                   </div>
 
                   {roster.length === 0 ? (
                     <div className="text-center py-6 border-2 border-dashed border-zinc-300 rounded-lg">
-                      <p className="font-bold text-xs uppercase text-zinc-400">No players checked in yet</p>
+                      <p className="font-bold text-xs uppercase text-zinc-500">No explorers checked in yet</p>
                       <a
                         href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[10px] text-[#38BDF8] hover:underline font-black uppercase block mt-1"
                       >
-                        Scan / Sign Up ➔
+                        Find the trail ➔
                       </a>
                     </div>
                   ) : (
@@ -612,9 +610,9 @@ export default function EntryLandingPage() {
                     href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-center brutal-font text-xs bg-[#38BDF8] hover:bg-sky-400 text-black py-3 border-2 border-black uppercase shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000]"
+                    className="block text-center brutal-font text-xs bg-[#5CC8E8] hover:bg-[#8eddf0] text-[#243028] py-3 border-2 border-[#243028] uppercase shadow-[3px_3px_0px_#243028]"
                   >
-                    📱 CHECK IN A PLAYER ➔
+                    🐾 CHECK IN AN EXPLORER ➔
                   </a>
                 </div>
               </div>
@@ -623,8 +621,8 @@ export default function EntryLandingPage() {
           </div>
 
           {/* Footer Deck Chassis */}
-          <footer className="text-center py-6 font-mono text-[9px] text-zinc-600 uppercase tracking-widest border-t-2 border-zinc-800">
-            © 2026 Zone Gathering Cabinet · Neo-Brutalist Layout Studio
+          <footer className="text-center py-6 font-mono text-[9px] text-[#dce9ba] uppercase tracking-widest border-t-2 border-[#6ca160]">
+            © 2026 Animal Kingdom Basecamp · Safari party games
           </footer>
 
         </div>

@@ -381,3 +381,171 @@ h1, h2, h3, .brutal-font {
   100% { clip: rect(14px, 9999px, 56px, 0); }
 }
 
+/* Animal Kingdom — shared cartoon safari design system */
+:root {
+  --safari-ink: #243028;
+  --safari-canopy: #1d4a35;
+  --safari-leaf: #b7df77;
+  --safari-river: #5cc8e8;
+  --safari-sun: #f4b942;
+  --safari-parchment: #fff3c4;
+  --safari-coral: #e8614d;
+}
+
+body {
+  background-color: var(--safari-parchment);
+  color: var(--safari-ink);
+}
+
+.safari-world {
+  background-color: var(--safari-canopy);
+  background-image:
+    radial-gradient(circle at 14% 13%, rgba(183, 223, 119, 0.32) 0 2px, transparent 3px),
+    radial-gradient(circle at 84% 27%, rgba(244, 185, 66, 0.25) 0 3px, transparent 4px),
+    linear-gradient(145deg, rgba(255, 243, 196, 0.12) 0 1px, transparent 1px 42px),
+    linear-gradient(32deg, rgba(11, 45, 30, 0.3) 0 1px, transparent 1px 58px),
+    linear-gradient(180deg, #2e7d4d 0%, #1d4a35 55%, #143525 100%);
+  background-size: 92px 92px, 130px 130px, 42px 42px, 58px 58px, auto;
+}
+
+.safari-world .brutal-box {
+  border-color: var(--safari-ink);
+  box-shadow: 7px 7px 0 var(--safari-ink);
+}
+
+.safari-world .terminal-header,
+.safari-canopy-header {
+  color: var(--safari-parchment) !important;
+  background:
+    radial-gradient(ellipse at 10% 130%, rgba(183, 223, 119, 0.28) 0 24%, transparent 25%),
+    radial-gradient(ellipse at 95% -25%, rgba(183, 223, 119, 0.18) 0 30%, transparent 31%),
+    var(--safari-canopy) !important;
+}
+
+.safari-world .terminal-header h1,
+.safari-title-text {
+  text-shadow: 3px 3px 0 var(--safari-ink), 5px 5px 0 rgba(244, 185, 66, 0.48);
+}
+
+.safari-card,
+.safari-expedition-pass,
+.safari-board-surface {
+  background-color: var(--safari-parchment);
+  background-image:
+    radial-gradient(rgba(36, 48, 40, 0.11) 0.7px, transparent 0.8px),
+    linear-gradient(105deg, transparent 0 48%, rgba(244, 185, 66, 0.12) 49% 52%, transparent 53%);
+  background-size: 8px 8px, 86px 86px;
+}
+
+.safari-expedition-pass {
+  box-shadow: 11px 11px 0 var(--safari-ink);
+}
+
+.safari-leaf-marker {
+  position: absolute;
+  font-size: 1.35rem;
+  line-height: 1;
+  filter: drop-shadow(1px 1px 0 var(--safari-ink));
+}
+
+.safari-live-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  background: var(--safari-leaf);
+  border: 2px solid var(--safari-ink);
+  box-shadow: 0 0 0 2px rgba(183, 223, 119, 0.25);
+  animation: safari-glow 1.2s ease-in-out infinite alternate;
+}
+
+.safari-danger-button {
+  background-color: var(--safari-coral) !important;
+  box-shadow: 3px 3px 0 var(--safari-ink) !important;
+}
+
+.safari-ticket {
+  background: var(--safari-parchment);
+  box-shadow: 5px 5px 0 var(--safari-ink);
+}
+
+.safari-world .ticket-tear::before,
+.safari-world .ticket-tear::after {
+  background-color: var(--safari-canopy);
+  border-color: var(--safari-ink);
+}
+
+.safari-scoreboard {
+  background: var(--safari-parchment);
+  box-shadow: 12px 12px 0 var(--safari-ink);
+}
+
+.safari-scoreboard-header {
+  color: var(--safari-parchment);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 15px, rgba(183, 223, 119, 0.11) 15px 18px),
+    var(--safari-canopy);
+}
+
+.safari-target-ribbon {
+  background: var(--safari-sun);
+  box-shadow: 5px 5px 0 var(--safari-ink);
+}
+
+.safari-leader-card {
+  background: var(--safari-canopy) !important;
+  box-shadow: 8px 8px 0 var(--safari-ink);
+  animation: safari-crown-call 1.8s ease-in-out infinite alternate;
+}
+
+.safari-team-crest {
+  background:
+    repeating-linear-gradient(135deg, rgba(36, 48, 40, 0.13) 0 3px, transparent 3px 12px),
+    var(--safari-parchment);
+}
+
+.safari-score-reel {
+  background:
+    linear-gradient(180deg, rgba(183, 223, 119, 0.1), transparent 48%),
+    #143525;
+  border-color: #7bb66b !important;
+}
+
+.safari-score-reel::after {
+  background: linear-gradient(to bottom, rgba(255,255,255,.06), transparent 44%, rgba(7,34,22,.55) 50%, transparent 56%);
+}
+
+.safari-trail-progress {
+  background-image: repeating-linear-gradient(90deg, rgba(36, 48, 40, 0.34) 0 8px, transparent 8px 16px);
+  background-color: #d2dea8;
+}
+
+.safari-paw-button:active {
+  transform: translate(4px, 4px);
+  box-shadow: 2px 2px 0 var(--safari-ink) !important;
+}
+
+.safari-world input,
+.safari-world select,
+.safari-world textarea {
+  border-color: var(--safari-ink) !important;
+}
+
+.safari-world .fold-corner-orange { background: var(--safari-sun); border-color: var(--safari-ink); }
+.safari-world .fold-corner-blue { background: var(--safari-river); border-color: var(--safari-ink); }
+.safari-world .arcade-bezel { border-color: var(--safari-ink); box-shadow: 0 0 0 4px var(--safari-leaf), 12px 12px 0 var(--safari-ink); }
+.safari-world .scanline-line { background: rgba(183, 223, 119, 0.42); box-shadow: 0 0 8px var(--safari-leaf); }
+
+@keyframes safari-glow {
+  from { transform: scale(0.82); opacity: .68; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes safari-crown-call {
+  from { box-shadow: 8px 8px 0 var(--safari-ink); }
+  to { box-shadow: 8px 8px 0 var(--safari-ink), 0 0 0 5px var(--safari-sun), 0 0 24px rgba(244, 185, 66, .56); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .safari-live-dot,
+  .safari-leader-card { animation: none; }
+}

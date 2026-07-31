@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { decodeShowcaseTeams } from "@/lib/showcase-share";
+import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
 
 interface TeamMember {
   name: string;
@@ -22,14 +23,14 @@ interface TeamData {
 const SCORE_TARGET = 300;
 
 const CG_COLORS = [
-  'bg-[#38BDF8]', // Blue
-  'bg-[#FACC15]', // Yellow
-  'bg-[#F59E0B]', // Orange
-  'bg-[#4ADE80]', // Green
-  'bg-[#F472B6]', // Pink
-  'bg-[#C084FC]', // Purple
-  'bg-[#2DD4BF]', // Teal
-  'bg-[#F87171]', // Red
+  'bg-[#5CC8E8]',
+  'bg-[#F4B942]',
+  'bg-[#F2A85B]',
+  'bg-[#B7DF77]',
+  'bg-[#E6D27A]',
+  'bg-[#79C8B5]',
+  'bg-[#D8A56F]',
+  'bg-[#E8614D]',
 ];
 
 const getGroupColor = (name: string) => {
@@ -42,18 +43,7 @@ const getGroupColor = (name: string) => {
   return CG_COLORS[index];
 };
 
-const getTeamEmoji = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("yellow")) return "🟡";
-  if (lower.includes("blue")) return "🔵";
-  if (lower.includes("orange")) return "🟠";
-  if (lower.includes("red")) return "🔴";
-  if (lower.includes("purple")) return "🟣";
-  if (lower.includes("green")) return "🟢";
-  if (lower.includes("pink")) return "🌸";
-  if (lower.includes("teal")) return "💎";
-  return "🎮";
-};
+const getTeamEmoji = (name: string) => getSafariTeamProfile(name).emoji;
 
 // Inner Showcase component
 function ShowcaseContent() {
@@ -180,11 +170,11 @@ function ShowcaseContent() {
   return (
     <div ref={containerRef} className="space-y-8">
       {/* Control Board: Search Bar & Presentation mode toggle */}
-      <div className="brutal-box p-5 bg-white text-black shadow-[8px_8px_0px_#000] border-4 border-black flex flex-col md:flex-row items-center justify-between gap-6 rounded-3xl relative">
+      <div className="safari-card brutal-box p-5 text-[#243028] shadow-[8px_8px_0px_#243028] border-4 border-[#243028] flex flex-col md:flex-row items-center justify-between gap-6 rounded-3xl relative">
         <div className="flex-1 w-full relative">
           <input
             type="text"
-            placeholder="🔍 Highlight name slot on projector... (e.g. John)"
+            placeholder="🔍 Find an explorer on the trail... (e.g. John)"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
             className="w-full px-5 py-3 border-4 border-black font-black uppercase focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 text-sm shadow-[inner_0_2px_4px_rgba(0,0,0,0.05)]"
@@ -195,7 +185,7 @@ function ShowcaseContent() {
           {cleanQuery && (
             <button
               onClick={() => setFilterQuery("")}
-              className="flex-1 md:flex-none brutal-box bg-[#EF4444] text-white font-black px-4 py-3 border-2 border-black text-xs uppercase hover:bg-red-600 shadow-[2px_2px_0px_#000] cursor-pointer"
+              className="flex-1 md:flex-none brutal-box bg-[#E8614D] text-white font-black px-4 py-3 border-2 border-[#243028] text-xs uppercase hover:bg-[#c84738] shadow-[2px_2px_0px_#243028] cursor-pointer"
             >
               Clear Highlight
             </button>
@@ -207,10 +197,10 @@ function ShowcaseContent() {
               playChirp(broadcastMode ? 300 : 600, 0.15, "triangle");
             }}
             className={`flex-1 md:flex-none brutal-box font-black px-5 py-3 border-2 border-black text-xs uppercase shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer ${
-              broadcastMode ? "bg-[#4ADE80] text-black hover:bg-green-400" : "bg-[#C084FC] text-black hover:bg-purple-400"
+              broadcastMode ? "bg-[#B7DF77] text-[#243028] hover:bg-[#d1efa1]" : "bg-[#5CC8E8] text-[#243028] hover:bg-[#8eddf0]"
             }`}
           >
-            {broadcastMode ? "📺 GRID VIEW" : "📽️ AUDITORIUM CAROUSEL"}
+            {broadcastMode ? "🗺️ TRAIL GRID" : "📽️ SAFARI CAROUSEL"}
           </button>
           
           <button
@@ -225,11 +215,11 @@ function ShowcaseContent() {
 
       {/* Roster Code Input Fallback */}
       {!rawData && teams.length === 0 && (
-        <div className="brutal-box p-8 bg-[#FACC15] text-black border-4 border-black shadow-[8px_8px_0px_#000] text-center max-w-md mx-auto rounded-3xl relative">
+        <div className="safari-card brutal-box p-8 text-[#243028] border-4 border-[#243028] shadow-[8px_8px_0px_#243028] text-center max-w-md mx-auto rounded-3xl relative">
           <div className="fold-corner-orange"></div>
-          <p className="brutal-font text-xl uppercase mb-3">⚠️ NO TEAM ROSTER LOADED</p>
+          <p className="brutal-font text-xl uppercase mb-3">⚠️ NO SAFARI CREW LOADED</p>
           <p className="text-xs font-bold uppercase leading-relaxed max-w-xs mx-auto text-zinc-800 font-mono">
-            Please shuffler players in the admin mixer console first, and scan or generate showcase presentation deck!
+            Form animal crews in the ranger shuffler first, then scan or open the Safari Crown board.
           </p>
         </div>
       )}
@@ -238,57 +228,57 @@ function ShowcaseContent() {
       {teams.length > 0 && (
         <section
           aria-labelledby="audience-standings-title"
-          className="brutal-box overflow-hidden rounded-3xl border-8 border-black bg-[#FFFDF5] text-black shadow-[12px_12px_0px_#000]"
+          className="safari-scoreboard brutal-box overflow-hidden rounded-3xl border-8 border-[#243028] text-[#243028] shadow-[12px_12px_0px_#243028]"
         >
-          <div className="flex flex-col gap-4 border-b-4 border-black bg-[#FACC15] px-5 py-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="safari-scoreboard-header flex flex-col gap-4 border-b-4 border-[#243028] px-5 py-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="mb-2 inline-block border-2 border-black bg-black px-2 py-1 font-mono text-[8px] font-black uppercase tracking-[0.25em] text-[#38BDF8] shadow-[2px_2px_0px_#FFFDF5]">
-                Live from the games floor
+                Live from the savanna stage
               </span>
               <h2 id="audience-standings-title" className="brutal-font text-3xl uppercase tracking-wide sm:text-5xl">
-                Point arena
+                Safari crown
               </h2>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="border-4 border-black bg-black px-4 py-3 font-mono text-[9px] font-black uppercase tracking-wider text-[#FACC15] shadow-[4px_4px_0px_#38BDF8]">
-                First to {SCORE_TARGET}
+                First to {SCORE_TARGET} paws
               </span>
               <div className="border-4 border-black bg-[#FFFDF5] px-4 py-3 font-mono text-[9px] font-black uppercase tracking-wider shadow-[4px_4px_0px_#000]">
                 {topScore > 0
                   ? leadMargin > 0
-                    ? `👑 ${rankedTeams[0]?.name} leads by ${leadMargin}`
-                    : `⚔️ Tie at the top • ${topScore} points`
-                  : "● Scores armed • Waiting for round 01"}
+                    ? `👑 ${getSafariTeamLabel(rankedTeams[0]?.name ?? "")} leads by ${leadMargin}`
+                    : `🐾 Trails tied • ${topScore} paws`
+                  : "● Trails ready • waiting for safari 01"}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 bg-[#FFFDF5] p-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)] md:p-6">
+          <div className="safari-board-surface grid grid-cols-1 gap-5 p-4 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.45fr)] md:p-6">
             {leaderTeam && (
-              <article className={`overflow-hidden border-4 border-black bg-[#18181B] shadow-[8px_8px_0px_#000] ${topScore > 0 ? "score-leader-card" : ""}`}>
+              <article className={`safari-leader-card overflow-hidden border-4 border-[#243028] ${topScore > 0 ? "score-leader-card" : ""}`}>
                 <div className={`relative border-b-4 border-black p-5 ${leaderTeam.color || "bg-yellow-400 text-black"}`}>
                   <span className="absolute right-4 top-4 border-2 border-black bg-[#FFFDF5] px-3 py-1 font-mono text-[8px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#000]">
-                    {topScore >= SCORE_TARGET ? "Champion" : topScore > 0 ? "Current leader" : "Starting grid"}
+                    {topScore >= SCORE_TARGET ? "Safari crown" : topScore > 0 ? "Pride leader" : "Trailhead"}
                   </span>
                   <span className="mb-6 flex h-16 w-16 items-center justify-center border-4 border-black bg-[#FFFDF5] brutal-font text-4xl shadow-[4px_4px_0px_#000]">1</span>
-                  <p className="font-mono text-[8px] font-black uppercase tracking-[0.25em]">Score to beat</p>
+                  <p className="font-mono text-[8px] font-black uppercase tracking-[0.25em]">Pride rock score</p>
                   <h3 className="mt-1 pr-24 brutal-font text-3xl uppercase tracking-wide sm:text-4xl">
-                    {getTeamEmoji(leaderTeam.name)} {leaderTeam.name}
+                    {getTeamEmoji(leaderTeam.name)} {getSafariTeamLabel(leaderTeam.name)}
                   </h3>
                 </div>
                 <div className="p-5 text-[#FFFDF5] md:p-7">
-                  <div className="score-reel flex items-end justify-between border-4 border-zinc-600 bg-black px-5 py-5 shadow-[inset_0_0_0_3px_#27272A]">
+                  <div className="safari-score-reel score-reel flex items-end justify-between border-4 px-5 py-5 shadow-[inset_0_0_0_3px_#143525]">
                     <span className="brutal-font text-7xl leading-[0.82] tracking-wider text-[#FACC15] sm:text-8xl xl:text-9xl">
                       {String(topScore).padStart(3, "0")}
                     </span>
-                    <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#38BDF8]">PTS</span>
+                    <span className="mb-2 font-mono text-[10px] font-black uppercase tracking-widest text-[#B7DF77]">PAW PTS</span>
                   </div>
-                  <div className="mt-5 h-7 overflow-hidden border-4 border-zinc-600 bg-black">
+                  <div className="safari-trail-progress mt-5 h-7 overflow-hidden border-4 border-[#243028]">
                     <div className={`h-full border-r-4 border-black ${leaderTeam.color || "bg-yellow-400"}`} style={{ width: `${leaderTargetProgress}%` }} />
                   </div>
                   <div className="mt-3 flex items-center justify-between font-mono text-[9px] font-black uppercase tracking-wider">
-                    <span>{Math.round(leaderTargetProgress)}% of target</span>
-                    <span>{leadMargin > 0 ? `+${leadMargin} ahead` : "Tied at top"}</span>
+                    <span>{Math.round(leaderTargetProgress)}% to crown</span>
+                    <span>{leadMargin > 0 ? `+${leadMargin} trail lead` : "Tied at the rock"}</span>
                   </div>
                 </div>
               </article>
@@ -306,22 +296,22 @@ function ShowcaseContent() {
                       <div className={`flex items-center gap-3 border-b-4 border-black p-4 md:border-b-0 md:border-r-4 ${team.color || "bg-yellow-400 text-black"}`}>
                         <span className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-black bg-[#FFFDF5] brutal-font text-2xl shadow-[3px_3px_0px_#000]">{rankIndex + 2}</span>
                         <div className="min-w-0">
-                          <p className="font-mono text-[7px] font-black uppercase tracking-[0.2em]">Challenger</p>
-                          <h3 className="truncate brutal-font text-base uppercase tracking-wide">{getTeamEmoji(team.name)} {team.name.replace(/^Team\s+/i, "")}</h3>
+                          <p className="font-mono text-[7px] font-black uppercase tracking-[0.2em]">On the trail</p>
+                          <h3 className="truncate brutal-font text-base uppercase tracking-wide">{getTeamEmoji(team.name)} {getSafariTeamLabel(team.name)}</h3>
                         </div>
                       </div>
                       <div className="flex flex-col justify-center bg-[#18181B] p-4 text-[#FFFDF5]">
                         <div className="mb-2 flex justify-between font-mono text-[8px] font-black uppercase tracking-wider text-zinc-400">
-                          <span>{gapToLeader === 0 ? "Level with leader" : `${gapToLeader} behind`}</span>
+                          <span>{gapToLeader === 0 ? "Level with pride leader" : `${gapToLeader} paws behind`}</span>
                           <span>{Math.round(targetProgress)}%</span>
                         </div>
                         <div className="h-5 overflow-hidden border-2 border-zinc-600 bg-black">
                           <div className={`h-full border-r-2 border-black ${team.color || "bg-yellow-400"}`} style={{ width: `${targetProgress}%` }} />
                         </div>
                       </div>
-                      <div className="score-reel flex items-end justify-between border-t-4 border-black bg-black px-4 py-4 text-[#FFFDF5] md:border-l-4 md:border-t-0">
+                      <div className="safari-score-reel score-reel flex items-end justify-between border-t-4 border-[#243028] px-4 py-4 text-[#FFF3C4] md:border-l-4 md:border-t-0">
                         <span className="brutal-font text-5xl leading-none tracking-wider text-[#FACC15]">{String(score).padStart(3, "0")}</span>
-                        <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#38BDF8]">PTS</span>
+                        <span className="mb-1 font-mono text-[8px] font-black uppercase text-[#B7DF77]">PAW</span>
                       </div>
                     </div>
                   </article>
@@ -331,7 +321,7 @@ function ShowcaseContent() {
           </div>
 
           <div className="border-t-4 border-black bg-[#38BDF8] px-5 py-3 text-center font-mono text-[8px] font-black uppercase tracking-[0.16em]">
-            Round win +100 <span aria-hidden="true">◆</span> Runner-up +60 <span aria-hidden="true">◆</span> Team spirit +25 <span aria-hidden="true">◆</span> Penalty −10
+            Crown hunt +100 <span aria-hidden="true">◆</span> Trailblazer +60 <span aria-hidden="true">◆</span> Wild spirit +25 <span aria-hidden="true">◆</span> Mud pit −10
           </div>
         </section>
       )}
@@ -505,18 +495,18 @@ export default function ShowcasePage() {
   );
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black pb-24">
+    <div ref={containerRef} className="safari-world min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] pb-24">
       {/* Header banner */}
-      <header className="gsap-reveal bg-[#18181B] border-b-4 border-black py-8 px-6 text-center shadow-[0_6px_0px_#000] relative z-20">
+      <header className="safari-canopy-header gsap-reveal border-b-4 border-[#243028] py-8 px-6 text-center shadow-[0_6px_0px_#243028] relative z-20">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <Link
             href="/"
-            className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-sm px-4 py-2 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000] self-start sm:self-auto active:translate-y-0.5"
+            className="brutal-box bg-[#FFF3C4] text-[#243028] font-black uppercase text-sm px-4 py-2 border-2 border-[#243028] hover:bg-[#F4B942] transition-all shadow-[2px_2px_0px_#243028] self-start sm:self-auto active:translate-y-0.5"
           >
             ← ESC HOME
           </Link>
-          <h1 className="brutal-font text-3xl sm:text-4xl text-[#FACC15] uppercase tracking-wider select-none">
-            📺 AUDITORIUM SHOWBOARD
+          <h1 className="safari-title-text brutal-font text-3xl sm:text-4xl text-[#FFF3C4] uppercase tracking-wider select-none">
+            🦁 SAFARI CROWN BOARD
           </h1>
           <div className="w-16 hidden sm:block"></div>
         </div>
