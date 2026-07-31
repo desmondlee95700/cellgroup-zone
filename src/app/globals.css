@@ -566,6 +566,506 @@ body {
   .safari-foreground-fronds { width: 34vw; opacity: .8; }
 }
 
+/* Basecamp world: a playable expedition map rather than a dashboard. */
+.safari-basecamp-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem) 0;
+  background:
+    linear-gradient(180deg, rgba(255, 243, 196, .15), transparent 30%),
+    linear-gradient(180deg, #63c8e7 0 18rem, #f4b942 18rem 27rem, #6d974c 27rem 38rem, #1d4a35 38rem 100%);
+}
+
+.safari-basecamp-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .24;
+  background-image:
+    radial-gradient(circle, #243028 0 1px, transparent 1.5px),
+    linear-gradient(115deg, transparent 0 48%, rgba(255, 243, 196, .3) 49% 50%, transparent 51%);
+  background-size: 44px 44px, 92px 92px;
+}
+
+.safari-basecamp-sun {
+  position: absolute;
+  z-index: 0;
+  top: 5.5rem;
+  right: max(5vw, 2rem);
+  width: clamp(9rem, 17vw, 15rem);
+  aspect-ratio: 1;
+  border: 7px solid var(--safari-ink);
+  border-radius: 50%;
+  background: var(--safari-parchment);
+  box-shadow: 0 0 0 14px rgba(244, 185, 66, .35);
+  animation: safari-basecamp-daylight 5.5s ease-in-out infinite alternate;
+}
+
+.safari-basecamp-hills {
+  position: absolute;
+  z-index: 0;
+  left: -6%;
+  width: 112%;
+  border: 6px solid var(--safari-ink);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 48% 58% 0 0;
+  pointer-events: none;
+}
+
+.safari-basecamp-hills-back {
+  top: 19rem;
+  height: 12rem;
+  background: #86a94e;
+  transform: rotate(-2deg);
+}
+
+.safari-basecamp-hills-front {
+  top: 25rem;
+  height: 17rem;
+  background: #315b39;
+  transform: rotate(1.5deg);
+}
+
+.safari-basecamp-nav,
+.safari-basecamp-shell,
+.safari-basecamp-footer {
+  position: relative;
+  z-index: 2;
+  width: min(92rem, 100%);
+  margin-inline: auto;
+}
+
+.safari-basecamp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 5rem;
+  padding: .75rem .9rem .75rem 1rem;
+  color: var(--safari-ink);
+  border: 4px solid var(--safari-ink);
+  border-radius: 999px;
+  background: rgba(255, 243, 196, .94);
+  box-shadow: 7px 7px 0 var(--safari-ink);
+}
+
+.safari-basecamp-brand {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  min-width: 0;
+}
+
+.safari-brand-mark {
+  width: 3.4rem;
+  flex: 0 0 auto;
+  color: var(--safari-ink);
+}
+
+.safari-basecamp-brand div { display: grid; min-width: 0; }
+.safari-basecamp-brand strong { font-size: clamp(1rem, 2vw, 1.35rem); line-height: 1; text-transform: uppercase; }
+.safari-basecamp-brand span { margin-top: .25rem; font-size: .62rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+
+.safari-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .55rem;
+}
+
+.safari-nav-actions button,
+.safari-camp-status {
+  min-height: 2.7rem;
+  padding: .65rem .85rem;
+  border: 3px solid var(--safari-ink);
+  border-radius: 999px;
+  background: #fff3c4;
+  color: var(--safari-ink);
+  font-family: var(--font-inter), sans-serif;
+  font-size: .66rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.safari-nav-actions button { cursor: pointer; box-shadow: 3px 3px 0 var(--safari-ink); transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease; }
+.safari-nav-actions button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--safari-ink); background: #f9d778; }
+.safari-nav-actions button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--safari-ink); }
+.safari-nav-actions button:focus-visible { outline: 4px solid #e8614d; outline-offset: 3px; }
+.safari-nav-actions button[aria-pressed="true"] { background: #5cc8e8; }
+.safari-nav-actions button:last-child { color: #fff3c4; background: #e8614d; }
+
+.safari-camp-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border-color: #2e7d4d;
+  color: #1d4a35;
+  background: #dff0a7;
+}
+
+.safari-camp-status i {
+  width: .66rem;
+  height: .66rem;
+  border: 2px solid var(--safari-ink);
+  border-radius: 50%;
+  background: #6d974c;
+  animation: safari-glow 1.2s ease-in-out infinite alternate;
+}
+
+.safari-basecamp-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(18rem, .88fr);
+  align-items: center;
+  gap: clamp(1.5rem, 5vw, 5rem);
+  min-height: 27rem;
+  padding: clamp(3rem, 7vw, 6.5rem) clamp(.5rem, 2vw, 2rem) 3.5rem;
+}
+
+.safari-eyebrow {
+  margin: 0 0 .75rem;
+  color: #1d4a35;
+  font-family: var(--font-inter), sans-serif;
+  font-size: .7rem;
+  font-weight: 950;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.safari-hero-copy h1 {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--safari-ink);
+  font-size: clamp(3rem, 6.5vw, 6.25rem);
+  line-height: .92;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  text-shadow: 4px 4px 0 #fff3c4;
+}
+
+.safari-hero-lede {
+  max-width: 39rem;
+  margin: 1.35rem 0 0;
+  color: #243028;
+  font-size: clamp(1rem, 1.45vw, 1.2rem);
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.safari-hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .8rem;
+  margin-top: 1.6rem;
+  padding: .55rem 1rem .55rem .6rem;
+  border: 3px solid var(--safari-ink);
+  border-radius: 999px;
+  background: rgba(255, 243, 196, .92);
+  box-shadow: 4px 4px 0 var(--safari-ink);
+  font-size: .75rem;
+  font-weight: 900;
+}
+
+.safari-hero-count {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--safari-ink);
+  border-radius: 50%;
+  background: var(--safari-sun);
+  font-size: 1.2rem;
+}
+
+.safari-hero-lookout {
+  position: relative;
+  min-height: 19rem;
+  align-self: end;
+}
+
+.safari-hero-lookout svg {
+  position: absolute;
+  right: -1rem;
+  bottom: -3px;
+  width: min(32rem, 100%);
+  overflow: visible;
+  filter: drop-shadow(8px 8px 0 rgba(36, 48, 40, .22));
+}
+
+.safari-basecamp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(19rem, 24rem);
+  align-items: start;
+  gap: clamp(1.25rem, 2.7vw, 2.6rem);
+  padding-bottom: 4.5rem;
+}
+
+.safari-expedition-map {
+  position: relative;
+  overflow: hidden;
+  border: 5px solid var(--safari-ink);
+  border-radius: 2.5rem;
+  background: #fff3c4;
+  box-shadow: 12px 12px 0 var(--safari-ink);
+}
+
+.safari-map-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1.65rem 1.8rem 1.35rem;
+  border-bottom: 4px solid var(--safari-ink);
+  background:
+    radial-gradient(circle at 93% 30%, rgba(92, 200, 232, .3) 0 12%, transparent 13%),
+    #fff3c4;
+}
+
+.safari-map-heading h2 { margin: 0; font-size: clamp(1.65rem, 3vw, 2.8rem); line-height: 1; }
+.safari-map-heading .safari-eyebrow { margin-bottom: .45rem; }
+.safari-map-heading > p { max-width: 18rem; margin: 0; font-size: .78rem; font-weight: 800; line-height: 1.4; text-align: right; }
+
+.safari-map-canvas {
+  position: relative;
+  min-height: 42rem;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 17% 25%, rgba(109, 151, 76, .18) 0 16%, transparent 17%),
+    radial-gradient(ellipse at 76% 72%, rgba(92, 200, 232, .18) 0 19%, transparent 20%),
+    repeating-radial-gradient(ellipse at 15% 15%, transparent 0 25px, rgba(158, 112, 70, .18) 26px 28px, transparent 29px 48px),
+    #f7e7ad;
+}
+
+.safari-map-landscape { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.safari-map-stop {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: min(27rem, 48%);
+  min-height: 10.5rem;
+  padding: 1.15rem 1.25rem;
+  color: var(--safari-ink);
+  border: 4px solid var(--safari-ink);
+  border-radius: 1rem 1.55rem .85rem 1.3rem;
+  box-shadow: 7px 7px 0 var(--safari-ink);
+  text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.safari-map-stop::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: 2rem;
+  bottom: -2.5rem;
+  width: 1.3rem;
+  height: 2.6rem;
+  border: 3px solid var(--safari-ink);
+  border-top: 0;
+  background: #8d5834;
+}
+
+.safari-map-stop:hover { transform: translate(-4px, -5px) rotate(-.6deg); box-shadow: 11px 12px 0 var(--safari-ink); filter: saturate(1.08); }
+.safari-map-stop:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0 var(--safari-ink); }
+.safari-map-stop:focus-visible { outline: 5px solid #e8614d; outline-offset: 5px; }
+.safari-map-stop-games { top: 7%; left: 5%; background: #f4b942; transform: rotate(-1deg); }
+.safari-map-stop-herds { bottom: 9%; left: 10%; background: #5cc8e8; transform: rotate(.8deg); }
+.safari-map-stop-crown { top: 37%; right: 5%; background: #b7df77; transform: rotate(1deg); }
+
+.safari-stop-icon { width: clamp(4rem, 7vw, 5.3rem); flex: 0 0 auto; color: var(--safari-ink); }
+.safari-stop-copy { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; }
+.safari-stop-copy small { font-size: .58rem; font-style: normal; font-weight: 950; letter-spacing: .13em; }
+.safari-stop-copy strong { margin-top: .25rem; font-size: clamp(1.25rem, 2.1vw, 2rem); line-height: 1.02; }
+.safari-stop-copy em { margin-top: .45rem; font-family: var(--font-inter), sans-serif; font-size: .72rem; font-style: normal; font-weight: 750; line-height: 1.4; }
+.safari-stop-copy b { margin-top: .7rem; border-bottom: 2px solid currentColor; font-family: var(--font-inter), sans-serif; font-size: .68rem; text-transform: uppercase; }
+
+.safari-roll-call {
+  position: relative;
+  margin-top: 2rem;
+  padding: 2.15rem 1.35rem 1.35rem;
+  color: #fff3c4;
+  border: 5px solid var(--safari-ink);
+  border-radius: 1.25rem 1.25rem 2rem 2rem;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(255, 243, 196, .12) 49% 51%, transparent 52%),
+    #a96238;
+  box-shadow: 10px 10px 0 var(--safari-ink);
+}
+
+.safari-tent-top {
+  position: absolute;
+  top: -2.2rem;
+  left: 7%;
+  width: 86%;
+  height: 3.5rem;
+  border: 5px solid var(--safari-ink);
+  background: #e8614d;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.safari-roll-call header {
+  position: relative;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid rgba(255, 243, 196, .7);
+}
+
+.safari-roll-call .safari-eyebrow { color: #f9d778; }
+.safari-roll-call h2 { margin: 0; font-size: clamp(1.65rem, 2.8vw, 2.45rem); line-height: 1; }
+.safari-roll-call header > span { display: inline-flex; align-items: baseline; gap: .45rem; margin-top: .8rem; font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.safari-roll-call header > span strong { color: #f4b942; font-family: var(--font-alfa-slab-one), serif; font-size: 1.9rem; line-height: 1; }
+
+.safari-explorer-list {
+  display: grid;
+  gap: .55rem;
+  max-height: 23rem;
+  margin: 1.15rem 0;
+  padding: 0 .25rem 0 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.safari-explorer-list li {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .65rem;
+  min-height: 3.05rem;
+  padding: .42rem .55rem;
+  color: var(--safari-ink);
+  border: 3px solid var(--safari-ink);
+  border-radius: .65rem;
+  background: #fff3c4;
+  box-shadow: 3px 3px 0 var(--safari-ink);
+  font-size: .78rem;
+  font-weight: 900;
+}
+
+.safari-explorer-initial {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  aspect-ratio: 1;
+  border: 2px solid var(--safari-ink);
+  border-radius: 50%;
+  background: #b7df77;
+  font-family: var(--font-alfa-slab-one), serif;
+}
+
+.safari-explorer-list small { font-size: .58rem; font-weight: 950; }
+.safari-explorer-list .safari-more-explorers { display: block; min-height: auto; padding: .7rem; text-align: center; background: #f4b942; }
+
+.safari-empty-camp { padding: 1.4rem .25rem; text-align: center; }
+.safari-empty-camp strong { display: block; margin-top: .75rem; font-family: var(--font-alfa-slab-one), serif; font-size: 1.1rem; }
+.safari-empty-camp p { margin: .4rem auto 0; max-width: 15rem; font-size: .72rem; font-weight: 700; line-height: 1.45; }
+
+.safari-campfire {
+  position: relative;
+  display: inline-flex;
+  align-items: end;
+  justify-content: center;
+  gap: .1rem;
+  width: 4.5rem;
+  height: 3.7rem;
+  border-bottom: 7px solid #243028;
+}
+
+.safari-campfire::after { content: ""; position: absolute; right: .35rem; bottom: -.4rem; left: .35rem; height: .55rem; border: 3px solid #243028; border-radius: 999px; background: #744529; }
+.safari-campfire i { width: 1.2rem; height: 2.8rem; border: 3px solid #243028; border-radius: 60% 40% 55% 45%; background: #f4b942; transform: rotate(9deg); animation: safari-fire-dance 1s ease-in-out infinite alternate; }
+.safari-campfire i:nth-child(2) { height: 3.35rem; background: #e8614d; animation-delay: -.5s; transform: rotate(-6deg); }
+.safari-campfire i:nth-child(3) { height: 2.35rem; animation-delay: -.75s; transform: rotate(13deg); }
+
+.safari-checkin-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.7rem;
+  padding: .9rem 1rem;
+  color: var(--safari-ink);
+  border: 4px solid var(--safari-ink);
+  border-radius: .75rem;
+  background: #f4b942;
+  box-shadow: 5px 5px 0 var(--safari-ink);
+  font-size: .9rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+
+.safari-checkin-button:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--safari-ink); }
+.safari-checkin-button:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 var(--safari-ink); }
+.safari-checkin-button:focus-visible { outline: 4px solid #5cc8e8; outline-offset: 4px; }
+
+.safari-basecamp-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem .25rem 1.8rem;
+  color: #dff0a7;
+  border-top: 2px solid rgba(183, 223, 119, .45);
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+@keyframes safari-basecamp-daylight {
+  from { transform: translateY(-.25rem) scale(.97); box-shadow: 0 0 0 10px rgba(244, 185, 66, .28); }
+  to { transform: translateY(.25rem) scale(1.03); box-shadow: 0 0 0 18px rgba(244, 185, 66, .4); }
+}
+
+@keyframes safari-fire-dance {
+  from { scale: .92 1; translate: 0 .1rem; }
+  to { scale: 1.04 .94; translate: 0 -.1rem; }
+}
+
+@media (max-width: 1050px) {
+  .safari-basecamp-grid { grid-template-columns: 1fr; }
+  .safari-roll-call { width: min(38rem, calc(100% - 1rem)); margin-inline: auto; }
+}
+
+@media (max-width: 760px) {
+  .safari-basecamp-page { padding-inline: .8rem; }
+  .safari-basecamp-nav { align-items: flex-start; border-radius: 1.4rem; }
+  .safari-basecamp-brand span, .safari-camp-status { display: none; }
+  .safari-nav-actions { flex-wrap: wrap; }
+  .safari-nav-actions button { min-height: 2.5rem; padding: .55rem .7rem; }
+  .safari-basecamp-hero { grid-template-columns: 1fr; min-height: auto; padding-top: 4rem; }
+  .safari-hero-lookout { min-height: 14rem; }
+  .safari-map-heading { align-items: flex-start; flex-direction: column; gap: .75rem; }
+  .safari-map-heading > p { max-width: 24rem; text-align: left; }
+  .safari-map-canvas { display: grid; gap: 1.2rem; min-height: 0; padding: 1.35rem; }
+  .safari-map-landscape { opacity: .32; }
+  .safari-map-stop { position: relative; inset: auto; width: 100%; min-height: 0; transform: none; }
+  .safari-map-stop::after { display: none; }
+  .safari-map-stop:hover { transform: translate(-3px, -3px); }
+}
+
+@media (max-width: 520px) {
+  .safari-brand-mark { width: 2.75rem; }
+  .safari-basecamp-brand strong { font-size: .88rem; }
+  .safari-nav-actions button { font-size: .58rem; }
+  .safari-nav-actions button:first-of-type { display: none; }
+  .safari-basecamp-hero { padding-inline: .35rem; }
+  .safari-hero-copy h1 { font-size: clamp(2.65rem, 14vw, 4rem); }
+  .safari-hero-status { align-items: flex-start; border-radius: 1rem; }
+  .safari-hero-lookout { min-height: 11rem; }
+  .safari-map-heading { padding: 1.35rem 1.2rem; }
+  .safari-map-canvas { padding: 1rem; }
+  .safari-map-stop { align-items: flex-start; padding: 1rem; }
+  .safari-stop-icon { width: 3.7rem; }
+  .safari-stop-copy strong { font-size: 1.2rem; }
+  .safari-roll-call { width: 100%; padding-inline: 1rem; }
+  .safari-basecamp-footer { align-items: flex-start; flex-direction: column; }
+}
+
 .safari-world input,
 .safari-world select,
 .safari-world textarea {
@@ -590,5 +1090,8 @@ body {
   .safari-leader-card,
   .safari-vista-sun,
   .safari-vista-birds,
-  .safari-vista-herd { animation: none; }
+  .safari-vista-herd,
+  .safari-basecamp-sun,
+  .safari-camp-status i,
+  .safari-campfire i { animation: none; }
 }

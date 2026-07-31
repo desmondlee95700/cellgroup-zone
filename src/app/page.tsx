@@ -3,17 +3,49 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import GameIcon from "@/components/GameIcon";
 
-const DECORATIVE_SHAPES = [
-  { char: "🦁", color: "bg-[#F4B942]", x: "8%", y: "15%", rot: -15 },
-  { char: "🦒", color: "bg-[#B7DF77]", x: "88%", y: "20%", rot: 12 },
-  { char: "🐘", color: "bg-[#5CC8E8]", x: "6%", y: "60%", rot: 10 },
-  { char: "🦩", color: "bg-[#E8614D]", x: "90%", y: "65%", rot: -8 },
-  { char: "🌿", color: "bg-[#B7DF77]", x: "80%", y: "88%", rot: 45 },
-  { char: "🐾", color: "bg-[#F4B942]", x: "15%", y: "88%", rot: -20 },
-];
+type TrailMarkKind = "compass" | "games" | "herds" | "crown";
+
+function TrailMark({ kind, className = "" }: { kind: TrailMarkKind; className?: string }) {
+  if (kind === "compass") {
+    return (
+      <svg className={className} viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="25" fill="#F4B942" stroke="currentColor" strokeWidth="5" />
+        <path d="m39 18-5 13-13 15 9-17 9-11Z" fill="#E8614D" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+        <circle cx="32" cy="32" r="4" fill="#FFF3C4" stroke="currentColor" strokeWidth="3" />
+      </svg>
+    );
+  }
+
+  if (kind === "games") {
+    return (
+      <svg className={className} viewBox="0 0 72 72" aria-hidden="true">
+        <circle cx="51" cy="20" r="10" fill="#F4B942" stroke="currentColor" strokeWidth="4" />
+        <path d="M7 56 26 24l14 18 8-10 17 24Z" fill="#6D974C" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+        <path d="m27 25 3 17 10 0" fill="none" stroke="#FFF3C4" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (kind === "herds") {
+    return (
+      <svg className={className} viewBox="0 0 72 72" aria-hidden="true">
+        <path d="M8 54c9-13 19-18 28-15 9-11 20-12 29-4v23H8Z" fill="#5CC8E8" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+        <circle cx="25" cy="27" r="10" fill="#F4B942" stroke="currentColor" strokeWidth="4" />
+        <circle cx="47" cy="22" r="12" fill="#E8614D" stroke="currentColor" strokeWidth="4" />
+        <path d="M25 38v15M47 34v19" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className={className} viewBox="0 0 72 72" aria-hidden="true">
+      <circle cx="50" cy="20" r="11" fill="#F4B942" stroke="currentColor" strokeWidth="4" />
+      <path d="M6 57c15-4 22-16 29-35 5 16 11 25 31 35Z" fill="#A96238" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+      <path d="m24 29 11-12 11 12-4 13H28Z" fill="#FFF3C4" stroke="currentColor" strokeWidth="4" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function EntryLandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -81,21 +113,21 @@ export default function EntryLandingPage() {
   const revealBasecamp = () => {
     const tl = gsap.timeline();
     tl.fromTo(
-      ".safari-signboard",
-      { scale: 0.9, y: -45, opacity: 0 },
-      { scale: 1, y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.2)" }
+      ".safari-basecamp-nav",
+      { y: -28, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.48, ease: "power2.out" }
     );
     tl.fromTo(
-      ".safari-map-surface",
-      { scale: 0.95, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: "power2.out" },
+      ".safari-basecamp-hero > *",
+      { y: 32, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: "power2.out" },
+      "-=0.18"
+    );
+    tl.fromTo(
+      ".safari-map-stop, .safari-roll-call",
+      { y: 36, opacity: 0, scale: 0.94 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.52, stagger: 0.1, ease: "back.out(1.2)", clearProps: "all" },
       "-=0.2"
-    );
-    tl.fromTo(
-      ".action-card",
-      { y: 50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.5, stagger: 0.12, ease: "back.out(1.4)", clearProps: "all" },
-      "-=0.15"
     );
   };
 
@@ -144,29 +176,10 @@ export default function EntryLandingPage() {
       }, "<+=0.08");
   };
 
-  // Floating background shape animations
-  useGSAP(
-    () => {
-      if (safariStage === "exploring") {
-        gsap.utils.toArray<HTMLElement>(".floating-element").forEach((el, index) => {
-          gsap.to(el, {
-            y: "+=35",
-            rotation: `${index % 2 === 0 ? "+" : "-"}=12`,
-            duration: 2.2 + index * 0.4,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-          });
-        });
-      }
-    },
-    { dependencies: [safariStage], scope: containerRef }
-  );
-
   return (
     <div
       ref={containerRef}
-      className="safari-world min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] py-12 px-6 flex flex-col items-center justify-center overflow-x-hidden relative"
+      className="min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028] overflow-x-hidden relative"
     >
       {/* Toast Alert popup */}
       {toastMessage && (
@@ -241,275 +254,163 @@ export default function EntryLandingPage() {
         </div>
       )}
 
-      {/* Floating animal markers in the basecamp sky */}
-      {safariStage === "exploring" &&
-        DECORATIVE_SHAPES.map((shape, idx) => (
-          <div
-            key={idx}
-            className={`hidden md:flex floating-element fixed items-center justify-center w-14 h-14 border-4 border-black ${shape.color} rounded-xl shadow-[4px_4px_0px_#000] text-3xl`}
-            style={{
-              left: shape.x,
-              top: shape.y,
-              transform: `rotate(${shape.rot}deg)`,
-            }}
-          >
-            {shape.char}
-          </div>
-        ))}
-
-      {/* Safari Basecamp map */}
+      {/* Illustrated Safari Basecamp */}
       {safariStage === "exploring" && (
-        <div className="max-w-6xl w-full space-y-8 z-10">
-          
-          <header className="safari-signboard brutal-box p-6 sm:p-8 rounded-3xl shadow-[12px_12px_0px_#243028] border-4 border-[#243028] relative">
-            <span className="safari-leaf-marker left-4 top-4" aria-hidden="true">🌿</span>
-            <span className="safari-leaf-marker right-4 top-4" aria-hidden="true">🦒</span>
+        <div className="safari-basecamp-page">
+          <div className="safari-basecamp-sun" aria-hidden="true" />
+          <div className="safari-basecamp-hills safari-basecamp-hills-back" aria-hidden="true" />
+          <div className="safari-basecamp-hills safari-basecamp-hills-front" aria-hidden="true" />
 
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-2">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-[#F4B942] border-4 border-[#243028] text-[#243028] rounded-xl transform -rotate-3 shadow-[4px_4px_0px_#243028] hover:rotate-3 transition-transform duration-200">
-                  <GameIcon className="w-12 h-8" />
-                </div>
-                <div className="text-left">
-                  <h1 className="safari-title-text brutal-font text-3xl sm:text-5xl text-[#FFF3C4] uppercase tracking-wider">
-                    ANIMAL KINGDOM
-                  </h1>
-                  <p className="text-[#B7DF77] font-mono text-[10px] sm:text-xs tracking-widest uppercase mt-0.5">
-                    {"/// SAFARI BASECAMP & PARTY GAMES ///"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-[#FFF3C4] bg-[#245b3f] p-3 shadow-[3px_3px_0px_#143525]">
-                <span className="font-mono text-[9px] font-black uppercase tracking-wider text-[#B7DF77]">🌿 Trail ready</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setSoundOn(!soundOn)}
-                    className="bg-[#5CC8E8] text-[#243028] font-black text-[10px] px-3 py-1.5 border-2 border-[#243028] hover:bg-[#8eddf0] uppercase shadow-[2px_2px_0px_#243028] cursor-pointer"
-                  >
-                    SFX: {soundOn ? "ON" : "OFF"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSafariStage("gathering");
-                      showToast("Back to the reserve entrance.");
-                    }}
-                    className="bg-[#E8614D] text-white font-black text-[10px] px-3 py-1.5 border-2 border-[#243028] hover:bg-[#c84738] uppercase shadow-[2px_2px_0px_#243028] cursor-pointer"
-                  >
-                    Return
-                  </button>
-                </div>
+          <nav className="safari-basecamp-nav" aria-label="Basecamp controls">
+            <div className="safari-basecamp-brand">
+              <TrailMark kind="compass" className="safari-brand-mark" />
+              <div>
+                <strong className="brutal-font">Animal Kingdom</strong>
+                <span>Expedition basecamp</span>
               </div>
             </div>
-          </header>
 
-          <div className="safari-trail-strip w-full overflow-hidden select-none relative flex items-stretch">
-            <div className="relative z-10 shrink-0 flex items-center gap-3 bg-[#F4B942] text-[#243028] px-4 py-3 border-r-4 border-[#243028] font-mono text-[10px] sm:text-xs font-black uppercase tracking-wider">
-              <span className="w-2.5 h-2.5 bg-[#B7DF77] rounded-full"></span>
-              {roster.length > 0 ? `${roster.length} explorers checked in` : "Basecamp open"}
+            <div className="safari-nav-actions">
+              <span className="safari-camp-status"><i aria-hidden="true" />{roster.length} in camp</span>
+              <button type="button" aria-pressed={soundOn} onClick={() => setSoundOn(!soundOn)}>
+                Sound {soundOn ? "on" : "off"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSafariStage("gathering");
+                  showToast("Back to the reserve entrance.");
+                }}
+              >
+                Exit reserve
+              </button>
             </div>
-            <div className="min-w-0 overflow-hidden py-3">
-              <div className="animate-trail-procession whitespace-nowrap flex gap-10 text-xs font-mono tracking-widest uppercase items-center font-bold">
-              {roster.length > 0 ? (
-                Array(6)
-                  .fill(roster)
-                  .flat()
-                  .map((name, i) => (
-                    <span key={i} className="flex items-center gap-3">
-                      <span aria-hidden="true">🐾</span>
-                      {name} ON THE TRAIL
-                    </span>
-                  ))
-              ) : (
-                Array(4)
-                  .fill([
-                    "SAFARI TRAIL OPEN // BASECAMP CONNECTED",
-                    "WAITING FOR EXPLORERS TO CHECK IN...",
-                    "SCAN THE TRAIL PASS TO JOIN THE ANIMAL CREWS!",
-                    "TEAM TRACKER IS READY TO FORM FAIR HERDS..."
-                  ])
-                  .flat()
-                  .map((text, i) => (
-                    <span key={i} className="flex items-center gap-3">
-                      <span aria-hidden="true">🌿</span>
-                      {text}
-                    </span>
-                  ))
-              )}
-              </div>
-            </div>
-          </div>
+          </nav>
 
-          {/* Basecamp trail map and explorer check-in */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            {/* Left: Main Dashboard Center Screen (8 Cols) */}
-            <main className="lg:col-span-8 space-y-8 safari-map-surface">
-              
-              <div className="safari-card brutal-box text-[#243028] p-6 rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
-                <div className="fold-corner-orange"></div>
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center border-b-4 border-black pb-4">
-                    <span className="bg-[#243028] text-[#FFF3C4] text-xs font-black px-2.5 py-1 border-2 border-[#243028] uppercase tracking-wider">
-                      SAFARI TRAIL SELECTOR
-                    </span>
-                    <span className="text-xs font-mono font-black uppercase text-zinc-500">
-                      CHOOSE YOUR ADVENTURE
-                    </span>
-                  </div>
-
-                  {/* Main features cards row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    
-                    {/* Action 1: Games rules */}
-                    <div className="action-card brutal-box p-7 bg-[#F4B942] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[250px] sm:col-span-2">
-                      <div className="space-y-4 max-w-xl">
-                        <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          SAFARI TRAIL 01 // WILD MISSIONS
-                        </span>
-                        <h2 className="brutal-font text-3xl sm:text-4xl uppercase tracking-tight">
-                          SAFARI GAMES 🦁
-                        </h2>
-                        <p className="font-bold text-sm leading-relaxed text-zinc-900">
-                          Brief the expedition, run the two wild challenges, then play the short game reel on the big screen.
-                        </p>
-                      </div>
-                      <div className="pt-4">
-                        <Link
-                          href="/games"
-                          className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
-                        >
-                          EXPLORE GAME RULES →
-                        </Link>
-                      </div>
-                    </div>
-
-                    {/* Action 2: Showcase Board */}
-                    <div className="action-card brutal-box p-6 bg-[#B7DF77] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
-                      <div className="space-y-3">
-                        <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          TRAIL 03 // PRIDE ROCK
-                        </span>
-                        <h2 className="brutal-font text-2xl uppercase tracking-tight">
-                          SAFARI CROWN 📺
-                        </h2>
-                        <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Put live animal-team standings and player names on the room display.
-                        </p>
-                      </div>
-                      <div className="pt-4">
-                        <Link
-                          href="/showcase"
-                          className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
-                        >
-                          OPEN CROWN BOARD →
-                        </Link>
-                      </div>
-                    </div>
-
-                    {/* Action 3: Player Mixer controller */}
-                    <div className="action-card brutal-box p-6 bg-[#5CC8E8] text-[#243028] rounded-2xl border-4 border-[#243028] shadow-[6px_6px_0px_#243028] hover:-translate-y-1 hover:shadow-[10px_10px_0px_#243028] transition-all duration-200 flex flex-col justify-between min-h-[210px]">
-                      <div className="space-y-3">
-                        <span className="bg-black text-[#FFFDF5] text-[9px] font-black px-2 py-0.5 border border-black uppercase tracking-wider inline-block">
-                          TRAIL 02 // HERD MAKER
-                        </span>
-                        <h2 className="brutal-font text-2xl uppercase tracking-tight">
-                          HERD MAKER 🐘
-                        </h2>
-                        <p className="font-bold text-xs leading-relaxed text-zinc-900">
-                          Build fair herds, avoid cell-group collisions, and ready the live Safari Crown board.
-                        </p>
-                      </div>
-                      <div className="pt-4">
-                        <Link
-                          href="/mixer"
-                          className="inline-block brutal-font text-xs bg-black text-[#FFFDF5] hover:bg-zinc-800 hover:text-white px-5 py-3 border-2 border-black uppercase transition-all duration-100 shadow-[3px_3px_0px_#000] active:translate-y-0.5 active:shadow-[1px_1px_0px_#000] cursor-pointer"
-                        >
-                          FORM ANIMAL CREWS →
-                        </Link>
-                      </div>
-                    </div>
-
-                  </div>
+          <main className="safari-basecamp-shell">
+            <section className="safari-basecamp-hero" aria-labelledby="basecamp-heading">
+              <div className="safari-hero-copy">
+                <p className="safari-eyebrow">THE RESERVE IS AWAKE</p>
+                <h1 id="basecamp-heading" className="brutal-font">Where will your crew roam first?</h1>
+                <p className="safari-hero-lede">
+                  Choose a destination on the expedition map, gather your animal crew, and lead the whole room into the wild.
+                </p>
+                <div className="safari-hero-status">
+                  <span className="safari-hero-count brutal-font">{roster.length}</span>
+                  <span>{roster.length === 1 ? "explorer is" : "explorers are"} waiting at the campfire</span>
                 </div>
               </div>
-            </main>
 
-            {/* Right: Live room status and registration (4 Cols) */}
-            <aside className="lg:col-span-4 space-y-8">
-              {/* Lobby Live Roster Player Ticket List */}
-              <div className="safari-card brutal-box p-6 text-[#243028] rounded-3xl border-4 border-[#243028] shadow-[8px_8px_0px_#243028] relative">
-                <div className="fold-corner-blue"></div>
-                <div className="space-y-5">
-                  <div className="bg-[#1D4A35] text-[#FFF3C4] border-4 border-[#243028] p-4 shadow-[4px_4px_0px_#243028]">
-                    <div className="flex items-center justify-between gap-3 font-mono text-[10px] font-black uppercase tracking-wider">
-                      <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-[#B7DF77]"></span> Basecamp status</span>
-                      <span className="text-[#F4B942]">Trail 01</span>
-                    </div>
-                    <p className="brutal-font text-3xl text-[#F4B942] mt-3 leading-none">{roster.length}</p>
-                    <p className="font-mono text-[10px] text-[#B7DF77] uppercase mt-1">Explorers checked in</p>
-                  </div>
-
-                  <div className="border-b-2 border-black pb-2 flex justify-between items-center">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-black text-[#FFFDF5] px-2 py-0.5 border border-black">
-                      LIVE EXPEDITION
-                    </span>
-                    <span className="text-xs font-mono font-bold text-[#2E7D4D]">ON TRAIL</span>
-                  </div>
-
-                  {roster.length === 0 ? (
-                    <div className="text-center py-6 border-2 border-dashed border-zinc-300 rounded-lg">
-                      <p className="font-bold text-xs uppercase text-zinc-500">No explorers checked in yet</p>
-                      <a
-                        href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] text-[#38BDF8] hover:underline font-black uppercase block mt-1"
-                      >
-                        Find the trail ➔
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="max-h-[160px] overflow-y-auto space-y-2 pr-1">
-                      {roster.slice(0, 8).map((player, idx) => (
-                        <div
-                          key={idx}
-                          className="ticket-tear px-5 py-2 border-2 border-black bg-zinc-100 flex items-center justify-between text-xs font-bold shadow-[2px_2px_0px_#000]"
-                        >
-                          <span className="truncate">{player}</span>
-                          <span className="text-[8px] font-mono bg-black text-white px-1.5 py-0.5 uppercase shrink-0">
-                            P0{idx + 1}
-                          </span>
-                        </div>
-                      ))}
-                      {roster.length > 8 && (
-                        <p className="text-center text-[10px] font-mono text-zinc-500 uppercase pt-1">
-                          + {roster.length - 8} MORE PLAYERS READY
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* QR signup link */}
-                  <a
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center brutal-font text-xs bg-[#5CC8E8] hover:bg-[#8eddf0] text-[#243028] py-3 border-2 border-[#243028] uppercase shadow-[3px_3px_0px_#243028]"
-                  >
-                    🐾 CHECK IN AN EXPLORER ➔
-                  </a>
-                </div>
+              <div className="safari-hero-lookout" aria-hidden="true">
+                <svg viewBox="0 0 420 300" role="presentation">
+                  <circle cx="292" cy="91" r="70" fill="#F4B942" stroke="#243028" strokeWidth="7" />
+                  <path d="M0 213c75-55 147-25 214-52 84-34 140 31 206-5v144H0Z" fill="#86A94E" stroke="#243028" strokeWidth="7" />
+                  <path d="M0 247c78-39 145 7 232-30 80-34 134 16 188-1v84H0Z" fill="#1D4A35" stroke="#243028" strokeWidth="7" />
+                  <path d="M76 225h25L94 115H82Z" fill="#243028" />
+                  <path d="M38 131c10-43 65-56 88-24 38-27 84 2 67 39-14 28-50 15-66 14-23 18-84 6-89-29Z" fill="#243028" />
+                  <path d="M272 229c0-26 25-41 51-31 15-23 56-14 58 19 19 2 27 14 25 29h-15v23h-12v-23h-31v23h-12v-23h-21v23h-12v-23h-15Z" fill="#243028" />
+                  <path d="M235 129q13-12 26 0q13-12 26 0M325 78q10-9 20 0q10-9 20 0" fill="none" stroke="#243028" strokeWidth="6" strokeLinecap="round" />
+                </svg>
               </div>
-            </aside>
+            </section>
 
-          </div>
+            <div className="safari-basecamp-grid">
+              <section className="safari-expedition-map safari-map-surface" aria-labelledby="map-heading">
+                <header className="safari-map-heading">
+                  <div>
+                    <p className="safari-eyebrow">RANGER&apos;S EXPEDITION MAP</p>
+                    <h2 id="map-heading" className="brutal-font">Pick a wild destination</h2>
+                  </div>
+                  <p>Every trail opens a live part of the gathering.</p>
+                </header>
 
-          {/* Footer Deck Chassis */}
-          <footer className="text-center py-6 font-mono text-[9px] text-[#dce9ba] uppercase tracking-widest border-t-2 border-[#6ca160]">
-            © 2026 Animal Kingdom Basecamp · Safari party games
+                <div className="safari-map-canvas">
+                  <svg className="safari-map-landscape" viewBox="0 0 900 670" preserveAspectRatio="none" aria-hidden="true">
+                    <path d="M-50 560C125 450 185 655 350 520S585 365 745 470s177-40 225-62" fill="none" stroke="#5CC8E8" strokeWidth="58" strokeLinecap="round" opacity=".72" />
+                    <path d="M62 150c185-74 280 65 367 167s194 47 288-56 145-38 174 31" fill="none" stroke="#9E7046" strokeWidth="15" strokeLinecap="round" strokeDasharray="3 30" />
+                    <path d="M68 150c183-70 274 67 360 166s191 48 286-54 143-39 171 29" fill="none" stroke="#FFF3C4" strokeWidth="5" strokeLinecap="round" strokeDasharray="3 30" />
+                    <path d="m34 559 58-93 66 93Zm77 0 75-130 82 130Z" fill="#86A94E" stroke="#243028" strokeWidth="6" strokeLinejoin="round" />
+                    <path d="m648 143 58-93 64 93Zm77 0 70-119 74 119Z" fill="#A96238" stroke="#243028" strokeWidth="6" strokeLinejoin="round" />
+                    <circle cx="88" cy="151" r="15" fill="#F4B942" stroke="#243028" strokeWidth="6" />
+                    <circle cx="453" cy="347" r="15" fill="#F4B942" stroke="#243028" strokeWidth="6" />
+                    <circle cx="844" cy="288" r="15" fill="#F4B942" stroke="#243028" strokeWidth="6" />
+                  </svg>
+
+                  <Link href="/games" className="safari-map-stop safari-map-stop-games">
+                    <TrailMark kind="games" className="safari-stop-icon" />
+                    <span className="safari-stop-copy">
+                      <small>SAVANNA ACTIVITY FIELD</small>
+                      <strong className="brutal-font">Wild Field Games</strong>
+                      <em>Read the challenges, gather supplies, and cue the game reel.</em>
+                      <b>Open the field guide <span aria-hidden="true">→</span></b>
+                    </span>
+                  </Link>
+
+                  <Link href="/mixer" className="safari-map-stop safari-map-stop-herds">
+                    <TrailMark kind="herds" className="safari-stop-icon" />
+                    <span className="safari-stop-copy">
+                      <small>RANGER ROUND-UP</small>
+                      <strong className="brutal-font">Gather the Herds</strong>
+                      <em>Turn the explorer roster into fair animal crews.</em>
+                      <b>Build the teams <span aria-hidden="true">→</span></b>
+                    </span>
+                  </Link>
+
+                  <Link href="/showcase" className="safari-map-stop safari-map-stop-crown">
+                    <TrailMark kind="crown" className="safari-stop-icon" />
+                    <span className="safari-stop-copy">
+                      <small>PRIDE ROCK OVERLOOK</small>
+                      <strong className="brutal-font">Raise the Safari Crown</strong>
+                      <em>Send live animal-team standings to the room display.</em>
+                      <b>View live standings <span aria-hidden="true">→</span></b>
+                    </span>
+                  </Link>
+                </div>
+              </section>
+
+              <aside className="safari-roll-call" aria-labelledby="roll-call-heading">
+                <div className="safari-tent-top" aria-hidden="true" />
+                <header>
+                  <p className="safari-eyebrow">CAMPFIRE ROLL CALL</p>
+                  <h2 id="roll-call-heading" className="brutal-font">Who&apos;s at basecamp?</h2>
+                  <span><strong>{roster.length}</strong> explorers checked in</span>
+                </header>
+
+                {roster.length === 0 ? (
+                  <div className="safari-empty-camp">
+                    <span className="safari-campfire" aria-hidden="true"><i /><i /><i /></span>
+                    <strong>The campfire is waiting.</strong>
+                    <p>Invite the first explorer and their name will appear here.</p>
+                  </div>
+                ) : (
+                  <ol className="safari-explorer-list">
+                    {roster.slice(0, 8).map((player, idx) => (
+                      <li key={`${player}-${idx}`}>
+                        <span className="safari-explorer-initial" aria-hidden="true">{player.trim().charAt(0).toUpperCase() || "?"}</span>
+                        <span>{player}</span>
+                        <small>{String(idx + 1).padStart(2, "0")}</small>
+                      </li>
+                    ))}
+                    {roster.length > 8 && <li className="safari-more-explorers">And {roster.length - 8} more around the fire</li>}
+                  </ol>
+                )}
+
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="safari-checkin-button brutal-font"
+                >
+                  Join the expedition <span aria-hidden="true">→</span>
+                </a>
+              </aside>
+            </div>
+          </main>
+
+          <footer className="safari-basecamp-footer">
+            <span>Animal Kingdom Basecamp</span>
+            <span>Gather boldly. Play wildly.</span>
           </footer>
-
         </div>
       )}
     </div>
