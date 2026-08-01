@@ -36,8 +36,6 @@ const SCORE_AWARDS = [
   { label: "+100", delta: 100, title: "Round win plus 100 points" },
 ] as const;
 
-const SCORE_TARGET = 300;
-
 function ScoreAwardControls({
   team,
   onAward,
@@ -147,6 +145,8 @@ export default function MixerPage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showShowcase, setShowShowcase] = useState(false);
   const [showTeamRosters, setShowTeamRosters] = useState(false);
+  const [showRangerControls, setShowRangerControls] = useState(false);
+  const [spotlightTeamId, setSpotlightTeamId] = useState<number | null>(null);
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
@@ -754,7 +754,7 @@ export default function MixerPage() {
     try {
       navigator.clipboard.writeText(buildShareUrl());
       playSuccessChirp();
-      showToast("Explorer share link copied!");
+      showToast("Read-only team viewer link copied!");
     } catch (e) {
       console.error(e);
       showToast("Failed to generate share link!");
@@ -795,8 +795,13 @@ export default function MixerPage() {
   const leadMargin = Math.max(0, topScore - runnerUpScore);
   const leaderTeam = rankedTeams[0];
   const challengerTeams = rankedTeams.slice(1);
-  const leaderTargetProgress = Math.min(100, (topScore / SCORE_TARGET) * 100);
-  const hasChampion = topScore >= SCORE_TARGET;
+  const liveReferenceScore = Math.max(topScore, 1);
+  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
+  const spotlightTeam = rankedTeams.find((team) => team.id === spotlightTeamId) ?? leaderTeam;
+  const podiumTeams = [rankedTeams[1], rankedTeams[0], rankedTeams[2]].filter((team): team is Team => Boolean(team));
+  const chasingTeams = rankedTeams.slice(3);
+  const leaderTargetProgress = topScore === 0 ? 0 : 100;
+  const hasChampion = false;
 
   const getTeamRank = (teamId: number) => {
     return rankedTeams.findIndex((team) => team.id === teamId) + 1;
@@ -830,6 +835,20 @@ export default function MixerPage() {
     );
     playSynthSound(220, 0.18, "triangle");
     showToast("Safari trail reset. A fresh expedition is ready!");
+  };
+
+  const toggleRallyFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+      const rallyScreen = document.querySelector<HTMLElement>(".safari-control-overlay");
+      await rallyScreen?.requestFullscreen();
+    } catch (error) {
+      console.warn("Fullscreen mode is unavailable", error);
+      showToast("Fullscreen is unavailable in this browser.");
+    }
   };
 
   // GSAP animations for active parts
@@ -1419,10 +1438,172 @@ export default function MixerPage() {
         </div>
       )}
 
-      {/* Presentation Showcase Modal Overlay (Ticket style) */}
+      {/* Open-ended Safari Rally projector overlay */}
       {showShowcase && finalTeams.length > 0 && (
         <div className="safari-control-overlay">
-          <div className="max-w-7xl mx-auto w-full space-y-6">
+          <div className="safari-rally-screen" role="dialog" aria-modal="true" aria-labelledby="safari-rally-title">
+            <header className="safari-rally-nav">
+              <button
+                type="button"
+                className="safari-rally-close"
+                onClick={() => {
+                  setShowShowcase(false);
+                  if (document.fullscreenElement) void document.exitFullscreen();
+                  playSynthSound(400, 0.15, "triangle");
+                }}
+              >
+                Close rally
+              </button>
+
+              <div className="safari-rally-brand">
+                <span className="safari-rally-brand-mark" aria-hidden="true"><i /><i /><i /></span>
+                <div>
+                  <small>Animal Kingdom · live</small>
+                  <strong>Safari Rally</strong>
+                </div>
+              </div>
+
+              <div className="safari-rally-tools">
+                <span className="safari-rally-live"><i aria-hidden="true" /> Live counting</span>
+                <button type="button" onClick={() => setShowRangerControls((visible) => !visible)}>
+                  {showRangerControls ? "Hide controls" : "Ranger controls"}
+                </button>
+                <button type="button" onClick={toggleRallyFullscreen}>Full screen</button>
+              </div>
+            </header>
+
+            <section className="safari-broadcast-banner">
+              <div className="safari-broadcast-sun" aria-hidden="true" />
+              <div className="safari-broadcast-canopy" aria-hidden="true"><i /><i /><i /></div>
+              <div className="safari-broadcast-copy">
+                <p className="safari-eyebrow">Live from Pride Rock</p>
+                <h2 id="safari-rally-title">The safari podium is live.</h2>
+                <p>Open-ended scoring. Every award can change the top three instantly.</p>
+              </div>
+              <div className="safari-broadcast-stats" aria-live="polite">
+                <div><span>Points counted</span><strong>{totalLivePoints}</strong></div>
+                <div><span>Lead status</span><strong>{topScore === 0 ? "Ready" : leadMargin === 0 ? "Tied" : `+${leadMargin}`}</strong></div>
+                <div><span>Herds running</span><strong>{rankedTeams.length}</strong></div>
+              </div>
+            </section>
+
+            <main className="safari-podium-layout">
+              <section className="safari-podium-board" aria-labelledby="live-podium-title">
+                <div className="safari-podium-heading">
+                  <div>
+                    <p className="safari-eyebrow">Live top three</p>
+                    <h3 id="live-podium-title">Pride Rock podium</h3>
+                  </div>
+                  <p>{topScore === 0 ? "The first points will wake the savanna." : `${getSafariTeamLabel(leaderTeam?.name ?? "")} currently commands the trail.`}</p>
+                </div>
+
+                <div className="safari-live-podium" aria-live="polite">
+                  <div className="safari-podium-horizon" aria-hidden="true"><i /><i /><i /></div>
+                  {podiumTeams.map((team) => {
+                    const rank = getTeamRank(team.id);
+                    const score = team.score ?? 0;
+                    const teamAhead = rankedTeams[rank - 2];
+                    const teamBehind = rankedTeams[rank];
+                    const isSpotlight = spotlightTeam?.id === team.id;
+                    const status = topScore === 0
+                      ? "Waiting for first points"
+                      : rank === 1
+                        ? leadMargin === 0 ? "Tied at the summit" : `${leadMargin} points clear`
+                        : `${Math.max(0, (teamAhead?.score ?? 0) - score)} points to ${rank === 2 ? "1st" : "2nd"}`;
+
+                    return (
+                      <article
+                        key={team.id}
+                        className={`safari-podium-place place-${rank}${isSpotlight ? " is-selected" : ""}`}
+                        style={{ "--team-accent": getTeamAccent(team.color, rank - 1) } as CSSProperties}
+                      >
+                        <button type="button" className="safari-podium-select" aria-pressed={isSpotlight} onClick={() => setSpotlightTeamId(team.id)}>
+                          <span className="safari-podium-medal">{rank === 1 ? "1ST" : rank === 2 ? "2ND" : "3RD"}</span>
+                          {rank === 1 && <span className="safari-podium-crown" aria-hidden="true"><i /><i /><i /></span>}
+                          <TeamMark name={team.name} />
+                          <span className="safari-podium-name">
+                            <small>{status}</small>
+                            <strong>{getSafariTeamLabel(team.name)}</strong>
+                            <em>{team.members.length} explorer{team.members.length === 1 ? "" : "s"}</em>
+                          </span>
+                          <span className={`safari-podium-score${scoreFlashTeamId === team.id ? " score-pop" : ""}`}><strong>{score}</strong><small>points</small></span>
+                          <span className="safari-podium-next">{teamBehind ? `${Math.max(0, score - (teamBehind.score ?? 0))} pts ahead` : "Holding the trail"}</span>
+                        </button>
+                        {showRangerControls && <ScoreAwardControls team={team} onAward={updateTeamScore} compact />}
+                      </article>
+                    );
+                  })}
+                </div>
+
+                {chasingTeams.length > 0 && (
+                  <div className="safari-chasing-strip">
+                    <span className="safari-chasing-label">Still on the trail</span>
+                    {chasingTeams.map((team) => {
+                      const rank = getTeamRank(team.id);
+                      return (
+                        <button
+                          key={team.id}
+                          type="button"
+                          className={spotlightTeam?.id === team.id ? "is-selected" : ""}
+                          onClick={() => setSpotlightTeamId(team.id)}
+                          style={{ "--team-accent": getTeamAccent(team.color, rank - 1) } as CSSProperties}
+                        >
+                          <b>{rank}</b><TeamMark name={team.name} compact /><span>{getSafariTeamLabel(team.name)}</span><strong>{team.score ?? 0}</strong>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {showRangerControls && chasingTeams.length > 0 && (
+                  <div className="safari-chasing-controls">
+                    {chasingTeams.map((team) => <ScoreAwardControls key={team.id} team={team} onAward={updateTeamScore} compact />)}
+                  </div>
+                )}
+              </section>
+
+              <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
+                <header>
+                  <span className="safari-viewer-eye" aria-hidden="true"><i /></span>
+                  <div><p>Audience access</p><h3>Your team viewer</h3></div>
+                  <b>Read only</b>
+                </header>
+
+                <div className="safari-viewer-qr">
+                  {canRenderShareQr ? (
+                    <QRCodeSVG value={shareUrl} size={220} level="M" marginSize={2} className="block" />
+                  ) : (
+                    <span>Roster is too large for a QR. Use the viewer link.</span>
+                  )}
+                </div>
+                <div className="safari-viewer-copy">
+                  <strong>Scan for teams + scores</strong>
+                  <p>Audience members can view the standings and team rosters. They cannot award, reset, or edit points.</p>
+                  <div>
+                    <a href={shareUrl} target="_blank" rel="noreferrer">Open viewer</a>
+                    <button type="button" onClick={copyShareLink}>Copy link</button>
+                  </div>
+                </div>
+
+                {spotlightTeam && (
+                  <section className="safari-viewer-roster" aria-label={`${getSafariTeamLabel(spotlightTeam.name)} team viewer`}>
+                    <div className="safari-viewer-team-heading"><TeamMark name={spotlightTeam.name} compact /><span><small>Selected herd · rank {getTeamRank(spotlightTeam.id)}</small><strong>{getSafariTeamLabel(spotlightTeam.name)}</strong></span><b>{spotlightTeam.score ?? 0}</b></div>
+                    <ul>
+                      {spotlightTeam.members.map((member, memberIndex) => <li key={member.id}><span>{String(memberIndex + 1).padStart(2, "0")}</span><strong>{member.name}</strong><small className={getGroupColor(member.cg)}>{member.cg}</small></li>)}
+                      {spotlightTeam.members.length === 0 && <li className="is-empty">This herd is waiting for explorers.</li>}
+                    </ul>
+                  </section>
+                )}
+              </aside>
+            </main>
+
+            <footer className="safari-rally-footer">
+              <span>Live podium · positions update after every score</span>
+              <span>Round win +100 · Runner-up +60 · Team spirit +25 · Trail find +10 · Penalty −10</span>
+            </footer>
+          </div>
+
+          <div className="safari-legacy-control-panel max-w-7xl mx-auto w-full space-y-6" aria-hidden="true">
             
             {/* Header section ticket layout */}
             <div className="safari-expedition-pass brutal-box text-[#243028] p-5 rounded-3xl shadow-[12px_12px_0px_#243028] border-8 border-[#243028] flex flex-col items-center gap-4 relative">
@@ -1526,7 +1707,7 @@ export default function MixerPage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="border-2 border-[#FFFDF5] bg-[#FACC15] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider text-black shadow-[3px_3px_0px_#38BDF8]">
-                    First to {SCORE_TARGET} points
+                    Live score reference: {liveReferenceScore}
                   </span>
                   <p aria-live="polite" className="border-2 border-[#FFFDF5] bg-[#27272A] px-3 py-2 font-mono text-[9px] font-black uppercase tracking-wider">
                     {topScore > 0
@@ -1551,13 +1732,13 @@ export default function MixerPage() {
                     <span className="flex h-9 w-9 items-center justify-center border-2 border-black bg-black text-lg text-[#FACC15]">🏆</span>
                     <div>
                       <p className="font-mono text-[8px] font-black uppercase tracking-[0.24em]">Safari crown target</p>
-                      <p className="brutal-font text-lg uppercase">{SCORE_TARGET} paw points earns the crown</p>
+                      <p className="brutal-font text-lg uppercase">Open-ended live counting</p>
                     </div>
                   </div>
                   <p className="font-mono text-[9px] font-black uppercase tracking-wider">
                     {hasChampion
                       ? `🏁 ${getSafariTeamLabel(leaderTeam?.name ?? "")} reached the pride rock`
-                      : `${Math.max(0, SCORE_TARGET - topScore)} points to the crown`}
+                      : `${topScore} current leading score`}
                   </p>
                 </div>
 
@@ -1616,7 +1797,7 @@ export default function MixerPage() {
                   <div className="space-y-4">
                     {challengerTeams.map((team, challengerIndex) => {
                       const score = team.score ?? 0;
-                      const targetProgress = Math.min(100, (score / SCORE_TARGET) * 100);
+                      const targetProgress = Math.min(100, (score / liveReferenceScore) * 100);
                       const gapToLeader = Math.max(0, topScore - score);
 
                       return (

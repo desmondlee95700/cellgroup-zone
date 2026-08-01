@@ -21,8 +21,6 @@ interface TeamData {
   score?: number;
 }
 
-const SCORE_TARGET = 300;
-
 const CG_COLORS = [
   "bg-[#5CC8E8]",
   "bg-[#F4B942]",
@@ -160,6 +158,8 @@ function ShowcaseContent() {
   const leadMargin = Math.max(0, topScore - runnerUpScore);
   const leaderTeam = rankedTeams[0];
   const challengerTeams = rankedTeams.slice(1);
+  const liveReferenceScore = Math.max(topScore, 1);
+  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
   const activeTeam = teams[activeBroadcastIdx];
   const matchCount = cleanQuery
     ? teams.reduce((count, team) => count + team.members.filter((member) => member.name.toLowerCase().includes(cleanQuery)).length, 0)
@@ -169,9 +169,15 @@ function ShowcaseContent() {
 
   return (
     <div ref={containerRef} className="safari-crown-content">
-      <section className="safari-lookout-rail" aria-label="Ranger tools">
+      <section className="safari-view-only-notice" aria-label="Audience viewer permissions">
+        <span aria-hidden="true"><i /></span>
+        <div><strong>Audience team viewer</strong><small>Read-only access to team rosters and current scores</small></div>
+        <b>No score controls</b>
+      </section>
+
+      <section className="safari-lookout-rail" aria-label="Viewer tools">
         <label className="safari-explorer-search">
-          <span>Ranger lookout</span>
+          <span>Find my team</span>
           <input
             type="search"
             placeholder="Find an explorer by name"
@@ -246,9 +252,9 @@ function ShowcaseContent() {
                 </p>
               </div>
               <div className="safari-crown-goal">
-                <span>Journey to the crown</span>
-                <strong>{SCORE_TARGET}</strong>
-                <small>points to win</small>
+                <span>Points recorded</span>
+                <strong>{totalLivePoints}</strong>
+                <small>open-ended count</small>
               </div>
             </div>
 
@@ -268,8 +274,8 @@ function ShowcaseContent() {
                   <strong>{topScore}</strong>
                   <span>points</span>
                 </div>
-                <div className="safari-summit-progress" aria-label={`${Math.min(100, Math.round((topScore / SCORE_TARGET) * 100))}% to the crown`}>
-                  <i style={{ width: `${Math.min(100, (topScore / SCORE_TARGET) * 100)}%` }} />
+                <div className="safari-summit-progress" aria-label={`${getSafariTeamLabel(leaderTeam.name)} is the current live leader`}>
+                  <i style={{ width: topScore > 0 ? "100%" : "6%" }} />
                 </div>
               </article>
 
@@ -277,7 +283,7 @@ function ShowcaseContent() {
                 {challengerTeams.map((team, index) => {
                   const score = team.score ?? 0;
                   const gap = Math.max(0, topScore - score);
-                  const progress = Math.min(100, (score / SCORE_TARGET) * 100);
+                  const progress = topScore === 0 ? 6 : Math.max(6, (score / liveReferenceScore) * 100);
 
                   return (
                     <article
@@ -427,10 +433,10 @@ export default function ShowcasePage() {
           <span className="safari-crown-brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <div>
             <strong>Pride Rock Ceremony</strong>
-            <small>Live safari points</small>
+            <small>Teams and live safari points</small>
           </div>
         </div>
-        <span className="safari-crown-live"><i aria-hidden="true" /> Ceremony live</span>
+        <span className="safari-crown-live"><i aria-hidden="true" /> Read-only spectator view</span>
       </header>
 
       <main className="safari-crown-shell gsap-reveal">
