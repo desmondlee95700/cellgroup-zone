@@ -1365,9 +1365,6 @@ export default function MixerPage() {
                               <span>{String(idx + 1).padStart(2, "0")}</span>
                               <b>{m.name}</b>
                             </span>
-                            <span className={`safari-roster-group ${getGroupColor(m.cg)}`}>
-                              {m.cg}
-                            </span>
                           </li>
                         ))}
                         {team.members.length === 0 && (
