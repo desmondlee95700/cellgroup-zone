@@ -24,3 +24,8 @@ This is a web application showcasing highly energetic and chaotic games for a la
   cd video-generator
   npx hyperframes render -o ../public/assets/videos/games-demo.mp4
   ```
+
+## Required Post-Change Review
+- After every change to application code, components, routes, styles, tests, configuration, build scripts, or HyperFrames files, invoke the `project-code-review` skill before the final handoff.
+- Treat `project-code-review` as the final quality gate even when another skill, such as `frontend-design`, handled the implementation.
+- Keep the review scoped to the current task and its changed files. Do not turn a focused change into an unrelated repository-wide refactor.

@@ -428,7 +428,7 @@ export default function ShowcasePage() {
   return (
     <div ref={containerRef} className="safari-crown-page min-h-screen selection:bg-[#F4B942] selection:text-[#243028]">
       <header className="safari-crown-nav gsap-reveal">
-        <Link href="/" className="safari-crown-back">Back to basecamp</Link>
+        <Link href="/home" className="safari-crown-back">Back to basecamp</Link>
         <div className="safari-crown-brand">
           <span className="safari-crown-brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <div>

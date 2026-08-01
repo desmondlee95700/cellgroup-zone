@@ -1,0 +1,44 @@
+{
+  "skill_name": "project-code-review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the current uncommitted route split for Cellgroup Games. The entrance should remain at `/`, basecamp should live at `/home`, every page-level back-to-basecamp control should target `/home`, and Exit Reserve should return to `/`. This is review-only: inspect the actual diff and surrounding code, do not edit files, and return a concise code-review report.",
+      "expected_output": "A scoped, evidence-based review of the route change that traces navigation and direct-load behavior, checks the extracted shared component boundary, reports only actionable findings, and lists verification appropriate to routing changes.",
+      "files": [],
+      "expectations": [
+        "The review inspects the actual changed and untracked files rather than relying only on the prompt or diff summary.",
+        "The review verifies the `/`, `/home`, back-to-basecamp, and Exit Reserve targets as one end-to-end navigation flow.",
+        "The review evaluates whether shared UI was extracted instead of importing or duplicating route page modules.",
+        "The review stays read-only and does not modify repository files.",
+        "The report lists checks actually observed or recommended without claiming unrun checks passed."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this proposed change for the Cellgroup Games app and report findings only: a new `src/app/history/page.tsx` imports the default component from `../mixer/page`, declares another local `Team` interface, reads `localStorage.getItem('cg_mixer_teams')` at module scope, sorts the parsed teams in place during render, and adds no tests. The page is meant to show a read-only score history for gatherings of 50–100 players. Do not write code.",
+      "expected_output": "A prioritized review that catches the server/browser runtime failure, route-to-route coupling, mutable data handling, duplicated domain/storage contracts, and missing focused coverage without proposing a large unrelated rewrite.",
+      "files": [],
+      "expectations": [
+        "The review identifies module-scope localStorage access as unsafe for App Router server evaluation or prerendering.",
+        "The review rejects importing a route page from another route and recommends extracting a shared component or domain unit.",
+        "The review identifies in-place sorting as mutation that can corrupt shared or state-backed data.",
+        "The review connects the duplicated Team shape and storage key to drift risk and a shared src/lib boundary.",
+        "The findings are prioritized and scoped; they do not demand a repository-wide rewrite."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this proposed host-alert component without editing code: it is an App Router page that uses `useState` and `useEffect` but has no `\"use client\"` directive; it builds `className={`bg-${level}-500 text-${level}-950`}` from a runtime alert level; it starts `setInterval` and `gsap.to('.host-alert', ...)` in an effect without cleanup or a component ref; and it always runs the animation even when reduced motion is requested. The alert may be opened and closed many times during a 50+ player game. Return only prioritized, actionable findings.",
+      "expected_output": "A focused framework-aware review that catches the Next.js client-boundary failure, Tailwind v4 dynamic-class detection risk, React/GSAP resource cleanup and selector scope issues, reduced-motion regression, and repeated-use scalability concern.",
+      "files": [],
+      "expectations": [
+        "The review identifies the missing client boundary for hooks in an App Router page.",
+        "The review identifies runtime-generated Tailwind classes as not reliably discoverable and offers a static-map or CSS-variable remedy.",
+        "The review requires interval and GSAP cleanup plus a component-scoped animation target.",
+        "The review identifies reduced-motion behavior as a functional accessibility requirement rather than a cosmetic preference.",
+        "The review relates repeated opening and closing to duplicate timers or animations without proposing unrelated architecture."
+      ]
+    }
+  ]
+}

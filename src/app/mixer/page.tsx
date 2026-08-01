@@ -872,7 +872,7 @@ export default function MixerPage() {
       <header className="safari-mixer-nav-wrap">
         <div className="safari-mixer-nav">
           <Link
-            href="/"
+            href="/home"
             className="safari-mixer-back"
           >
             Back to basecamp

@@ -149,7 +149,7 @@ export default function GamesPage() {
       </div>
 
       <nav className="safari-field-nav field-reveal" aria-label="Mission navigation">
-        <Link href="/" className="safari-field-back"><span aria-hidden="true">←</span> Basecamp</Link>
+        <Link href="/home" className="safari-field-back"><span aria-hidden="true">←</span> Basecamp</Link>
         <div className="safari-field-brand">
           <span className="safari-field-brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <div><strong className="brutal-font">Wild Field Guide</strong><span>Animal Kingdom expeditions</span></div>
@@ -297,7 +297,7 @@ export default function GamesPage() {
         </section>
       </main>
 
-      <footer className="safari-field-footer"><span>Animal Kingdom field guide</span><Link href="/">Return to expedition map</Link></footer>
+      <footer className="safari-field-footer"><span>Animal Kingdom field guide</span><Link href="/home">Return to expedition map</Link></footer>
     </div>
   );
 }
