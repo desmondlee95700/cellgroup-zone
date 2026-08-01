@@ -1,11 +1,13 @@
 "use client";
 
-import { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import type { CSSProperties } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { decodeShowcaseTeams } from "@/lib/showcase-share";
+import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
 
 interface TeamMember {
   name: string;
@@ -16,56 +18,58 @@ interface TeamData {
   name: string;
   members: TeamMember[];
   color: string;
+  score?: number;
 }
 
 const CG_COLORS = [
-  'bg-[#38BDF8]', // Blue
-  'bg-[#FACC15]', // Yellow
-  'bg-[#F59E0B]', // Orange
-  'bg-[#4ADE80]', // Green
-  'bg-[#F472B6]', // Pink
-  'bg-[#C084FC]', // Purple
-  'bg-[#2DD4BF]', // Teal
-  'bg-[#F87171]', // Red
+  "bg-[#5CC8E8]",
+  "bg-[#F4B942]",
+  "bg-[#F2A85B]",
+  "bg-[#B7DF77]",
+  "bg-[#E6D27A]",
+  "bg-[#79C8B5]",
+  "bg-[#D8A56F]",
+  "bg-[#E8614D]",
 ];
 
+const TEAM_ACCENTS = ["#F4B942", "#5CC8E8", "#F2A85B", "#E8614D", "#B7DF77", "#79C8B5"];
+
 const getGroupColor = (name: string) => {
-  if (!name) return 'bg-[#FFFDF5]';
+  if (!name) return "bg-[#FFFDF5]";
   let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let index = 0; index < name.length; index += 1) {
+    hash = name.charCodeAt(index) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % CG_COLORS.length;
-  return CG_COLORS[index];
+  return CG_COLORS[Math.abs(hash) % CG_COLORS.length];
 };
 
-const getTeamEmoji = (name: string) => {
-  const lower = name.toLowerCase();
-  if (lower.includes("yellow")) return "🟡";
-  if (lower.includes("blue")) return "🔵";
-  if (lower.includes("orange")) return "🟠";
-  if (lower.includes("red")) return "🔴";
-  if (lower.includes("purple")) return "🟣";
-  if (lower.includes("green")) return "🟢";
-  if (lower.includes("pink")) return "🌸";
-  if (lower.includes("teal")) return "💎";
-  return "🎮";
+const getTeamAccent = (color: string, index: number) => {
+  const match = color?.match(/#[0-9a-fA-F]{6}/)?.[0];
+  return match ?? TEAM_ACCENTS[index % TEAM_ACCENTS.length];
 };
 
-// Inner Showcase component
+function TeamMark({ name, compact = false }: { name: string; compact?: boolean }) {
+  const profile = getSafariTeamProfile(name);
+
+  return (
+    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true">
+      <i />
+      <b>{profile.animal.slice(0, 1)}</b>
+      <i />
+    </span>
+  );
+}
+
 function ShowcaseContent() {
   const searchParams = useSearchParams();
   const rawData = searchParams.get("t");
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [filterQuery, setFilterQuery] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  // Projection Carousel Broadcast Mode
   const [broadcastMode, setBroadcastMode] = useState(false);
   const [activeBroadcastIdx, setActiveBroadcastIdx] = useState(0);
   const [soundOn, setSoundOn] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Decode teams from URL parameter or load fallback
   useEffect(() => {
     const timer = setTimeout(() => {
       if (rawData) {
@@ -73,297 +77,340 @@ function ShowcaseContent() {
           const parsed = decodeShowcaseTeams(rawData);
           setTeams(parsed);
           localStorage.setItem("player_last_teams", JSON.stringify(parsed));
-        } catch (e) {
-          console.error("Failed to decode team data", e);
+        } catch (error) {
+          console.error("Failed to decode team data", error);
         }
-      } else {
-        let savedTeamsStr = localStorage.getItem("player_last_teams");
-        if (!savedTeamsStr) {
-          savedTeamsStr = localStorage.getItem("cg_mixer_teams");
-        }
-        if (savedTeamsStr) {
-          try {
-            const parsed = JSON.parse(savedTeamsStr);
-            if (Array.isArray(parsed)) {
-              setTeams(parsed);
-            }
-          } catch (e) {
-            console.error("Failed to parse cached team data", e);
-          }
-        }
+        return;
+      }
+
+      const savedTeams = localStorage.getItem("player_last_teams") ?? localStorage.getItem("cg_mixer_teams");
+      if (!savedTeams) return;
+
+      try {
+        const parsed = JSON.parse(savedTeams);
+        if (Array.isArray(parsed)) setTeams(parsed);
+      } catch (error) {
+        console.error("Failed to parse cached team data", error);
       }
     }, 0);
+
     return () => clearTimeout(timer);
   }, [rawData]);
 
-  // Audio Synthesizer
-  const playChirp = useCallback((freq: number, duration: number, type: OscillatorType = "sine") => {
+  const playChirp = useCallback((frequency: number, duration: number, type: OscillatorType = "sine") => {
     if (!soundOn) return;
+
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-      console.warn(e);
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const context = new AudioContextClass();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+      gain.gain.setValueAtTime(0.08, context.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start();
+      oscillator.stop(context.currentTime + duration);
+    } catch (error) {
+      console.warn(error);
     }
   }, [soundOn]);
 
-  // Auto Rotation Loop for Broadcast Mode
   useEffect(() => {
     if (!broadcastMode || teams.length === 0) return;
-    
+
     const interval = setInterval(() => {
-      setActiveBroadcastIdx((prev) => {
-        const next = (prev + 1) % teams.length;
-        // Play chiptune transition sound
+      setActiveBroadcastIdx((previous) => {
+        const next = (previous + 1) % teams.length;
         playChirp(440 + next * 40, 0.08, "triangle");
         return next;
       });
-    }, 5000); // 5 seconds rotation
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [broadcastMode, teams.length, playChirp]);
 
-  // Play a sound when search results match
   useEffect(() => {
-    const clean = filterQuery.trim().toLowerCase();
-    if (!clean || teams.length === 0) return;
-
-    // Check if player exists
-    const hasMatch = teams.some(t => 
-      t.members.some(m => m.name.toLowerCase().includes(clean))
-    );
-
-    if (hasMatch) {
-      // High rising chirp on successful search find
+    const query = filterQuery.trim().toLowerCase();
+    if (!query || teams.length === 0) return;
+    if (teams.some((team) => team.members.some((member) => member.name.toLowerCase().includes(query)))) {
       playChirp(880, 0.12, "sine");
     }
   }, [filterQuery, teams, playChirp]);
 
-  // GSAP animated reveal of team cards
   useGSAP(() => {
     if (teams.length > 0 && !broadcastMode) {
       gsap.fromTo(
         ".showcase-team-card",
-        { scale: 0.8, y: 50, opacity: 0 },
-        { scale: 1, y: 0, opacity: 1, duration: 0.5, stagger: 0.06, ease: "back.out(1.2)" }
+        { y: 28, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: "power2.out" },
       );
     }
   }, [teams, broadcastMode]);
 
   const cleanQuery = filterQuery.trim().toLowerCase();
+  const rankedTeams = [...teams].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+  const topScore = rankedTeams[0]?.score ?? 0;
+  const runnerUpScore = rankedTeams[1]?.score ?? 0;
+  const leadMargin = Math.max(0, topScore - runnerUpScore);
+  const leaderTeam = rankedTeams[0];
+  const challengerTeams = rankedTeams.slice(1);
+  const liveReferenceScore = Math.max(topScore, 1);
+  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
+  const activeTeam = teams[activeBroadcastIdx];
+  const matchCount = cleanQuery
+    ? teams.reduce((count, team) => count + team.members.filter((member) => member.name.toLowerCase().includes(cleanQuery)).length, 0)
+    : 0;
+
+  const getTeamRank = (teamName: string) => rankedTeams.findIndex((team) => team.name === teamName) + 1;
 
   return (
-    <div ref={containerRef} className="space-y-8">
-      {/* Control Board: Search Bar & Presentation mode toggle */}
-      <div className="brutal-box p-5 bg-white text-black shadow-[8px_8px_0px_#000] border-4 border-black flex flex-col md:flex-row items-center justify-between gap-6 rounded-3xl relative">
-        <div className="flex-1 w-full relative">
+    <div ref={containerRef} className="safari-crown-content">
+      <section className="safari-view-only-notice" aria-label="Audience viewer permissions">
+        <span aria-hidden="true"><i /></span>
+        <div><strong>Audience team viewer</strong><small>Read-only access to team rosters and current scores</small></div>
+        <b>No score controls</b>
+      </section>
+
+      <section className="safari-lookout-rail" aria-label="Viewer tools">
+        <label className="safari-explorer-search">
+          <span>Find my team</span>
           <input
-            type="text"
-            placeholder="🔍 Highlight name slot on projector... (e.g. John)"
+            type="search"
+            placeholder="Find an explorer by name"
             value={filterQuery}
-            onChange={(e) => setFilterQuery(e.target.value)}
-            className="w-full px-5 py-3 border-4 border-black font-black uppercase focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 text-sm shadow-[inner_0_2px_4px_rgba(0,0,0,0.05)]"
+            onChange={(event) => setFilterQuery(event.target.value)}
           />
-        </div>
-        
-        <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+          <i aria-hidden="true" />
+        </label>
+
+        <div className="safari-lookout-actions">
           {cleanQuery && (
-            <button
-              onClick={() => setFilterQuery("")}
-              className="flex-1 md:flex-none brutal-box bg-[#EF4444] text-white font-black px-4 py-3 border-2 border-black text-xs uppercase hover:bg-red-600 shadow-[2px_2px_0px_#000] cursor-pointer"
-            >
-              Clear Highlight
+            <button type="button" className="safari-tool-button is-coral" onClick={() => setFilterQuery("")}>
+              {matchCount > 0 ? `${matchCount} found · clear` : "No match · clear"}
             </button>
           )}
-          
           <button
+            type="button"
+            className={`safari-tool-button${broadcastMode ? " is-active" : ""}`}
             onClick={() => {
-              setBroadcastMode(!broadcastMode);
+              setBroadcastMode((current) => !current);
               playChirp(broadcastMode ? 300 : 600, 0.15, "triangle");
             }}
-            className={`flex-1 md:flex-none brutal-box font-black px-5 py-3 border-2 border-black text-xs uppercase shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer ${
-              broadcastMode ? "bg-[#4ADE80] text-black hover:bg-green-400" : "bg-[#C084FC] text-black hover:bg-purple-400"
-            }`}
           >
-            {broadcastMode ? "📺 GRID VIEW" : "📽️ AUDITORIUM CAROUSEL"}
+            {broadcastMode ? "Return to standings" : "Start safari parade"}
           </button>
-          
           <button
-            onClick={() => setSoundOn(!soundOn)}
-            className="brutal-box bg-white text-black border-2 border-black p-3 text-xs font-black shadow-[2px_2px_0px_#000] hover:bg-zinc-100 cursor-pointer"
-            title="Toggle Sound"
+            type="button"
+            className="safari-sound-button"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((current) => !current)}
           >
-            SFX: {soundOn ? "🔊" : "🔇"}
+            <span className={soundOn ? "is-on" : ""} aria-hidden="true" />
+            Sound {soundOn ? "on" : "off"}
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* Roster Code Input Fallback */}
-      {!rawData && teams.length === 0 && (
-        <div className="brutal-box p-8 bg-[#FACC15] text-black border-4 border-black shadow-[8px_8px_0px_#000] text-center max-w-md mx-auto rounded-3xl relative">
-          <div className="fold-corner-orange"></div>
-          <p className="brutal-font text-xl uppercase mb-3">⚠️ NO TEAM ROSTER LOADED</p>
-          <p className="text-xs font-bold uppercase leading-relaxed max-w-xs mx-auto text-zinc-800 font-mono">
-            Please shuffler players in the admin mixer console first, and scan or generate showcase presentation deck!
-          </p>
-        </div>
+      {teams.length === 0 && (
+        <section className="safari-empty-lookout" aria-labelledby="empty-lookout-title">
+          <div className="safari-empty-sun" aria-hidden="true" />
+          <div className="safari-empty-tree" aria-hidden="true"><i /><i /><i /></div>
+          <div className="safari-empty-copy">
+            <p className="safari-eyebrow">The clearing is quiet</p>
+            <h2 id="empty-lookout-title">No animal crews have arrived yet.</h2>
+            <p>Form the crews in Herd Maker, then return here to begin the live points ceremony.</p>
+            <Link href="/mixer">Form animal crews</Link>
+          </div>
+        </section>
       )}
 
-      {/* RENDER MODE A: Auditorium Broadcast Carousel (Giant Center Cards) */}
-      {broadcastMode && teams.length > 0 && (
-        <div className="max-w-3xl mx-auto space-y-6">
-          
-          {/* Active Carousel Card Frame */}
-          <div className="brutal-box overflow-hidden shadow-[12px_12px_0px_#000] border-8 border-black rounded-3xl flex flex-col bg-white text-black min-h-[520px] transition-all duration-300 relative">
-            <div className="scanline-line"></div>
-            
-            {/* Carousel Active Bar */}
-            <div className="w-full h-3 bg-zinc-200 border-b-4 border-black overflow-hidden relative">
-              <div className="h-full bg-black animate-[scan-laser_5s_linear_infinite]"></div>
+      {!broadcastMode && teams.length > 0 && leaderTeam && (
+        <>
+          <section className="safari-pride-stage" aria-labelledby="pride-stage-title">
+            <div className="safari-stage-sky" aria-hidden="true">
+              <i className="safari-stage-sun" />
+              <i className="safari-stage-cloud cloud-one" />
+              <i className="safari-stage-cloud cloud-two" />
+              <i className="safari-stage-bird bird-one" />
+              <i className="safari-stage-bird bird-two" />
             </div>
 
-            {/* Team header banner */}
-            <div className={`p-6 border-b-4 border-black text-center font-black uppercase ${teams[activeBroadcastIdx].color || "bg-yellow-400"}`}>
-              <h2 className="brutal-font text-3xl sm:text-5xl tracking-wide flex items-center justify-center gap-3">
-                <span>{getTeamEmoji(teams[activeBroadcastIdx].name)}</span>
-                {teams[activeBroadcastIdx].name}
-              </h2>
-              <span className="bg-black text-[#FFFDF5] text-xs font-mono font-black px-3.5 py-1 border-2 border-black uppercase mt-3 inline-block shadow-[2px_2px_0px_#000]">
-                {teams[activeBroadcastIdx].members.length} MEMBERS ALLOCATED
-              </span>
-            </div>
-
-            {/* Large layout member list */}
-            <div className="p-8 bg-[#FFFDF5] flex-1">
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {teams[activeBroadcastIdx].members.map((m, mIdx) => {
-                  const isHighlighted = cleanQuery !== "" && m.name.toLowerCase().includes(cleanQuery);
-                  return (
-                    <li
-                      key={mIdx}
-                      className={`py-3.5 px-4 flex justify-between items-center rounded-xl border-4 border-black transition-all duration-300 ${
-                        isHighlighted
-                          ? "bg-[#FACC15] text-black scale-105 font-black shadow-[4px_4px_0px_#000] animate-pulse"
-                          : "bg-white text-zinc-950 shadow-[2px_2px_0px_#000] font-black text-base"
-                      }`}
-                    >
-                      <span className="truncate">{m.name}</span>
-                      <span className={`text-[10px] px-2.5 py-1 border-2 border-black uppercase font-black shrink-0 ${
-                        isHighlighted
-                          ? "bg-black text-white"
-                          : getGroupColor(m.cg)
-                      }`}>
-                        {m.cg}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              {teams[activeBroadcastIdx].members.length === 0 && (
-                <div className="text-center py-16 text-zinc-400 font-bold uppercase">
-                  No players allocated to this slot
-                </div>
-              )}
-            </div>
-            
-            {/* Carousel navigation controls deck */}
-            <div className="border-t-4 border-black p-4 bg-zinc-100 flex justify-between items-center">
-              <button
-                onClick={() => {
-                  setActiveBroadcastIdx((prev) => (prev - 1 + teams.length) % teams.length);
-                  playChirp(350, 0.08, "triangle");
-                }}
-                className="brutal-box bg-white text-black font-black text-xs px-4 py-2 border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer uppercase"
-              >
-                ◀ PREV TEAM
-              </button>
-              
-              <span className="font-mono text-xs font-black uppercase text-zinc-500">
-                TEAM {activeBroadcastIdx + 1} / {teams.length}
-              </span>
-
-              <button
-                onClick={() => {
-                  setActiveBroadcastIdx((prev) => (prev + 1) % teams.length);
-                  playChirp(450, 0.08, "triangle");
-                }}
-                className="brutal-box bg-white text-black font-black text-xs px-4 py-2 border-2 border-black shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer uppercase"
-              >
-                NEXT TEAM ▶
-              </button>
-            </div>
-          </div>
-          
-          <div className="text-center font-mono text-[10px] text-zinc-500 uppercase tracking-widest animate-pulse">
-            •• AUDITORIUM ROTATOR ENGAGED •• ROTATES AUTOMATICALLY EVERY 5 SECONDS ••
-          </div>
-        </div>
-      )}
-
-      {/* RENDER MODE B: Standard Grid View */}
-      {!broadcastMode && teams.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {teams.map((team, idx) => (
-            <div
-              key={idx}
-              className="showcase-team-card brutal-box overflow-hidden shadow-[8px_8px_0px_#000] rounded-2xl border-4 border-black flex flex-col bg-white hover:-translate-y-1 hover:shadow-[12px_12px_0px_#000] transition-all duration-200"
-            >
-              {/* Header card with team color */}
-              <div className={`p-4 border-b-4 border-black text-center font-black uppercase text-lg ${team.color || "bg-yellow-400 text-black"}`}>
-                <h3 className="brutal-font tracking-wide truncate flex items-center justify-center gap-1.5">
-                  <span>{getTeamEmoji(team.name)}</span>
-                  {team.name}
-                </h3>
-                <span className="bg-black text-[#FFFDF5] text-[10px] px-2 py-0.5 border border-black uppercase font-bold mt-1 inline-block shadow-[1px_1px_0px_#000]">
-                  {team.members.length} players
-                </span>
+            <div className="safari-stage-heading">
+              <div>
+                <p className="safari-eyebrow">Live at Pride Rock</p>
+                <h2 id="pride-stage-title">The Safari Crown</h2>
+                <p>
+                  {topScore > 0
+                    ? leadMargin > 0
+                      ? `${getSafariTeamLabel(leaderTeam.name)} leads the migration by ${leadMargin} points.`
+                      : `The herds are level at ${topScore} points.`
+                    : "The herds are assembled. The first points will set the trail."}
+                </p>
               </div>
+              <div className="safari-crown-goal">
+                <span>Points recorded</span>
+                <strong>{totalLivePoints}</strong>
+                <small>open-ended count</small>
+              </div>
+            </div>
 
-              {/* Members lists */}
-              <ul className="p-3 bg-[#FFFDF5] divide-y-2 divide-zinc-150 flex-1">
-                {team.members.map((m, mIdx) => {
-                  const isHighlighted = cleanQuery !== "" && m.name.toLowerCase().includes(cleanQuery);
+            <div className="safari-pride-landscape">
+              <article
+                className="safari-summit-team"
+                style={{ "--team-accent": getTeamAccent(leaderTeam.color, 0) } as CSSProperties}
+              >
+                <div className="safari-leader-crown" aria-hidden="true"><i /><i /><i /></div>
+                <TeamMark name={leaderTeam.name} />
+                <div className="safari-summit-name">
+                  <span>Current trail leader</span>
+                  <h3>{getSafariTeamLabel(leaderTeam.name)}</h3>
+                  <small>{leaderTeam.members.length} explorers</small>
+                </div>
+                <div className="safari-summit-score">
+                  <strong>{topScore}</strong>
+                  <span>points</span>
+                </div>
+                <div className="safari-summit-progress" aria-label={`${getSafariTeamLabel(leaderTeam.name)} is the current live leader`}>
+                  <i style={{ width: topScore > 0 ? "100%" : "6%" }} />
+                </div>
+              </article>
+
+              <div className="safari-rock-terraces" aria-label="Chasing teams">
+                {challengerTeams.map((team, index) => {
+                  const score = team.score ?? 0;
+                  const gap = Math.max(0, topScore - score);
+                  const progress = topScore === 0 ? 6 : Math.max(6, (score / liveReferenceScore) * 100);
+
                   return (
-                    <li
-                      key={mIdx}
-                      className={`py-2 px-2 flex justify-between items-center transition-all duration-300 rounded ${
-                        isHighlighted
-                          ? "bg-[#FACC15] text-black border-2 border-black scale-105 font-black shadow-[2px_2px_0px_#000]"
-                          : "font-bold text-xs text-zinc-800"
-                      }`}
+                    <article
+                      key={team.name}
+                      className="safari-rock-terrace"
+                      style={{ "--team-accent": getTeamAccent(team.color, index + 1) } as CSSProperties}
                     >
-                      <span className="truncate">{m.name}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 border uppercase font-black shrink-0 ${
-                        isHighlighted
-                          ? "bg-black text-white border-black"
-                          : getGroupColor(m.cg)
-                      }`}>
-                        {m.cg}
-                      </span>
-                    </li>
+                      <span className="safari-terrace-rank">{index + 2}</span>
+                      <TeamMark name={team.name} compact />
+                      <div className="safari-terrace-name">
+                        <small>{gap === 0 ? "Neck and neck" : `${gap} points behind`}</small>
+                        <h3>{getSafariTeamLabel(team.name)}</h3>
+                      </div>
+                      <div className="safari-terrace-trail"><i style={{ width: `${progress}%` }} /></div>
+                      <strong className="safari-terrace-score">{score}<small> pts</small></strong>
+                    </article>
                   );
                 })}
-              </ul>
+              </div>
             </div>
-          ))}
-        </div>
+
+            <div className="safari-scoring-path" aria-label="Scoring guide">
+              <span><b>+100</b> Round win</span>
+              <span><b>+60</b> Runner-up</span>
+              <span><b>+25</b> Team spirit</span>
+              <span><b>−10</b> Penalty</span>
+            </div>
+          </section>
+
+          <section className="safari-herd-rollcall" aria-labelledby="herd-rollcall-title">
+            <div className="safari-rollcall-heading">
+              <div>
+                <p className="safari-eyebrow">Herd roll call</p>
+                <h2 id="herd-rollcall-title">Every explorer on the trail</h2>
+              </div>
+              <p>Search above to light up an explorer&apos;s camp flag.</p>
+            </div>
+
+            <div className="safari-herd-camps">
+              {rankedTeams.map((team, index) => (
+                <article
+                  key={team.name}
+                  className="showcase-team-card safari-herd-camp"
+                  style={{ "--team-accent": getTeamAccent(team.color, index) } as CSSProperties}
+                >
+                  <div className="safari-camp-pennant" aria-hidden="true" />
+                  <header>
+                    <TeamMark name={team.name} compact />
+                    <div>
+                      <span>Rank {index + 1} · {team.score ?? 0} points</span>
+                      <h3>{getSafariTeamLabel(team.name)}</h3>
+                    </div>
+                  </header>
+                  <ul>
+                    {team.members.map((member, memberIndex) => {
+                      const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
+                      return (
+                        <li key={`${member.name}-${memberIndex}`} className={highlighted ? "is-found" : ""}>
+                          <span>{member.name}</span>
+                          <small className={getGroupColor(member.cg)}>{member.cg}</small>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {team.members.length === 0 && <p className="safari-no-explorers">This camp is waiting for explorers.</p>}
+                </article>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      {broadcastMode && activeTeam && (
+        <section
+          className="safari-parade-stage"
+          aria-labelledby="safari-parade-title"
+          style={{ "--team-accent": getTeamAccent(activeTeam.color, activeBroadcastIdx) } as CSSProperties}
+        >
+          <div className="safari-parade-sun" aria-hidden="true" />
+          <div className="safari-parade-canopy" aria-hidden="true"><i /><i /><i /><i /></div>
+          <div className="safari-parade-copy">
+            <p className="safari-eyebrow">Now crossing the savanna</p>
+            <TeamMark name={activeTeam.name} />
+            <h2 id="safari-parade-title">{getSafariTeamLabel(activeTeam.name)}</h2>
+            <p>Rank {getTeamRank(activeTeam.name)} · {activeTeam.score ?? 0} points · {activeTeam.members.length} explorers</p>
+          </div>
+
+          <ul className="safari-parade-roster">
+            {activeTeam.members.map((member, index) => {
+              const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
+              return (
+                <li key={`${member.name}-${index}`} className={highlighted ? "is-found" : ""}>
+                  <span>{member.name}</span>
+                  <small className={getGroupColor(member.cg)}>{member.cg}</small>
+                </li>
+              );
+            })}
+            {activeTeam.members.length === 0 && <li className="is-empty">This herd is waiting for explorers.</li>}
+          </ul>
+
+          <footer className="safari-parade-controls">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveBroadcastIdx((previous) => (previous - 1 + teams.length) % teams.length);
+                playChirp(350, 0.08, "triangle");
+              }}
+            >
+              Previous herd
+            </button>
+            <span><b>{activeBroadcastIdx + 1}</b> of {teams.length} · changes every 5 seconds</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveBroadcastIdx((previous) => (previous + 1) % teams.length);
+                playChirp(450, 0.08, "triangle");
+              }}
+            >
+              Next herd
+            </button>
+          </footer>
+        </section>
       )}
     </div>
   );
 }
 
-// Main page component with Suspense boundary
 export default function ShowcasePage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -371,40 +418,42 @@ export default function ShowcasePage() {
     () => {
       gsap.fromTo(
         ".gsap-reveal",
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.2)" }
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.62, stagger: 0.09, ease: "power2.out" },
       );
     },
-    { scope: containerRef }
+    { scope: containerRef },
   );
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#18181B] bg-grid-pattern-dark text-white selection:bg-[#FACC15] selection:text-black pb-24">
-      {/* Header banner */}
-      <header className="gsap-reveal bg-[#18181B] border-b-4 border-black py-8 px-6 text-center shadow-[0_6px_0px_#000] relative z-20">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <Link
-            href="/"
-            className="brutal-box bg-[#FFFDF5] text-black font-black uppercase text-sm px-4 py-2 border-2 border-black hover:bg-[#FACC15] transition-all shadow-[2px_2px_0px_#000] self-start sm:self-auto active:translate-y-0.5"
-          >
-            ← ESC HOME
-          </Link>
-          <h1 className="brutal-font text-3xl sm:text-4xl text-[#FACC15] uppercase tracking-wider select-none">
-            📺 AUDITORIUM SHOWBOARD
-          </h1>
-          <div className="w-16 hidden sm:block"></div>
+    <div ref={containerRef} className="safari-crown-page min-h-screen selection:bg-[#F4B942] selection:text-[#243028]">
+      <header className="safari-crown-nav gsap-reveal">
+        <Link href="/home" className="safari-crown-back">Back to basecamp</Link>
+        <div className="safari-crown-brand">
+          <span className="safari-crown-brand-mark" aria-hidden="true"><i /><i /><i /></span>
+          <div>
+            <strong>Pride Rock Ceremony</strong>
+            <small>Teams and live safari points</small>
+          </div>
         </div>
+        <span className="safari-crown-live"><i aria-hidden="true" /> Read-only spectator view</span>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 mt-8 gsap-reveal">
+      <main className="safari-crown-shell gsap-reveal">
         <Suspense fallback={
-          <div className="brutal-box p-8 bg-white text-black text-center font-bold border-4 border-black rounded-2xl">
-            <p className="animate-pulse text-lg uppercase font-black">Decrypting showcase records...</p>
+          <div className="safari-crown-loading">
+            <span aria-hidden="true" />
+            <p>Opening the ranger ledger...</p>
           </div>
         }>
           <ShowcaseContent />
         </Suspense>
       </main>
+
+      <footer className="safari-crown-footer">
+        <span>Animal Kingdom · Pride Rock</span>
+        <span>Cheer loudly. Score clearly. Celebrate every herd.</span>
+      </footer>
     </div>
   );
 }

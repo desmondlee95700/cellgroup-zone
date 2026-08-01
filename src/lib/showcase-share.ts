@@ -12,6 +12,7 @@ export interface ShowcaseTeam {
   name: string;
   color: string;
   members: ShowcaseTeamMember[];
+  score?: number;
 }
 
 const SHARE_FORMAT_PREFIX = "v1.";
@@ -20,11 +21,18 @@ const SHARE_FORMAT_PREFIX = "v1.";
 // for encoder differences and future URL changes.
 export const MAX_QR_URL_LENGTH = 2_200;
 
-type CompactTeam = [
-  name: string,
-  color: string,
-  members: Array<[name: string, cellGroup: string]>,
-];
+type CompactTeam =
+  | [
+      name: string,
+      color: string,
+      members: Array<[name: string, cellGroup: string]>,
+    ]
+  | [
+      name: string,
+      color: string,
+      members: Array<[name: string, cellGroup: string]>,
+      score: number,
+    ];
 
 function parseTeams(value: unknown): ShowcaseTeam[] {
   if (!Array.isArray(value)) {
@@ -57,7 +65,17 @@ function parseTeams(value: unknown): ShowcaseTeam[] {
       return { name: member.name, cg: member.cg };
     });
 
-    return { name: team.name, color: team.color, members };
+    const score = "score" in team ? team.score : undefined;
+    if (score !== undefined && (typeof score !== "number" || !Number.isFinite(score))) {
+      throw new Error("Invalid showcase score");
+    }
+
+    return {
+      name: team.name,
+      color: team.color,
+      members,
+      ...(score === undefined ? {} : { score }),
+    };
   });
 }
 
@@ -69,11 +87,15 @@ function decodeLegacyBase64(value: string): ShowcaseTeam[] {
 }
 
 export function encodeShowcaseTeams(teams: ShowcaseTeam[]): string {
-  const compactTeams: CompactTeam[] = teams.map((team) => [
-    team.name,
-    team.color,
-    team.members.map((member) => [member.name, member.cg]),
-  ]);
+  const compactTeams: CompactTeam[] = teams.map((team) => {
+    const compactMembers = team.members.map(
+      (member) => [member.name, member.cg] as [string, string],
+    );
+
+    return team.score === undefined
+      ? [team.name, team.color, compactMembers]
+      : [team.name, team.color, compactMembers, team.score];
+  });
 
   return `${SHARE_FORMAT_PREFIX}${compressToEncodedURIComponent(JSON.stringify(compactTeams))}`;
 }
@@ -97,8 +119,19 @@ export function decodeShowcaseTeams(value: string): ShowcaseTeam[] {
 
   return parseTeams(
     compactTeams.map((team) => {
-      if (!Array.isArray(team) || team.length !== 3 || !Array.isArray(team[2])) {
+      if (
+        !Array.isArray(team) ||
+        (team.length !== 3 && team.length !== 4) ||
+        !Array.isArray(team[2])
+      ) {
         throw new Error("Invalid compact showcase team");
+      }
+
+      if (
+        team.length === 4 &&
+        (typeof team[3] !== "number" || !Number.isFinite(team[3]))
+      ) {
+        throw new Error("Invalid compact showcase score");
       }
 
       return {
@@ -110,6 +143,7 @@ export function decodeShowcaseTeams(value: string): ShowcaseTeam[] {
           }
           return { name: member[0], cg: member[1] };
         }),
+        ...(team.length === 4 ? { score: team[3] } : {}),
       };
     }),
   );

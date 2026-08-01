@@ -14,6 +14,7 @@ function createTeams(playerCount: number): ShowcaseTeam[] {
   const teams = Array.from({ length: teamCount }, (_, index) => ({
     name: `Team ${index + 1}`,
     color: "bg-[#FACC15] text-black",
+    score: index * 25,
     members: [] as ShowcaseTeam["members"],
   }));
 
@@ -48,6 +49,18 @@ describe("showcase share URLs", () => {
     const legacyPayload = Buffer.from(JSON.stringify(teams), "utf8").toString("base64");
 
     expect(decodeShowcaseTeams(legacyPayload)).toEqual(teams);
+  });
+
+  it("keeps compressed links without scores readable", () => {
+    const teams = createTeams(10).map((team) => ({
+      name: team.name,
+      color: team.color,
+      members: team.members,
+    }));
+    const url = buildShowcaseShareUrl("https://example.com", teams);
+    const payload = new URL(url).searchParams.get("t");
+
+    expect(decodeShowcaseTeams(payload!)).toEqual(teams);
   });
 
   it("rejects oversized URLs before QR rendering", () => {
