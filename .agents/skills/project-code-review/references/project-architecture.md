@@ -18,7 +18,7 @@ Current product routing intentionally separates the reserve entrance at `/` from
 
 - `video-generator/` is a separate package with its own `AGENTS.md`, commands, and deterministic timeline rules.
 - Read its nested instructions before reviewing or changing compositions.
-- Browser-app validation does not replace `video-generator`'s own `npm run check`.
+- Next.js application validation does not replace `video-generator`'s own `npm run check`.
 
 ## Domain boundaries worth protecting
 
@@ -36,12 +36,14 @@ Current product routing intentionally separates the reserve entrance at `/` from
 
 ## Proportional verification guide
 
+Browser-based verification is outside the default review gate. Run it only when the user explicitly requests it.
+
 | Changed surface | Minimum useful checks | Add when risk warrants |
 | --- | --- | --- |
 | Shared TypeScript utility | Targeted tests, `npm run lint` | `npm run build` when imported by routes |
-| React component or route | `npm run lint`, `npm test` | Production build and browser flow verification |
-| Routing/navigation | Lint, tests, production build | Click-through and direct-load verification |
-| CSS-only visual behavior | Lint plus visual check | Build for new imports or configuration |
+| React component or route | `npm run lint`, `npm test` | Production build |
+| Routing/navigation | Lint, tests, production build | Targeted route assertions |
+| CSS-only visual behavior | Lint plus source inspection | Build for new imports or configuration |
 | Root config/dependencies | Relevant script plus production build | Focused runtime smoke test |
 | HyperFrames composition | Nested `npm run check` | Preview/render when visual output changed materially |
 

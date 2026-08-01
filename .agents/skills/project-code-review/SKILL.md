@@ -1,7 +1,6 @@
 ---
 name: project-code-review
 description: Review Cellgroup Games code changes for correctness, maintainability, scalability, and clean project structure. Invoke this skill after every change to source code, routes, React components, styles, tests, configuration, build scripts, dependencies, public behavior, or HyperFrames files and before the final handoff, even when the user did not explicitly ask for a review. Also use it for explicit code reviews, refactors, architecture checks, and pull-request review. Do not invoke it for read-only explanations, status checks, or documentation-only edits that cannot affect runtime or developer workflows.
-compatibility: Requires git and the repository's Node/npm toolchain. Reviews use Next.js 15 App Router, React, Tailwind CSS v4, and @gsap/react conventions; HyperFrames checks use the nested video-generator package when that surface changes.
 ---
 
 # Project Code Review Gate
@@ -53,7 +52,7 @@ Review the current task's code as a senior maintainer who will need to extend it
 - Match checks to risk. Read the available package scripts instead of inventing commands.
 - For TypeScript, React, route, or shared-library changes, normally run `npm run lint` and `npm test`.
 - Add `npm run build` when routes, server/client boundaries, configuration, dependencies, imports, or production compilation could be affected.
-- Visually verify meaningful UI changes at representative desktop and mobile widths when a browser is available.
+- Do not run browser-based visual verification as part of this review gate unless the user explicitly requests it.
 - For HyperFrames changes, work from `video-generator/` and run its required `npm run check` after reading the nested instructions.
 - If a check is blocked by network, credentials, sandboxing, or missing services, report the exact limitation. Do not convert an unrun check into a pass.
 
