@@ -8,6 +8,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { decodeShowcaseTeams } from "@/lib/showcase-share";
 import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
+import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 
 interface TeamMember {
   name: string;
@@ -52,10 +53,8 @@ function TeamMark({ name, compact = false }: { name: string; compact?: boolean }
   const profile = getSafariTeamProfile(name);
 
   return (
-    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true">
-      <i />
-      <b>{profile.animal.slice(0, 1)}</b>
-      <i />
+    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true" title={profile.animal}>
+      <CartoonAnimalIcon animal={profile.animal} />
     </span>
   );
 }

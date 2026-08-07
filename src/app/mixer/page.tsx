@@ -11,6 +11,7 @@ import {
   isShowcaseQrSafe,
 } from "@/lib/showcase-share";
 import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
+import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 
 interface Member {
   id: string;
@@ -29,11 +30,9 @@ interface Team {
 const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
 
 const SCORE_AWARDS = [
-  { label: "−10", delta: -10, title: "Penalty minus 10 points" },
-  { label: "+10", delta: 10, title: "Trail find plus 10 points" },
-  { label: "+25", delta: 25, title: "Team spirit plus 25 points" },
-  { label: "+60", delta: 60, title: "Runner-up plus 60 points" },
-  { label: "+100", delta: 100, title: "Round win plus 100 points" },
+  { label: "+1", delta: 1, title: "Add 1 point" },
+  { label: "+2", delta: 2, title: "Add 2 points" },
+  { label: "+3", delta: 3, title: "Add 3 points" },
 ] as const;
 
 function ScoreAwardControls({
@@ -54,7 +53,13 @@ function ScoreAwardControls({
           title={award.title}
           aria-label={`${award.title} for ${team.name}`}
           onClick={() => onAward(team.id, award.delta)}
-          className={`${award.delta < 0 ? "is-negative" : ""}${award.delta === 100 ? " is-major" : ""}`}
+          className={
+            award.delta === 3
+              ? "is-major"
+              : award.delta === 2
+                ? "is-mid"
+                : ""
+          }
         >
           {award.label}
         </button>
@@ -110,10 +115,8 @@ function TeamMark({ name, compact = false }: { name: string; compact?: boolean }
   const profile = getSafariTeamProfile(name);
 
   return (
-    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true">
-      <i />
-      <b>{profile.animal.slice(0, 1)}</b>
-      <i />
+    <span className={`safari-animal-mark${compact ? " is-compact" : ""}`} aria-hidden="true" title={profile.animal}>
+      <CartoonAnimalIcon animal={profile.animal} />
     </span>
   );
 }
@@ -1471,16 +1474,104 @@ export default function MixerPage() {
 
             <section className="safari-broadcast-banner">
               <div className="safari-broadcast-sun" aria-hidden="true" />
-              <div className="safari-broadcast-canopy" aria-hidden="true"><i /><i /><i /></div>
-              <div className="safari-broadcast-copy">
-                <p className="safari-eyebrow">Live from Pride Rock</p>
-                <h2 id="safari-rally-title">The safari podium is live.</h2>
-                <p>Open-ended scoring. Every award can change the top three instantly.</p>
+              <div className="safari-broadcast-hill" aria-hidden="true" />
+              <div className="safari-broadcast-fence" aria-hidden="true">
+                <svg viewBox="0 0 60 70" className="fence-svg">
+                  <path d="M 14 15 L 22 15 L 22 65 L 14 65 Z" fill="#4a241b" stroke="#23382d" strokeWidth="2.5" />
+                  <path d="M 14 15 L 18 8 L 22 15 Z" fill="#5c2e22" stroke="#23382d" strokeWidth="2.5" />
+                  <path d="M 44 10 L 52 10 L 52 60 L 44 60 Z" fill="#4a241b" stroke="#23382d" strokeWidth="2.5" />
+                  <path d="M 44 10 L 48 3 L 52 10 Z" fill="#5c2e22" stroke="#23382d" strokeWidth="2.5" />
+                  <path d="M 6 22 L 56 17 L 56 26 L 6 31 Z" fill="#361912" stroke="#23382d" strokeWidth="2.5" />
+                  <path d="M 6 40 L 56 35 L 56 44 L 6 49 Z" fill="#361912" stroke="#23382d" strokeWidth="2.5" />
+                </svg>
               </div>
-              <div className="safari-broadcast-stats" aria-live="polite">
-                <div><span>Points counted</span><strong>{totalLivePoints}</strong></div>
-                <div><span>Lead status</span><strong>{topScore === 0 ? "Ready" : leadMargin === 0 ? "Tied" : `+${leadMargin}`}</strong></div>
-                <div><span>Herds running</span><strong>{rankedTeams.length}</strong></div>
+              <div className="safari-jumping-herd" aria-hidden="true">
+                <div className="jumping-sheep sheep-1">
+                  <svg viewBox="0 0 100 80" className="sheep-svg">
+                    <g className="sheep-legs">
+                      <rect x="64" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(-35 64 46)" />
+                      <rect x="64" y="60" width="7" height="6" fill="#361912" transform="rotate(-35 64 46)" />
+                      <rect x="74" y="42" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(-22 74 42)" />
+                      <rect x="74" y="56" width="7" height="6" fill="#2d130d" transform="rotate(-22 74 42)" />
+                      <rect x="20" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(32 20 46)" />
+                      <rect x="20" y="60" width="7" height="6" fill="#361912" transform="rotate(32 20 46)" />
+                      <rect x="28" y="50" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(42 28 50)" />
+                      <rect x="28" y="64" width="7" height="6" fill="#2d130d" transform="rotate(42 28 50)" />
+                    </g>
+                    <path
+                      d="M 30 25 a 10 10 0 0 1 14 -5 a 11 11 0 0 1 16 0 a 10 10 0 0 1 14 5 a 10 10 0 0 1 10 12 a 10 10 0 0 1 -4 14 a 11 11 0 0 1 -12 8 a 10 10 0 0 1 -16 2 a 10 10 0 0 1 -16 -6 a 10 10 0 0 1 -8 -14 a 10 10 0 0 1 2 -16 z"
+                      fill="#FFFDF5" stroke="#23382d" strokeWidth="2.5" strokeLinejoin="round"
+                    />
+                    <g className="sheep-head-group">
+                      <ellipse cx="22" cy="30" rx="10" ry="9" fill="#e58c72" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="25" cy="34" r="3.2" fill="#d96951" opacity="0.65" />
+                      <path d="M 28 24 C 36 20, 36 30, 28 27 Z" fill="#d97a60" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="18" cy="28" r="2.2" fill="#23382d" />
+                      <path d="M 15 33 Q 18 36 21 33" fill="none" stroke="#23382d" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx="22" cy="22" r="6" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="27" cy="21" r="5" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                    </g>
+                  </svg>
+                </div>
+                <div className="jumping-sheep sheep-2">
+                  <svg viewBox="0 0 100 80" className="sheep-svg">
+                    <g className="sheep-legs">
+                      <rect x="64" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(-35 64 46)" />
+                      <rect x="64" y="60" width="7" height="6" fill="#361912" transform="rotate(-35 64 46)" />
+                      <rect x="74" y="42" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(-22 74 42)" />
+                      <rect x="74" y="56" width="7" height="6" fill="#2d130d" transform="rotate(-22 74 42)" />
+                      <rect x="20" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(32 20 46)" />
+                      <rect x="20" y="60" width="7" height="6" fill="#361912" transform="rotate(32 20 46)" />
+                      <rect x="28" y="50" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(42 28 50)" />
+                      <rect x="28" y="64" width="7" height="6" fill="#2d130d" transform="rotate(42 28 50)" />
+                    </g>
+                    <path
+                      d="M 30 25 a 10 10 0 0 1 14 -5 a 11 11 0 0 1 16 0 a 10 10 0 0 1 14 5 a 10 10 0 0 1 10 12 a 10 10 0 0 1 -4 14 a 11 11 0 0 1 -12 8 a 10 10 0 0 1 -16 2 a 10 10 0 0 1 -16 -6 a 10 10 0 0 1 -8 -14 a 10 10 0 0 1 2 -16 z"
+                      fill="#FFFDF5" stroke="#23382d" strokeWidth="2.5" strokeLinejoin="round"
+                    />
+                    <g className="sheep-head-group">
+                      <ellipse cx="22" cy="30" rx="10" ry="9" fill="#e58c72" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="25" cy="34" r="3.2" fill="#d96951" opacity="0.65" />
+                      <path d="M 28 24 C 36 20, 36 30, 28 27 Z" fill="#d97a60" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="18" cy="28" r="2.2" fill="#23382d" />
+                      <path d="M 15 33 Q 18 36 21 33" fill="none" stroke="#23382d" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx="22" cy="22" r="6" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="27" cy="21" r="5" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                    </g>
+                  </svg>
+                </div>
+                <div className="jumping-sheep sheep-3">
+                  <svg viewBox="0 0 100 80" className="sheep-svg">
+                    <g className="sheep-legs">
+                      <rect x="64" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(-35 64 46)" />
+                      <rect x="64" y="60" width="7" height="6" fill="#361912" transform="rotate(-35 64 46)" />
+                      <rect x="74" y="42" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(-22 74 42)" />
+                      <rect x="74" y="56" width="7" height="6" fill="#2d130d" transform="rotate(-22 74 42)" />
+                      <rect x="20" y="46" width="7" height="20" rx="3.5" fill="#e58c72" transform="rotate(32 20 46)" />
+                      <rect x="20" y="60" width="7" height="6" fill="#361912" transform="rotate(32 20 46)" />
+                      <rect x="28" y="50" width="7" height="20" rx="3.5" fill="#d97a60" transform="rotate(42 28 50)" />
+                      <rect x="28" y="64" width="7" height="6" fill="#2d130d" transform="rotate(42 28 50)" />
+                    </g>
+                    <path
+                      d="M 30 25 a 10 10 0 0 1 14 -5 a 11 11 0 0 1 16 0 a 10 10 0 0 1 14 5 a 10 10 0 0 1 10 12 a 10 10 0 0 1 -4 14 a 11 11 0 0 1 -12 8 a 10 10 0 0 1 -16 2 a 10 10 0 0 1 -16 -6 a 10 10 0 0 1 -8 -14 a 10 10 0 0 1 2 -16 z"
+                      fill="#FFFDF5" stroke="#23382d" strokeWidth="2.5" strokeLinejoin="round"
+                    />
+                    <g className="sheep-head-group">
+                      <ellipse cx="22" cy="30" rx="10" ry="9" fill="#e58c72" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="25" cy="34" r="3.2" fill="#d96951" opacity="0.65" />
+                      <path d="M 28 24 C 36 20, 36 30, 28 27 Z" fill="#d97a60" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="18" cy="28" r="2.2" fill="#23382d" />
+                      <path d="M 15 33 Q 18 36 21 33" fill="none" stroke="#23382d" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx="22" cy="22" r="6" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                      <circle cx="27" cy="21" r="5" fill="#FFFDF5" stroke="#23382d" strokeWidth="2" />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <div className="safari-broadcast-copy">
+                <p className="safari-eyebrow">Ranger scorebook · live</p>
+                <h2 id="safari-rally-title">Keep the herd moving.</h2>
+                <p>Small points, big cheers. Every score updates the trail right away.</p>
               </div>
             </section>
 
@@ -1488,25 +1579,24 @@ export default function MixerPage() {
               <section className="safari-podium-board" aria-labelledby="live-podium-title">
                 <div className="safari-podium-heading">
                   <div>
-                    <p className="safari-eyebrow">Live top three</p>
-                    <h3 id="live-podium-title">Pride Rock podium</h3>
+                    <p className="safari-eyebrow">Live Leaderboard</p>
+                    <h3 id="live-podium-title">Today&apos;s trail</h3>
                   </div>
                   <p>{topScore === 0 ? "The first points will wake the savanna." : `${getSafariTeamLabel(leaderTeam?.name ?? "")} currently commands the trail.`}</p>
                 </div>
 
                 <div className="safari-live-podium" aria-live="polite">
-                  <div className="safari-podium-horizon" aria-hidden="true"><i /><i /><i /></div>
-                  {podiumTeams.map((team) => {
-                    const rank = getTeamRank(team.id);
+                  {rankedTeams.map((team, idx) => {
+                    const rank = idx + 1;
                     const score = team.score ?? 0;
-                    const teamAhead = rankedTeams[rank - 2];
-                    const teamBehind = rankedTeams[rank];
+                    const teamAhead = rankedTeams[idx - 1];
+                    const teamBehind = rankedTeams[idx + 1];
                     const isSpotlight = spotlightTeam?.id === team.id;
                     const status = topScore === 0
                       ? "Waiting for first points"
                       : rank === 1
                         ? leadMargin === 0 ? "Tied at the summit" : `${leadMargin} points clear`
-                        : `${Math.max(0, (teamAhead?.score ?? 0) - score)} points to ${rank === 2 ? "1st" : "2nd"}`;
+                        : `${Math.max(0, (teamAhead?.score ?? 0) - score)} points to ${rank - 1}${rank === 2 ? "st" : rank === 3 ? "nd" : "rd"}`;
 
                     return (
                       <article
@@ -1515,48 +1605,23 @@ export default function MixerPage() {
                         style={{ "--team-accent": getTeamAccent(team.color, rank - 1) } as CSSProperties}
                       >
                         <button type="button" className="safari-podium-select" aria-pressed={isSpotlight} onClick={() => setSpotlightTeamId(team.id)}>
-                          <span className="safari-podium-medal">{rank === 1 ? "1ST" : rank === 2 ? "2ND" : "3RD"}</span>
-                          {rank === 1 && <span className="safari-podium-crown" aria-hidden="true"><i /><i /><i /></span>}
+                          <span className="safari-podium-medal">{rank}</span>
                           <TeamMark name={team.name} />
                           <span className="safari-podium-name">
                             <small>{status}</small>
                             <strong>{getSafariTeamLabel(team.name)}</strong>
                             <em>{team.members.length} explorer{team.members.length === 1 ? "" : "s"}</em>
                           </span>
-                          <span className={`safari-podium-score${scoreFlashTeamId === team.id ? " score-pop" : ""}`}><strong>{score}</strong><small>points</small></span>
-                          <span className="safari-podium-next">{teamBehind ? `${Math.max(0, score - (teamBehind.score ?? 0))} pts ahead` : "Holding the trail"}</span>
+                          <span className={`safari-podium-score${scoreFlashTeamId === team.id ? " score-pop" : ""}`}>
+                            <strong>{score}</strong>
+                            <small>points</small>
+                          </span>
                         </button>
                         {showRangerControls && <ScoreAwardControls team={team} onAward={updateTeamScore} compact />}
                       </article>
                     );
                   })}
                 </div>
-
-                {chasingTeams.length > 0 && (
-                  <div className="safari-chasing-strip">
-                    <span className="safari-chasing-label">Still on the trail</span>
-                    {chasingTeams.map((team) => {
-                      const rank = getTeamRank(team.id);
-                      return (
-                        <button
-                          key={team.id}
-                          type="button"
-                          className={spotlightTeam?.id === team.id ? "is-selected" : ""}
-                          onClick={() => setSpotlightTeamId(team.id)}
-                          style={{ "--team-accent": getTeamAccent(team.color, rank - 1) } as CSSProperties}
-                        >
-                          <b>{rank}</b><TeamMark name={team.name} compact /><span>{getSafariTeamLabel(team.name)}</span><strong>{team.score ?? 0}</strong>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {showRangerControls && chasingTeams.length > 0 && (
-                  <div className="safari-chasing-controls">
-                    {chasingTeams.map((team) => <ScoreAwardControls key={team.id} team={team} onAward={updateTeamScore} compact />)}
-                  </div>
-                )}
               </section>
 
               <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
@@ -1595,8 +1660,8 @@ export default function MixerPage() {
             </main>
 
             <footer className="safari-rally-footer">
-              <span>Live podium · positions update after every score</span>
-              <span>Round win +100 · Runner-up +60 · Team spirit +25 · Trail find +10 · Penalty −10</span>
+              <span>Live trail · standings update after every point</span>
+              <span>Quick awards: +1 · +2 · +3 · +5</span>
             </footer>
           </div>
 
