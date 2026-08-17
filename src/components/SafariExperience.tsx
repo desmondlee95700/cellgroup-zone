@@ -4,6 +4,8 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
+import { QRCodeSVG } from "qrcode.react";
+import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 
 type TrailMarkKind = "compass" | "games" | "herds" | "crown";
 
@@ -61,6 +63,17 @@ export default function SafariExperience({
 
   const [soundOn, setSoundOn] = useState(true);
   const [roster, setRoster] = useState<string[]>([]);
+  const [showQrModal, setShowQrModal] = useState(false);
+
+  // Close QR modal on Escape key
+  useEffect(() => {
+    if (!showQrModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowQrModal(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showQrModal]);
 
   // Load roster from localStorage to show live players
   useEffect(() => {
@@ -366,31 +379,59 @@ export default function SafariExperience({
               </section>
 
               <aside className="safari-roll-call" aria-labelledby="roll-call-heading">
-                <div className="safari-tent-top" aria-hidden="true" />
-                <header>
-                  <p className="safari-eyebrow">CAMPFIRE ROLL CALL</p>
-                  <h2 id="roll-call-heading" className="brutal-font">Who&apos;s at basecamp?</h2>
-                  <span><strong>{roster.length}</strong> explorers checked in</span>
-                </header>
-
-                {roster.length === 0 ? (
-                  <div className="safari-empty-camp">
-                    <span className="safari-campfire" aria-hidden="true"><i /><i /><i /></span>
-                    <strong>The campfire is waiting.</strong>
-                    <p>Invite the first explorer and their name will appear here.</p>
+                <div className="safari-roll-call-header">
+                  <span className="safari-roll-call-icon" aria-hidden="true">
+                    <TrailMark kind="compass" className="safari-brand-mark" />
+                  </span>
+                  <div>
+                    <p className="safari-eyebrow">RANGER STATION CHECK-IN</p>
+                    <h2 id="roll-call-heading" className="brutal-font">Join the Expedition</h2>
                   </div>
-                ) : (
-                  <ol className="safari-explorer-list">
-                    {roster.slice(0, 8).map((player, idx) => (
-                      <li key={`${player}-${idx}`}>
-                        <span className="safari-explorer-initial" aria-hidden="true">{player.trim().charAt(0).toUpperCase() || "?"}</span>
-                        <span>{player}</span>
-                        <small>{String(idx + 1).padStart(2, "0")}</small>
-                      </li>
-                    ))}
-                    {roster.length > 8 && <li className="safari-more-explorers">And {roster.length - 8} more around the fire</li>}
-                  </ol>
-                )}
+                </div>
+
+                <div className="safari-ticket-card">
+                  <div className="safari-ticket-header brutal-font">
+                    <span className="safari-animal-mini"><CartoonAnimalIcon animal="lion" /></span>
+                    <span className="safari-animal-mini"><CartoonAnimalIcon animal="parrot" /></span>
+                    <span>EXPEDITION PASS</span>
+                    <span className="safari-animal-mini"><CartoonAnimalIcon animal="cheetah" /></span>
+                    <span className="safari-animal-mini"><CartoonAnimalIcon animal="zebra" /></span>
+                  </div>
+
+                  <div className="safari-qr-stage">
+                    <button
+                      type="button"
+                      onClick={() => setShowQrModal(true)}
+                      className="safari-qr-frame-button group focus:outline-none"
+                      title="Click to enlarge QR code for scanning"
+                      aria-label="Click to enlarge QR code"
+                    >
+                      <div className="safari-qr-frame relative">
+                        <QRCodeSVG
+                          value="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
+                          size={190}
+                          bgColor="#FFFDF5"
+                          fgColor="#243028"
+                          level="H"
+                          marginSize={2}
+                        />
+                        <div className="safari-qr-hover-badge brutal-font">
+                          🔍 Click to Enlarge
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="safari-ticket-footer">
+                    <button
+                      type="button"
+                      onClick={() => setShowQrModal(true)}
+                      className="safari-camera-pill hover:scale-105 transition-transform cursor-pointer"
+                    >
+                      <span aria-hidden="true">🔍</span> CLICK TO ENLARGE QR CODE
+                    </button>
+                  </div>
+                </div>
 
                 <a
                   href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
@@ -398,9 +439,74 @@ export default function SafariExperience({
                   rel="noopener noreferrer"
                   className="safari-checkin-button brutal-font"
                 >
-                  Join the expedition <span aria-hidden="true">→</span>
+                  Open Form Directly <span aria-hidden="true">→</span>
                 </a>
               </aside>
+
+              {/* Enlarged QR Modal */}
+              {showQrModal && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+                  onClick={() => setShowQrModal(false)}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Enlarged Check-In QR Code"
+                >
+                  <div
+                    className="relative w-full max-w-lg p-6 md:p-8 bg-[#FFFDF5] border-4 border-[#243028] rounded-3xl shadow-[14px_14px_0px_#243028] text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowQrModal(false)}
+                      className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 border-3 border-[#243028] rounded-full bg-[#E8614D] text-[#FFF3C4] font-black text-xl shadow-[3px_3px_0px_#243028] hover:bg-red-500 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                      aria-label="Close enlarged QR code"
+                    >
+                      ✕
+                    </button>
+
+                    <div className="flex items-center justify-center gap-2 mb-2 brutal-font text-2xl md:text-3xl text-[#243028]">
+                      <span className="w-8 h-8 md:w-10 md:h-10 inline-block"><CartoonAnimalIcon animal="lion" /></span>
+                      <span>EXPEDITION CHECK-IN</span>
+                      <span className="w-8 h-8 md:w-10 md:h-10 inline-block"><CartoonAnimalIcon animal="cheetah" /></span>
+                    </div>
+
+                    <p className="text-xs md:text-sm font-bold text-[#243028] uppercase tracking-wider mb-4">
+                      Point phone camera at code to join basecamp
+                    </p>
+
+                    <div className="p-4 md:p-6 bg-[#FFF3C4] border-4 border-[#243028] rounded-2xl shadow-[6px_6px_0px_#243028] inline-block my-2 max-w-full">
+                      <QRCodeSVG
+                        value="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
+                        size={320}
+                        bgColor="#FFF3C4"
+                        fgColor="#243028"
+                        level="H"
+                        marginSize={2}
+                        className="w-full h-auto max-w-[280px] md:max-w-[340px]"
+                      />
+                    </div>
+
+                    <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSfIjmZMfPsbdXJ-5eYNVzQ2525PFaeVspfeEht2QxuvoCS-_w/viewform?usp=dialog"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full sm:w-auto px-6 py-3 border-3 border-[#243028] rounded-xl bg-[#F4B942] text-[#243028] brutal-font text-sm uppercase shadow-[4px_4px_0px_#243028] hover:bg-[#f9d778] active:translate-x-1 active:translate-y-1 transition-all"
+                      >
+                        Open Form Link →
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setShowQrModal(false)}
+                        className="w-full sm:w-auto px-6 py-3 border-3 border-[#243028] rounded-xl bg-[#FFFDF5] text-[#243028] font-bold text-sm uppercase shadow-[4px_4px_0px_#243028] hover:bg-zinc-200 active:translate-x-1 active:translate-y-1 transition-all cursor-pointer"
+                      >
+                        Close [ESC]
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </main>
 
