@@ -135,6 +135,9 @@ export default function MixerPage() {
   const [cellGroups, setCellGroups] = useState<string[]>(PRESET_CG_NAMES);
   const [newCGName, setNewCGName] = useState("");
   
+  // Quick check-in & import method dropdown
+  const [checkInMethod, setCheckInMethod] = useState<"single" | "bulk" | "sheets">("sheets");
+
   // Single member inputs
   const [inputName, setInputName] = useState("");
   const [inputCG, setInputCG] = useState("");
@@ -143,9 +146,11 @@ export default function MixerPage() {
   const [bulkInput, setBulkInput] = useState("");
   const [showBulkModal, setShowBulkModal] = useState(false);
 
-  // Google Form sync (published CSV link)
+  // Google Form sync (published CSV link & guide)
   const [sheetUrl, setSheetUrl] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [guideTab, setGuideTab] = useState<"csv" | "appscript">("csv");
   const [showShowcase, setShowShowcase] = useState(false);
   const [showTeamRosters, setShowTeamRosters] = useState(false);
   const [showRangerControls, setShowRangerControls] = useState(false);
@@ -975,41 +980,107 @@ export default function MixerPage() {
               <span>01</span><div><p>Registration lodge</p><h2>Explorer check-in</h2></div>
             </div>
             
-            {/* Quick Add Form */}
-            <form onSubmit={handleAddMember} className="space-y-4 mb-6">
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-1">Explorer name</label>
+            {/* Check-In Mode Selector Dropdown */}
+            <div className="mb-5 pb-4 border-b-4 border-black">
+              <label className="block text-[10px] font-black uppercase mb-1">Check-in method</label>
+              <select
+                value={checkInMethod}
+                onChange={(e) => setCheckInMethod(e.target.value as "single" | "bulk" | "sheets")}
+                className="w-full px-3 py-2.5 border-4 border-black font-bold bg-[#FFFDF5] text-black outline-none text-xs shadow-[2px_2px_0px_#000] cursor-pointer"
+              >
+                <option value="single">👤 Single Explorer Check-In</option>
+                <option value="bulk">📋 Bulk Text Roster Import</option>
+                <option value="sheets">📊 Google Form / Sheets CSV Sync</option>
+              </select>
+            </div>
+            
+            {/* Active Check-In Method Form */}
+            {checkInMethod === "single" && (
+              <form onSubmit={handleAddMember} className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-[10px] font-black uppercase mb-1">Explorer name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. John Doe"
+                    value={inputName}
+                    onChange={(e) => setInputName(e.target.value)}
+                    className="w-full px-4 py-2.5 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase mb-1">Home cell group</label>
+                    <select
+                      value={inputCG || cellGroups[0] || ""}
+                      onChange={(e) => setInputCG(e.target.value)}
+                      className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white text-black outline-none text-sm"
+                    >
+                      {cellGroups.map(cg => (
+                        <option key={cg} value={cg}>{cg}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="submit"
+                      className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5"
+                    >
+                      Check in explorer
+                    </button>
+                  </div>
+                </div>
+              </form>
+            )}
+
+            {checkInMethod === "bulk" && (
+              <div className="mb-6 space-y-3">
+                <p className="text-[10px] font-bold text-zinc-500 uppercase leading-relaxed">
+                  Paste multiple explorer names directly from Excel or plain text manifest.
+                </p>
+                <button
+                  onClick={() => setShowBulkModal(true)}
+                  className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
+                >
+                  Import a full roster
+                </button>
+              </div>
+            )}
+
+            {checkInMethod === "sheets" && (
+              <div className="mb-6 space-y-3">
+                <label className="block text-[10px] font-black uppercase">Google Form trail sync</label>
+                <p className="text-[9px] font-bold text-zinc-500 mb-2 uppercase leading-relaxed">
+                  In your response sheet: File → Share → Publish to web → &quot;Form Responses 1&quot; as CSV. Paste that link once — it&apos;s remembered.
+                </p>
                 <input
                   type="text"
-                  placeholder="e.g. John Doe"
-                  value={inputName}
-                  onChange={(e) => setInputName(e.target.value)}
-                  className="w-full px-4 py-2.5 border-4 border-black font-bold focus:bg-[#FFFDF5] outline-none text-black bg-white placeholder-zinc-400 text-sm"
+                  placeholder="https://docs.google.com/spreadsheets/d/e/...output=csv"
+                  value={sheetUrl}
+                  onChange={(e) => setSheetUrl(e.target.value)}
+                  className="w-full px-3 py-2 border-2 border-black text-[10px] font-bold font-mono outline-none text-black bg-white placeholder-zinc-400 mb-2"
                 />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase mb-1">Home cell group</label>
-                  <select
-                    value={inputCG || cellGroups[0] || ""}
-                    onChange={(e) => setInputCG(e.target.value)}
-                    className="w-full px-3 py-2.5 border-4 border-black font-bold bg-white text-black outline-none text-sm"
-                  >
-                    {cellGroups.map(cg => (
-                      <option key={cg} value={cg}>{cg}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-end">
+                <div className="flex gap-2">
                   <button
-                    type="submit"
-                    className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] shadow-[2px_2px_0px_#000] cursor-pointer active:translate-y-0.5"
+                    onClick={handleSheetSync}
+                    disabled={isSyncing || !sheetUrl.trim()}
+                    className="flex-1 brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
                   >
-                    Check in explorer
+                    {isSyncing ? "Syncing responses..." : "Sync responses"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowGuideModal(true);
+                      playSynthSound(400, 0.1, "sine");
+                    }}
+                    title="Open Google Sheets & Apps Script Setup Guide"
+                    className="brutal-box bg-[#FACC15] text-black font-black text-xs px-3 py-3 border-2 border-black hover:bg-[#eab308] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5 flex items-center justify-center gap-1 shrink-0"
+                  >
+                    <span>📖</span> Setup Guide
                   </button>
                 </div>
               </div>
-            </form>
+            )}
 
             <div className="border-t-4 border-black pt-4">
               <div className="flex justify-between items-center mb-3">
@@ -1054,38 +1125,6 @@ export default function MixerPage() {
                   Add group
                 </button>
               </div>
-            </div>
-
-            {/* Bulk Sheets Import button */}
-            <div className="mt-6 pt-4 border-t-4 border-black">
-              <button
-                onClick={() => setShowBulkModal(true)}
-                className="w-full brutal-box bg-[#38BDF8] text-black font-black uppercase text-xs py-3.5 border-2 border-black hover:bg-[#0ea5e9] shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
-              >
-                Import a full roster
-              </button>
-            </div>
-
-            {/* Google Form Auto-Sync */}
-            <div className="mt-4 pt-4 border-t-4 border-black">
-              <label className="block text-[10px] font-black uppercase mb-1">Google Form trail sync</label>
-              <p className="text-[9px] font-bold text-zinc-500 mb-2 uppercase leading-relaxed">
-                In your response sheet: File → Share → Publish to web → &quot;Form Responses 1&quot; as CSV. Paste that link once — it&apos;s remembered.
-              </p>
-              <input
-                type="text"
-                placeholder="https://docs.google.com/spreadsheets/d/e/...output=csv"
-                value={sheetUrl}
-                onChange={(e) => setSheetUrl(e.target.value)}
-                className="w-full px-3 py-2 border-2 border-black text-[10px] font-bold font-mono outline-none text-black bg-white placeholder-zinc-400 mb-2"
-              />
-              <button
-                onClick={handleSheetSync}
-                disabled={isSyncing || !sheetUrl.trim()}
-                className="w-full brutal-box bg-[#4ADE80] text-black font-black uppercase text-xs py-3 border-2 border-black hover:bg-[#34d399] disabled:opacity-50 disabled:cursor-not-allowed shadow-[3px_3px_0px_#000] cursor-pointer active:translate-y-0.5"
-              >
-                {isSyncing ? "Syncing responses..." : "Sync Google Form responses"}
-              </button>
             </div>
           </div>
 
@@ -1437,6 +1476,250 @@ export default function MixerPage() {
           </div>
         </div>
       )}
+
+      {/* Google Sheets & Apps Script Setup Guide Bottom Sheet */}
+      {showGuideModal && (
+        <div className="safari-modal-backdrop" onClick={() => setShowGuideModal(false)}>
+          <div
+            className="safari-import-tent max-w-2xl w-full max-h-[88vh] flex flex-col my-auto overflow-hidden animate-in slide-in-from-bottom duration-200"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sheets-guide-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowGuideModal(false);
+                playSynthSound(400, 0.1, "sine");
+              }}
+              className="absolute top-4 right-4 brutal-box bg-red-500 text-white font-black text-base w-8 h-8 flex items-center justify-center border-2 border-black shadow-[2px_2px_0px_#000] cursor-pointer z-10"
+            >
+              ×
+            </button>
+
+            {/* Header */}
+            <div className="border-b-4 border-black pb-3 pr-10">
+              <span className="inline-block bg-[#FACC15] text-black font-black text-[9px] uppercase px-2 py-0.5 border border-black mb-1 shadow-[1px_1px_0px_#000]">
+                Integration Cheat Sheet
+              </span>
+              <h3 id="sheets-guide-title" className="brutal-font text-xl md:text-2xl uppercase text-[#243028] leading-tight">
+                Google Sheets & Apps Script Guide
+              </h3>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex gap-2 border-b-2 border-black py-3 bg-[#fff3c4] shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setGuideTab("csv");
+                  playSynthSound(500, 0.05, "sine");
+                }}
+                className={`px-3 py-1.5 font-black uppercase text-[10px] border-2 border-black cursor-pointer transition-all ${
+                  guideTab === "csv"
+                    ? "bg-[#38BDF8] text-black shadow-[2px_2px_0px_#000]"
+                    : "bg-white text-zinc-600 hover:bg-gray-100"
+                }`}
+              >
+                1. Publish CSV Link (Direct Sync)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuideTab("appscript");
+                  playSynthSound(500, 0.05, "sine");
+                }}
+                className={`px-3 py-1.5 font-black uppercase text-[10px] border-2 border-black cursor-pointer transition-all ${
+                  guideTab === "appscript"
+                    ? "bg-[#FACC15] text-black shadow-[2px_2px_0px_#000]"
+                    : "bg-white text-zinc-600 hover:bg-gray-100"
+                }`}
+              >
+                2. Google Apps Script Code
+              </button>
+            </div>
+
+            {/* Tab Content (Scrollable Body) */}
+            <div className="flex-1 overflow-y-auto p-1 pt-3 space-y-4 text-xs">
+              {guideTab === "csv" ? (
+                <div className="space-y-3">
+                  <div className="bg-amber-100/70 border-2 border-black p-3 shadow-[2px_2px_0px_#000]">
+                    <h4 className="font-black uppercase text-[11px] text-black mb-1 flex items-center gap-1.5">
+                      <span className="text-sm">⚡</span> Fastest Setup — No Code Required
+                    </h4>
+                    <p className="text-[10px] font-semibold text-zinc-700 leading-normal">
+                      Publish your Google Sheet responses as a CSV web link. The Mixer auto-parses names &amp; cell groups and deduplicates repeat submissions.
+                    </p>
+                  </div>
+
+                  <ol className="space-y-2.5 font-medium text-[11px]">
+                    <li className="flex gap-3 items-start bg-white p-3 border-2 border-black shadow-[2px_2px_0px_#000]">
+                      <span className="bg-[#38BDF8] text-black font-black text-[11px] w-6 h-6 rounded-full border border-black flex items-center justify-center shrink-0">1</span>
+                      <div>
+                        <strong className="font-black uppercase block text-black">Open Response Sheet</strong>
+                        Open the Google Sheet linked to your Google Form.
+                      </div>
+                    </li>
+                    <li className="flex gap-3 items-start bg-white p-3 border-2 border-black shadow-[2px_2px_0px_#000]">
+                      <span className="bg-[#38BDF8] text-black font-black text-[11px] w-6 h-6 rounded-full border border-black flex items-center justify-center shrink-0">2</span>
+                      <div>
+                        <strong className="font-black uppercase block text-black">Click File → Share → Publish to web</strong>
+                        In the top menu bar: <code className="bg-gray-100 px-1 border border-black text-[10px]">File</code> → <code className="bg-gray-100 px-1 border border-black text-[10px]">Share</code> → <code className="bg-gray-100 px-1 border border-black text-[10px]">Publish to web</code>.
+                      </div>
+                    </li>
+                    <li className="flex gap-3 items-start bg-white p-3 border-2 border-black shadow-[2px_2px_0px_#000]">
+                      <span className="bg-[#38BDF8] text-black font-black text-[11px] w-6 h-6 rounded-full border border-black flex items-center justify-center shrink-0">3</span>
+                      <div>
+                        <strong className="font-black uppercase block text-black">Configure Dropdowns</strong>
+                        - Dropdown 1: Select <span className="font-bold text-black">&quot;Form Responses 1&quot;</span><br />
+                        - Dropdown 2: Select <span className="font-bold text-black">&quot;Comma-separated values (.csv)&quot;</span>
+                      </div>
+                    </li>
+                    <li className="flex gap-3 items-start bg-white p-3 border-2 border-black shadow-[2px_2px_0px_#000]">
+                      <span className="bg-[#38BDF8] text-black font-black text-[11px] w-6 h-6 rounded-full border border-black flex items-center justify-center shrink-0">4</span>
+                      <div>
+                        <strong className="font-black uppercase block text-black">Publish &amp; Copy Link</strong>
+                        Click <span className="font-bold text-blue-700">&quot;Publish&quot;</span>, copy the generated URL (<code className="bg-gray-100 px-1 border text-[9px] font-mono">https://docs.google.com/spreadsheets/...output=csv</code>), and paste it into the sync box in the Mixer!
+                      </div>
+                    </li>
+                  </ol>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="bg-amber-100/70 border-2 border-black p-3 shadow-[2px_2px_0px_#000]">
+                    <h4 className="font-black uppercase text-[11px] text-black mb-1 flex items-center gap-1.5">
+                      <span className="text-sm">🛠️</span> Google Apps Script Code
+                    </h4>
+                    <p className="text-[10px] font-semibold text-zinc-700 leading-normal">
+                      Use this script inside Google Sheets (<code className="bg-white px-1 border border-black text-[10px]">Extensions → Apps Script</code>) to process, deduplicate, or format responses directly inside Google Sheets.
+                    </p>
+                  </div>
+
+                  <ol className="space-y-1.5 font-medium text-[11px]">
+                    <li className="flex gap-2 items-center">
+                      <span className="font-black text-black">1.</span> In Google Sheet, click <code className="bg-white px-1.5 py-0.5 border border-black text-[10px]">Extensions → Apps Script</code>.
+                    </li>
+                    <li className="flex gap-2 items-center">
+                      <span className="font-black text-black">2.</span> Replace contents of <code className="bg-white px-1.5 py-0.5 border border-black text-[10px]">Code.gs</code> with the script below.
+                    </li>
+                    <li className="flex gap-2 items-center">
+                      <span className="font-black text-black">3.</span> Press <code className="bg-white px-1 border border-black text-[10px]">Cmd + S</code>, select <code className="bg-white px-1 border border-black text-[10px]">formatCellgroupRoster</code>, and click <code className="bg-white px-1 border border-black text-[10px]">▶ Run</code>.
+                    </li>
+                  </ol>
+
+                  <div className="relative border-2 border-black bg-zinc-900 text-amber-300 p-3 font-mono text-[10px] overflow-x-auto shadow-[3px_3px_0px_#000]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const code = `/**
+ * Google Apps Script for Cellgroup Games Response Sheet
+ * Open Sheet -> Extensions -> Apps Script -> Paste this script
+ */
+function formatCellgroupRoster() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  
+  if (data.length < 2) {
+    Logger.log("No data rows found.");
+    return;
+  }
+  
+  var headers = data[0].map(function(h) { return h.toString().trim().toLowerCase(); });
+  
+  // Find Name and Cell Group column indices
+  var nameCol = headers.findIndex(function(h) { return h.includes("name"); });
+  var cgCol = headers.findIndex(function(h) { return h.includes("cell group") || h.includes("cg"); });
+  
+  if (nameCol === -1 || cgCol === -1) {
+    SpreadsheetApp.getUi().alert("Error: Couldn't find 'Name' or 'Cell Group' column headers!");
+    return;
+  }
+  
+  // Deduplicate by Name (latest response wins)
+  var latestPlayers = {};
+  for (var i = 1; i < data.length; i++) {
+    var name = data[i][nameCol].toString().trim();
+    var cg = data[i][cgCol].toString().trim();
+    if (name && cg) {
+      latestPlayers[name.toLowerCase()] = { name: name, cellGroup: cg };
+    }
+  }
+  
+  Logger.log("Unique Players Count: " + Object.keys(latestPlayers).length);
+  return Object.values(latestPlayers);
+}`;
+                        navigator.clipboard.writeText(code);
+                        showToast("Apps Script copied to clipboard!");
+                        playSynthSound(600, 0.1, "sine");
+                      }}
+                      className="absolute top-2 right-2 bg-[#FACC15] text-black font-black text-[9px] uppercase px-2 py-1 border border-black hover:bg-[#eab308] cursor-pointer shadow-[1px_1px_0px_#000] active:translate-y-0.5 z-10"
+                    >
+                      📋 Copy Script
+                    </button>
+                    <pre className="whitespace-pre overflow-x-auto text-emerald-300">
+{`/**
+ * Google Apps Script for Cellgroup Games Response Sheet
+ * Open Sheet -> Extensions -> Apps Script -> Paste this script
+ */
+function formatCellgroupRoster() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  
+  if (data.length < 2) {
+    Logger.log("No data rows found.");
+    return;
+  }
+  
+  var headers = data[0].map(function(h) { return h.toString().trim().toLowerCase(); });
+  
+  // Find Name and Cell Group column indices
+  var nameCol = headers.findIndex(function(h) { return h.includes("name"); });
+  var cgCol = headers.findIndex(function(h) { return h.includes("cell group") || h.includes("cg"); });
+  
+  if (nameCol === -1 || cgCol === -1) {
+    SpreadsheetApp.getUi().alert("Error: Couldn't find 'Name' or 'Cell Group' column headers!");
+    return;
+  }
+  
+  // Deduplicate by Name (latest response wins)
+  var latestPlayers = {};
+  for (var i = 1; i < data.length; i++) {
+    var name = data[i][nameCol].toString().trim();
+    var cg = data[i][cgCol].toString().trim();
+    if (name && cg) {
+      latestPlayers[name.toLowerCase()] = { name: name, cellGroup: cg };
+    }
+  }
+  
+  Logger.log("Unique Players Count: " + Object.keys(latestPlayers).length);
+  return Object.values(latestPlayers);
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="pt-3 border-t-2 border-black flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowGuideModal(false);
+                  playSynthSound(400, 0.1, "sine");
+                }}
+                className="brutal-box bg-white text-black font-black uppercase text-xs px-5 py-2 border-2 border-black hover:bg-gray-100 shadow-[2px_2px_0px_#000] cursor-pointer"
+              >
+                Close Guide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+
 
       {/* Open-ended Safari Rally projector overlay */}
       {showShowcase && finalTeams.length > 0 && (
