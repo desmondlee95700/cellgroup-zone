@@ -4,7 +4,7 @@ export interface SafariTeamProfile {
   emoji: string;
 }
 
-const SAFARI_PROFILES: SafariTeamProfile[] = [
+export const SAFARI_PROFILES: SafariTeamProfile[] = [
   { animal: "Lion", collective: "Pride", emoji: "🦁" },
   { animal: "Elephant", collective: "Herd", emoji: "🐘" },
   { animal: "Cheetah", collective: "Dash", emoji: "🐆" },
@@ -24,6 +24,12 @@ const COLOR_PROFILE_INDEX: Array<[string, number]> = [
 
 export function getSafariTeamProfile(name: string): SafariTeamProfile {
   const normalized = name.toLowerCase();
+
+  const animalMatch = SAFARI_PROFILES.find((profile) =>
+    normalized.includes(profile.animal.toLowerCase())
+  );
+  if (animalMatch) return animalMatch;
+
   const colorProfile = COLOR_PROFILE_INDEX.find(([color]) => normalized.includes(color));
   if (colorProfile) return SAFARI_PROFILES[colorProfile[1]];
 

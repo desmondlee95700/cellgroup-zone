@@ -10,7 +10,7 @@ import {
   buildShowcaseShareUrl,
   isShowcaseQrSafe,
 } from "@/lib/showcase-share";
-import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
+import { getSafariTeamLabel, getSafariTeamProfile, SAFARI_PROFILES } from "@/lib/safari-theme";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 
 interface Member {
@@ -633,17 +633,10 @@ export default function MixerPage() {
     }, 4000);
   };
 
-  // Get Naming Lists
+  // Get Naming Lists (Always Animal Realm)
   const getTeamNames = (count: number): string[] => {
-    if (namingPreset === "colors") {
-      const colors = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
-      return Array.from({ length: count }, (_, i) => `Team ${colors[i % colors.length]}`);
-    } else if (namingPreset === "heroes") {
-      const heroes = ["Titans", "Avengers", "Justice", "Defenders", "Guardians", "Storms", "Raptors", "Warriors", "Legends", "Monarchs"];
-      return Array.from({ length: count }, (_, i) => `Team ${heroes[i % heroes.length]}`);
-    } else {
-      return Array.from({ length: count }, (_, i) => `Team ${i + 1}`);
-    }
+    const colors = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
+    return Array.from({ length: count }, (_, i) => `Team ${colors[i % colors.length]}`);
   };
 
   // Core Mixing Engine: Greedy Dealer with Smart Tie-breaking
@@ -1131,57 +1124,131 @@ export default function MixerPage() {
           {/* Module 2: Shuffler Configuration Panel */}
           <div className="safari-herd-trail">
             <div className="safari-section-heading">
-              <span>02</span><div><p>Herd-forming trail</p><h2>Choose the expedition shape</h2></div>
+              <span>02</span><div><p>Herd-forming trail</p><h2>Expedition setup</h2></div>
             </div>
             
             <div className="space-y-6">
+              {/* Herd Count Selector with Stepper & Quick Chips */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] font-black uppercase">How many animal herds?</label>
-                  <span className="brutal-font text-base bg-black text-[#FACC15] px-3 py-1 border-2 border-black font-mono">
-                    {groupCount} TEAMS
+                  <label className="text-[10px] font-black uppercase tracking-wider">How many animal herds?</label>
+                  <span className="brutal-font text-base bg-black text-[#FACC15] px-3 py-1 border-2 border-black font-mono shadow-[2px_2px_0px_#000]">
+                    {groupCount} HERDS
                   </span>
                 </div>
-                {/* Visual styled slider */}
-                <input
-                  type="range"
-                  min="2"
-                  max={Math.max(2, members.length)}
-                  value={groupCount}
-                  onChange={(e) => setGroupCount(parseInt(e.target.value, 10))}
-                  className="w-full accent-black cursor-pointer bg-black h-2 rounded-full outline-none"
-                />
-                <div className="flex justify-between text-[9px] font-mono font-bold mt-1 uppercase text-black">
-                  <span>MIN: 2</span>
-                  <span>MAX: {members.length || 2} HERDS</span>
+
+                {/* Range Slider + Stepper controls */}
+                <div className="flex items-center gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setGroupCount(prev => Math.max(2, prev - 1))}
+                    disabled={groupCount <= 2}
+                    className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
+                    title="Decrease herds"
+                  >
+                    −
+                  </button>
+                  <div className="flex-1">
+                    <input
+                      type="range"
+                      min="2"
+                      max={Math.max(2, members.length)}
+                      value={groupCount}
+                      onChange={(e) => setGroupCount(parseInt(e.target.value, 10))}
+                      className="w-full accent-black cursor-pointer bg-black h-2 rounded-full outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setGroupCount(prev => Math.min(Math.max(2, members.length), prev + 1))}
+                    disabled={groupCount >= Math.max(2, members.length)}
+                    className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
+                    title="Increase herds"
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Quick Count Chips & Explorer Ratio */}
+                <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                  <div className="flex gap-1.5">
+                    {[4, 6, 8, 10].map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        onClick={() => setGroupCount(Math.min(Math.max(2, members.length), num))}
+                        className={`text-[9px] font-black font-mono px-2.5 py-1 border-2 border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
+                          groupCount === num
+                            ? "bg-black text-[#FACC15]"
+                            : "bg-white text-black hover:bg-zinc-100"
+                        }`}
+                      >
+                        {num} Herds
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-[9px] font-mono font-bold uppercase text-zinc-600">
+                    {members.length > 0
+                      ? `~${Math.ceil(members.length / groupCount)} explorers / herd`
+                      : "Add explorers first"}
+                  </span>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-black uppercase mb-2">Herd naming trail</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["numbers", "colors", "heroes"] as const).map(preset => (
-                    <button
-                      key={preset}
-                      onClick={() => setNamingPreset(preset)}
-                      className={`px-3 py-2 border-2 border-black font-bold uppercase text-[10px] tracking-tighter transition-all shadow-[2px_2px_0px_#000] active:translate-y-0.5 cursor-pointer ${
-                        namingPreset === preset
-                          ? "bg-black text-[#FACC15]"
-                          : "bg-white text-black hover:bg-gray-100"
+              {/* Animal Realm Exclusive Showcase Banner */}
+              <div className="border-4 border-black bg-[#FFFDF5] p-4 shadow-[4px_4px_0px_#000] relative overflow-hidden">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-black">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🦁</span>
+                    <div>
+                      <span className="brutal-font text-xs uppercase tracking-wider text-black block leading-none">
+                        Animal Realm
+                      </span>
+                      <span className="text-[8px] font-mono font-bold text-zinc-500 uppercase">
+                        Wild Safari Expedition Theme
+                      </span>
+                    </div>
+                  </div>
+                  <span className="bg-[#4ADE80] text-black font-black text-[9px] uppercase px-2 py-0.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000]">
+                    ✓ ONLY THEME ACTIVE
+                  </span>
+                </div>
+
+                <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed">
+                  Explorers will be randomly dispersed across wild safari herds:
+                </p>
+
+                {/* Animal Herds Preview Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+                  {SAFARI_PROFILES.map((profile, i) => (
+                    <div
+                      key={profile.animal}
+                      className={`p-1.5 border-2 border-black text-center flex flex-col items-center justify-center transition-all ${
+                        i < groupCount
+                          ? "bg-white shadow-[2px_2px_0px_#000]"
+                          : "bg-zinc-100/60 opacity-40 border-dashed"
                       }`}
                     >
-                      {preset === "colors" ? "Animal realm" : preset === "heroes" ? "Adventure" : "Numbered"}
-                    </button>
+                      <span className="text-base leading-none mb-0.5">{profile.emoji}</span>
+                      <span className="text-[9px] font-black uppercase text-black truncate w-full">
+                        {profile.animal}
+                      </span>
+                      <span className="text-[7px] font-bold font-mono text-zinc-500 uppercase truncate w-full">
+                        {profile.collective}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
 
+              {/* Primary Action CTA */}
               <button
                 onClick={generateTeams}
                 disabled={members.length < 2 || isDealing}
-                className="w-full brutal-font text-lg bg-black text-[#FACC15] hover:text-[#fff] hover:bg-zinc-950 py-4 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000] cursor-pointer active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000]"
+                className="w-full brutal-font text-lg bg-black text-[#FACC15] hover:text-[#fff] hover:bg-zinc-950 py-4 border-4 border-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[6px_6px_0px_#000] cursor-pointer active:translate-x-[4px] active:translate-y-[4px] active:shadow-[2px_2px_0px_#000] flex items-center justify-center gap-2"
               >
-                {isDealing ? "Guides are forming herds..." : "Form balanced animal herds"}
+                <span className="text-xl">🦁</span>
+                <span>{isDealing ? "Guides are forming herds..." : "Form balanced animal herds"}</span>
               </button>
             </div>
           </div>
