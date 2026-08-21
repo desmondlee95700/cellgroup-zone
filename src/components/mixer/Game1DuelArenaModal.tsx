@@ -204,10 +204,9 @@ export function Game1DuelArenaModal({
                   teamA.members.map((m) => (
                     <span
                       key={m.id}
-                      className="bg-white/90 text-black font-black text-xs px-2.5 py-1 border-2 border-black rounded-lg shadow-[1.5px_1.5px_0px_#000] flex items-center gap-1"
+                      className="bg-white/90 text-black font-black text-xs px-2.5 py-1 border-2 border-black rounded-lg shadow-[1.5px_1.5px_0px_#000]"
                     >
-                      <span>{m.name}</span>
-                      <span className="text-[9px] text-zinc-500 font-mono font-bold">({m.cg})</span>
+                      {m.name}
                     </span>
                   ))
                 )}
@@ -278,10 +277,9 @@ export function Game1DuelArenaModal({
                   teamB.members.map((m) => (
                     <span
                       key={m.id}
-                      className="bg-white/90 text-black font-black text-xs px-2.5 py-1 border-2 border-black rounded-lg shadow-[1.5px_1.5px_0px_#000] flex items-center gap-1"
+                      className="bg-white/90 text-black font-black text-xs px-2.5 py-1 border-2 border-black rounded-lg shadow-[1.5px_1.5px_0px_#000]"
                     >
-                      <span>{m.name}</span>
-                      <span className="text-[9px] text-zinc-500 font-mono font-bold">({m.cg})</span>
+                      {m.name}
                     </span>
                   ))
                 )}
