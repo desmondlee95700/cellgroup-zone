@@ -1705,30 +1705,34 @@ body {
 }
 
 .safari-mixer-back,
-.safari-clear-roster {
+.safari-clear-roster,
+.safari-nav-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.7rem;
+  gap: .4rem;
+  min-height: 2.5rem;
   width: fit-content;
-  padding: .65rem .9rem;
+  padding: .5rem 1rem;
   color: var(--safari-ink);
   border: 3px solid var(--safari-ink);
   border-radius: 999px;
   background: #f4b942;
   box-shadow: 3px 3px 0 var(--safari-ink);
-  font-size: .62rem;
+  font-size: .68rem;
   font-weight: 950;
   text-decoration: none;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform .16s ease, box-shadow .16s ease;
+  transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
 }
 .safari-mixer-back::before { content: "←"; margin-right: .45rem; font-size: 1rem; }
-.safari-mixer-back:hover, .safari-clear-roster:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--safari-ink); }
-.safari-mixer-back:focus-visible, .safari-clear-roster:focus-visible { outline: 4px solid var(--safari-coral); outline-offset: 3px; }
+.safari-mixer-back:hover, .safari-clear-roster:hover, .safari-nav-btn:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--safari-ink); }
+.safari-mixer-back:focus-visible, .safari-clear-roster:focus-visible, .safari-nav-btn:focus-visible { outline: 4px solid var(--safari-coral); outline-offset: 3px; }
 .safari-clear-roster { justify-self: end; color: #fffdf5; background: #e8614d; }
 .safari-clear-roster:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; transform: none; }
+.safari-fullscreen-btn { background: #38bdf8; color: #000; }
+.safari-fullscreen-btn:hover { background: #7dd3fc; }
 
 .safari-mixer-brand { display: flex; align-items: center; gap: .8rem; margin: 0; font-size: clamp(.85rem, 1.8vw, 1.35rem); line-height: 1; text-transform: uppercase; }
 .safari-mixer-brand > span:last-child { display: grid; }

@@ -985,7 +985,7 @@ export default function MixerPage() {
             <button
               type="button"
               onClick={toggleAppFullscreen}
-              className="brutal-box bg-[#38BDF8] text-black font-black text-xs px-3 py-1.5 border-2 border-black hover:bg-sky-300 shadow-[2px_2px_0px_#000] cursor-pointer flex items-center gap-1 uppercase"
+              className="safari-nav-btn safari-fullscreen-btn"
               title="Toggle Fullscreen Mode across the webapp"
             >
               <span>📺</span> Full Screen
