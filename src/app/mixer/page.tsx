@@ -27,7 +27,7 @@ interface Team {
   score?: number;
 }
 
-const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
+const PRESET_CG_NAMES = ["Jason", "Lemuel", "Rebecca", "Jackson"];
 
 const SCORE_AWARDS = [
   { label: "+1", delta: 1, title: "Add 1 point" },
@@ -159,6 +159,7 @@ export default function MixerPage() {
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
+  const [selectedAnimals, setSelectedAnimals] = useState<number[]>([0, 1, 2, 3, 4]);
   const [namingPreset, setNamingPreset] = useState<"numbers" | "colors" | "heroes">("colors");
   
   // Output state
@@ -271,13 +272,37 @@ export default function MixerPage() {
         if (savedMembers) setMembers(JSON.parse(savedMembers));
 
         const savedGroups = localStorage.getItem("cg_mixer_cellgroups");
-        if (savedGroups) setCellGroups(JSON.parse(savedGroups));
+        if (savedGroups) {
+          try {
+            const parsed = JSON.parse(savedGroups);
+            if (JSON.stringify(parsed) === JSON.stringify(["Jason", "Victor", "Lemuel"]) || parsed.length === 3 && parsed.includes("Victor")) {
+              setCellGroups(PRESET_CG_NAMES);
+              localStorage.setItem("cg_mixer_cellgroups", JSON.stringify(PRESET_CG_NAMES));
+            } else {
+              setCellGroups(parsed);
+            }
+          } catch {
+            setCellGroups(PRESET_CG_NAMES);
+          }
+        }
 
         const savedTeams = localStorage.getItem("cg_mixer_teams");
         if (savedTeams) setFinalTeams(JSON.parse(savedTeams));
 
         const savedCount = localStorage.getItem("cg_mixer_groupcount");
         if (savedCount) setGroupCount(parseInt(savedCount, 10));
+
+        const savedSelectedAnimals = localStorage.getItem("cg_mixer_selected_animals");
+        if (savedSelectedAnimals) {
+          try {
+            const parsed = JSON.parse(savedSelectedAnimals);
+            if (Array.isArray(parsed) && parsed.length >= 2) {
+              setSelectedAnimals(parsed);
+            }
+          } catch {
+            // fallback
+          }
+        }
 
         const savedPreset = localStorage.getItem("cg_mixer_preset");
         if (savedPreset) setNamingPreset(savedPreset as "numbers" | "colors" | "heroes");
@@ -333,6 +358,13 @@ export default function MixerPage() {
       localStorage.setItem("cg_mixer_groupcount", groupCount.toString());
     }
   }, [groupCount]);
+
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cg_mixer_selected_animals", JSON.stringify(selectedAnimals));
+    }
+  }, [selectedAnimals]);
 
   useEffect(() => {
     if (!isLoadedRef.current) return;
@@ -645,10 +677,37 @@ export default function MixerPage() {
     }, 4000);
   };
 
-  // Get Naming Lists (Always Animal Realm)
-  const getTeamNames = (count: number): string[] => {
-    const colors = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
-    return Array.from({ length: count }, (_, i) => `Team ${colors[i % colors.length]}`);
+  // Set herd count (via slider, stepper, or quick chips) and auto-select first N animals
+  const changeHerdCount = (count: number) => {
+    const finalCount = Math.min(10, Math.max(2, count));
+    setGroupCount(finalCount);
+    setSelectedAnimals(Array.from({ length: finalCount }, (_, i) => i));
+  };
+
+  // Toggle individual animal herd selection freely
+  const toggleAnimalSelection = (index: number) => {
+    let updated: number[];
+    if (selectedAnimals.includes(index)) {
+      if (selectedAnimals.length <= 2) {
+        showToast("Need at least 2 active animal herds!");
+        return;
+      }
+      updated = selectedAnimals.filter(idx => idx !== index);
+    } else {
+      if (selectedAnimals.length >= 10) {
+        showToast("Maximum 10 animal herds allowed!");
+        return;
+      }
+      updated = [...selectedAnimals, index].sort((a, b) => a - b);
+    }
+    setSelectedAnimals(updated);
+    setGroupCount(updated.length);
+    playSynthSound(450, 0.08, "triangle");
+    showToast(
+      selectedAnimals.includes(index)
+        ? `Removed ${SAFARI_PROFILES[index].animal} (${updated.length} Herds Active)`
+        : `Added ${SAFARI_PROFILES[index].animal} (${updated.length} Herds Active)`
+    );
   };
 
   // Core Mixing Engine: Greedy Dealer with Smart Tie-breaking
@@ -694,12 +753,17 @@ export default function MixerPage() {
     bucketList.sort((a, b) => b.length - a.length);
 
     // 4. Initialize target groups
-    const teamNames = getTeamNames(groupCount);
-    const groups: Team[] = Array.from({ length: groupCount }, (_, i) => ({
+    const COLOR_NAMES = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
+    const activeIndices = selectedAnimals.length === groupCount 
+      ? selectedAnimals 
+      : Array.from({ length: groupCount }, (_, i) => i);
+
+    const teamNames = activeIndices.map(animalIdx => `Team ${COLOR_NAMES[animalIdx % COLOR_NAMES.length]}`);
+    const groups: Team[] = activeIndices.map((animalIdx, i) => ({
       id: i + 1,
       name: teamNames[i],
       members: [],
-      color: TEAM_COLOR_PALETTES[i % TEAM_COLOR_PALETTES.length],
+      color: TEAM_COLOR_PALETTES[animalIdx % TEAM_COLOR_PALETTES.length],
       score: 0,
     }));
 
@@ -1090,9 +1154,23 @@ export default function MixerPage() {
             <div className="border-t-4 border-black pt-4">
               <div className="flex justify-between items-center mb-3">
                 <label className="block text-[10px] font-black uppercase">Cell-group trail markers</label>
-                <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
-                  {cellGroups.length} GROUPS
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCellGroups(PRESET_CG_NAMES);
+                      showToast("Reset trail markers to Jason, Lemuel, Rebecca, Jackson");
+                      playSynthSound(450, 0.08, "sine");
+                    }}
+                    className="text-[8px] font-mono text-black bg-white hover:bg-zinc-100 px-2 py-0.5 border border-black font-black shadow-[1px_1px_0px_#000] cursor-pointer"
+                    title="Reset trail markers to default presets"
+                  >
+                    Reset presets
+                  </button>
+                  <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
+                    {cellGroups.length} GROUPS
+                  </span>
+                </div>
               </div>
               
               {/* Dynamic Groups Badges */}
@@ -1153,7 +1231,7 @@ export default function MixerPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <button
                     type="button"
-                    onClick={() => setGroupCount(prev => Math.max(2, prev - 1))}
+                    onClick={() => changeHerdCount(groupCount - 1)}
                     disabled={groupCount <= 2}
                     className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
                     title="Decrease herds"
@@ -1166,13 +1244,13 @@ export default function MixerPage() {
                       min="2"
                       max={Math.max(2, members.length)}
                       value={groupCount}
-                      onChange={(e) => setGroupCount(parseInt(e.target.value, 10))}
+                      onChange={(e) => changeHerdCount(parseInt(e.target.value, 10))}
                       className="w-full accent-black cursor-pointer bg-black h-2 rounded-full outline-none"
                     />
                   </div>
                   <button
                     type="button"
-                    onClick={() => setGroupCount(prev => Math.min(Math.max(2, members.length), prev + 1))}
+                    onClick={() => changeHerdCount(groupCount + 1)}
                     disabled={groupCount >= Math.max(2, members.length)}
                     className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
                     title="Increase herds"
@@ -1188,7 +1266,7 @@ export default function MixerPage() {
                       <button
                         key={num}
                         type="button"
-                        onClick={() => setGroupCount(Math.min(Math.max(2, members.length), num))}
+                        onClick={() => changeHerdCount(num)}
                         className={`text-[9px] font-black font-mono px-2.5 py-1 border-2 border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
                           groupCount === num
                             ? "bg-black text-[#FACC15]"
@@ -1226,30 +1304,44 @@ export default function MixerPage() {
                   </span>
                 </div>
 
-                <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed">
-                  Explorers will be randomly dispersed across wild safari herds:
+                <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed flex items-center justify-between">
+                  <span>Click any animal card to freely toggle individual herds ON or OFF:</span>
+                  <span className="font-mono text-[9px] text-black bg-[#FACC15] px-2 py-0.5 border border-black font-black shadow-[1px_1px_0px_#000] shrink-0">
+                    {selectedAnimals.length} / 10 SELECTED
+                  </span>
                 </p>
 
                 {/* Animal Herds Preview Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-                  {SAFARI_PROFILES.map((profile, i) => (
-                    <div
-                      key={profile.animal}
-                      className={`p-1.5 border-2 border-black text-center flex flex-col items-center justify-center transition-all ${
-                        i < groupCount
-                          ? "bg-white shadow-[2px_2px_0px_#000]"
-                          : "bg-zinc-100/60 opacity-40 border-dashed"
-                      }`}
-                    >
-                      <span className="text-base leading-none mb-0.5">{profile.emoji}</span>
-                      <span className="text-[9px] font-black uppercase text-black truncate w-full">
-                        {profile.animal}
-                      </span>
-                      <span className="text-[7px] font-bold font-mono text-zinc-500 uppercase truncate w-full">
-                        {profile.collective}
-                      </span>
-                    </div>
-                  ))}
+                  {SAFARI_PROFILES.map((profile, i) => {
+                    const isSelected = selectedAnimals.includes(i);
+                    return (
+                      <button
+                        key={profile.animal}
+                        type="button"
+                        onClick={() => toggleAnimalSelection(i)}
+                        title={`Click to ${isSelected ? "deselect" : "select"} ${profile.animal} ${profile.collective}`}
+                        className={`p-2 border-2 border-black text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none rounded-lg relative ${
+                          isSelected
+                            ? "bg-white shadow-[2px_2px_0px_#000] hover:bg-[#FACC15] hover:scale-[1.04] active:translate-y-0.5"
+                            : "bg-zinc-100/70 opacity-40 border-dashed hover:opacity-100 hover:border-black hover:border-solid hover:bg-white hover:shadow-[2px_2px_0px_#000]"
+                        }`}
+                      >
+                        {isSelected && (
+                          <span className="absolute top-1 right-1 text-[8px] font-black text-black leading-none bg-[#4ADE80] px-1 py-0.5 rounded-sm border border-black shadow-[0.5px_0.5px_0px_#000]">
+                            ✓
+                          </span>
+                        )}
+                        <span className="text-lg leading-none mb-0.5">{profile.emoji}</span>
+                        <span className="text-[9px] font-black uppercase text-black truncate w-full">
+                          {profile.animal}
+                        </span>
+                        <span className="text-[7px] font-bold font-mono text-zinc-500 uppercase truncate w-full">
+                          {profile.collective}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1325,7 +1417,7 @@ export default function MixerPage() {
                         <th className="p-3.5 font-black uppercase text-left w-12 font-mono">#</th>
                         <th className="p-3.5 font-black uppercase">Explorer</th>
                         <th className="p-3.5 font-black uppercase">Home group</th>
-                        <th className="p-3.5 font-black uppercase text-right w-24">Action</th>
+                        <th className="p-3.5 font-black uppercase text-right w-28 whitespace-nowrap">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y-2 divide-black bg-[#FFFDF5]">
@@ -1338,12 +1430,15 @@ export default function MixerPage() {
                               {m.cg}
                             </span>
                           </td>
-                          <td className="p-3.5 text-right">
+                          <td className="p-3.5 text-right whitespace-nowrap">
                             <button
+                              type="button"
                               onClick={() => handleRemoveMember(m.id)}
-                              className="text-red-600 hover:text-red-700 font-black uppercase text-[10px] tracking-wide border border-transparent hover:border-red-600 px-2 py-1 transition-all rounded"
+                              className="inline-flex items-center gap-1 bg-[#E8614D] !text-white hover:bg-[#d54e3a] font-black uppercase text-[9px] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2.5px_2.5px_0px_#000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer rounded-md whitespace-nowrap"
+                              title={`Remove ${m.name} from roster`}
                             >
-                              [ REMOVE ]
+                              <span className="text-white font-black">✕</span>
+                              <span className="text-white font-black">Remove</span>
                             </button>
                           </td>
                         </tr>
