@@ -938,14 +938,13 @@ export default function MixerPage() {
     showToast("Safari trail reset. A fresh expedition is ready!");
   };
 
-  const toggleRallyFullscreen = async () => {
+  const toggleAppFullscreen = async () => {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
         return;
       }
-      const rallyScreen = document.querySelector<HTMLElement>(".safari-control-overlay");
-      await rallyScreen?.requestFullscreen();
+      await document.documentElement.requestFullscreen();
     } catch (error) {
       console.warn("Fullscreen mode is unavailable", error);
       showToast("Fullscreen is unavailable in this browser.");
@@ -971,7 +970,7 @@ export default function MixerPage() {
   return (
     <div ref={containerRef} className="safari-mixer-page min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028]">
       <header className="safari-mixer-nav-wrap">
-        <div className="safari-mixer-nav">
+        <div className="safari-mixer-nav flex items-center justify-between">
           <Link
             href="/home"
             className="safari-mixer-back"
@@ -982,11 +981,21 @@ export default function MixerPage() {
             <span className="safari-mixer-brand-mark" aria-hidden="true"><i /><i /><i /></span>
             <span><small>Animal Kingdom</small> Ranger Registration Camp</span>
           </h1>
-          {isAuthenticated && (
-            <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
-              Clear roster
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleAppFullscreen}
+              className="brutal-box bg-[#38BDF8] text-black font-black text-xs px-3 py-1.5 border-2 border-black hover:bg-sky-300 shadow-[2px_2px_0px_#000] cursor-pointer flex items-center gap-1 uppercase"
+              title="Toggle Fullscreen Mode across the webapp"
+            >
+              <span>📺</span> Full Screen
             </button>
-          )}
+            {isAuthenticated && (
+              <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
+                Clear roster
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1957,7 +1966,7 @@ function formatCellgroupRoster() {
                 <button type="button" onClick={() => setShowRangerControls((visible) => !visible)}>
                   {showRangerControls ? "Hide controls" : "Ranger controls"}
                 </button>
-                <button type="button" onClick={toggleRallyFullscreen}>Full screen</button>
+                <button type="button" onClick={toggleAppFullscreen}>Full screen</button>
               </div>
             </header>
 
