@@ -1408,11 +1408,11 @@ export default function MixerPage() {
                             <button
                               type="button"
                               onClick={() => handleRemoveMember(m.id)}
-                              className="inline-flex items-center gap-1 bg-[#E8614D] text-white hover:bg-[#d54e3a] font-black uppercase text-[9px] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2.5px_2.5px_0px_#000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer rounded-md whitespace-nowrap"
+                              className="inline-flex items-center gap-1 bg-[#E8614D] !text-white hover:bg-[#d54e3a] font-black uppercase text-[9px] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2.5px_2.5px_0px_#000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer rounded-md whitespace-nowrap"
                               title={`Remove ${m.name} from roster`}
                             >
-                              <span>✕</span>
-                              <span>Remove</span>
+                              <span className="text-white font-black">✕</span>
+                              <span className="text-white font-black">Remove</span>
                             </button>
                           </td>
                         </tr>
