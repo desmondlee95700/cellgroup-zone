@@ -72,22 +72,28 @@ export function Game1DuelArenaModal({
     <div className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
       <div className="bg-[#FFFDF5] border-4 border-black rounded-3xl p-4 sm:p-6 shadow-[10px_10px_0px_#000] w-full max-w-5xl my-auto relative">
         
-        {/* Streamlined Single Header */}
+        {/* Product-Designer Header Bar */}
         <div className="flex flex-wrap items-center justify-between border-b-4 border-black pb-4 mb-4 gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">⚔️</span>
-            <h2 className="brutal-font text-xl sm:text-2xl text-black uppercase leading-none">
-              Game 1 Duel
-            </h2>
+          
+          {/* Left: Modal Title & Icon */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 bg-[#FACC15] border-3 border-black rounded-xl flex items-center justify-center text-xl shadow-[2px_2px_0px_#000]">
+              ⚔️
+            </div>
+            <div>
+              <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 font-mono block">
+                1v1 Head-to-Head Duel
+              </span>
+              <h2 className="brutal-font text-xl sm:text-2xl text-black uppercase leading-none">
+                Savanna Duel
+              </h2>
+            </div>
           </div>
 
-          {/* Premium Matchmaker Controls Bar */}
-          <div className="flex items-center justify-center gap-2 flex-wrap flex-1 max-w-2xl bg-[#18181B] p-2 border-3 border-black rounded-2xl shadow-[4px_4px_0px_#000]">
+          {/* Center: Matchmaker Team Selectors (Red vs Blue) */}
+          <div className="flex items-center justify-center gap-2 flex-1 max-w-xl mx-auto">
             {/* Red Corner Selector */}
-            <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
-              <span className="text-[10px] font-black uppercase tracking-wider text-red-400 font-mono pl-1 shrink-0 flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-500 inline-block animate-ping"></span> RED
-              </span>
+            <div className="relative flex-1 min-w-[140px]">
               <select
                 value={duelTeamAId ?? ""}
                 onChange={(e) => {
@@ -98,29 +104,28 @@ export function Game1DuelArenaModal({
                     if (other) setDuelTeamBId(other.id);
                   }
                 }}
-                className="flex-1 bg-[#FFFDF5] text-black font-black text-xs sm:text-sm px-3 py-2 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer hover:bg-white transition-all truncate"
+                className="w-full bg-[#FFE4E6] text-red-950 font-black text-xs sm:text-sm px-3 py-2 border-3 border-black rounded-xl shadow-[3px_3px_0px_#000] outline-none cursor-pointer hover:bg-red-100 transition-all font-mono uppercase truncate"
               >
                 {finalTeams.map(team => (
-                  <option key={team.id} value={team.id}>
-                    {getSafariTeamLabel(team.name)} ({team.members.length} player{team.members.length === 1 ? "" : "s"})
+                  <option key={team.id} value={team.id} className="bg-white text-black">
+                    🔴 {getSafariTeamLabel(team.name)} ({team.members.length}P)
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Swap Button */}
+            {/* Swap Action Button */}
             <button
               type="button"
               onClick={swapCorners}
               title="Swap Red & Blue Corners"
-              className="brutal-box bg-[#FACC15] text-black font-mono font-black text-xs px-2.5 py-2 border-2 border-black rounded-xl hover:bg-[#eab308] active:translate-y-0.5 shadow-[2px_2px_0px_#000] cursor-pointer flex items-center gap-1 shrink-0"
+              className="brutal-box bg-[#FACC15] text-black font-black text-xs p-2 border-3 border-black rounded-xl hover:bg-[#eab308] active:translate-y-0.5 shadow-[2.5px_2.5px_0px_#000] cursor-pointer shrink-0 transition-transform active:scale-95 flex items-center justify-center"
             >
-              <span className="text-sm">🔀</span>
-              <span className="hidden sm:inline">SWAP</span>
+              🔀
             </button>
 
             {/* Blue Corner Selector */}
-            <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
+            <div className="relative flex-1 min-w-[140px]">
               <select
                 value={duelTeamBId ?? ""}
                 onChange={(e) => {
@@ -131,24 +136,22 @@ export function Game1DuelArenaModal({
                     if (other) setDuelTeamBId(other.id);
                   }
                 }}
-                className="flex-1 bg-[#FFFDF5] text-black font-black text-xs sm:text-sm px-3 py-2 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer hover:bg-white transition-all truncate"
+                className="w-full bg-[#E0F2FE] text-sky-950 font-black text-xs sm:text-sm px-3 py-2 border-3 border-black rounded-xl shadow-[3px_3px_0px_#000] outline-none cursor-pointer hover:bg-sky-100 transition-all font-mono uppercase truncate"
               >
                 {finalTeams.map(team => (
-                  <option key={team.id} value={team.id}>
-                    {getSafariTeamLabel(team.name)} ({team.members.length} player{team.members.length === 1 ? "" : "s"})
+                  <option key={team.id} value={team.id} className="bg-white text-black">
+                    🔵 {getSafariTeamLabel(team.name)} ({team.members.length}P)
                   </option>
                 ))}
               </select>
-              <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 font-mono pr-1 shrink-0 flex items-center gap-1">
-                BLUE <span className="w-2 h-2 rounded-full bg-sky-500 inline-block animate-ping"></span>
-              </span>
             </div>
           </div>
 
+          {/* Right: Exit Button */}
           <button
             type="button"
             onClick={onClose}
-            className="brutal-box bg-red-500 text-white font-black text-xs px-3 py-1.5 border-2 border-black hover:bg-red-600 shadow-[2px_2px_0px_#000] cursor-pointer ml-auto"
+            className="brutal-box bg-red-500 text-white font-black text-xs px-3.5 py-2 border-3 border-black rounded-xl hover:bg-red-600 shadow-[3px_3px_0px_#000] cursor-pointer shrink-0"
           >
             ✕ Close
           </button>
