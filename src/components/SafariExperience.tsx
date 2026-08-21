@@ -257,14 +257,13 @@ export default function SafariExperience({
             <div className="safari-sign-rope safari-sign-rope-right" aria-hidden="true" />
             <div className="safari-ranger-plaque">
               <p className="safari-ranger-kicker">GAMES PRESENTS</p>
-              <h1 id="reserve-title" className="safari-reserve-title brutal-font">ANIMAL KINGDOM</h1>
+              <h1 id="reserve-title" className="safari-reserve-title brutal-font">VICTOR ZONE</h1>
               <div className="safari-sign-divider" aria-hidden="true"><span /> <span /> <span /></div>
-              <p className="safari-reserve-subtitle">SAFARI BASECAMP FOR 50+ EXPLORERS</p>
               <button
                 onClick={enterSafariReserve}
                 className="safari-reserve-button brutal-font"
               >
-                ENTER THE RESERVE <span aria-hidden="true">→</span>
+                ENTER THE RESERVE <span aria-hidden="true"></span>
               </button>
             </div>
           </section>
