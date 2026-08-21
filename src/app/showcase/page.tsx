@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import gsap from "gsap";
@@ -12,7 +12,7 @@ import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 
 interface TeamMember {
   name: string;
-  cg: string;
+  cg?: string;
 }
 
 interface TeamData {
@@ -44,7 +44,6 @@ function RosterViewerContent() {
   const rawData = searchParams.get("t");
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [filterQuery, setFilterQuery] = useState("");
-  const [soundOn, setSoundOn] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,36 +73,6 @@ function RosterViewerContent() {
     return () => clearTimeout(timer);
   }, [rawData]);
 
-  const playChirp = useCallback((frequency: number, duration: number, type: OscillatorType = "sine") => {
-    if (!soundOn) return;
-
-    try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioContextClass) return;
-      const context = new AudioContextClass();
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = type;
-      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
-      gain.gain.setValueAtTime(0.08, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
-      oscillator.connect(gain);
-      gain.connect(context.destination);
-      oscillator.start();
-      oscillator.stop(context.currentTime + duration);
-    } catch (error) {
-      console.warn(error);
-    }
-  }, [soundOn]);
-
-  useEffect(() => {
-    const query = filterQuery.trim().toLowerCase();
-    if (!query || teams.length === 0) return;
-    if (teams.some((team) => team.members.some((member) => member.name.toLowerCase().includes(query)))) {
-      playChirp(880, 0.12, "sine");
-    }
-  }, [filterQuery, teams, playChirp]);
-
   useGSAP(() => {
     if (teams.length > 0) {
       gsap.fromTo(
@@ -121,58 +90,53 @@ function RosterViewerContent() {
     : 0;
 
   return (
-    <div ref={containerRef} className="safari-crown-content max-w-4xl mx-auto px-4 py-6">
-      {/* Top Controls & Navigation Bar */}
-      <section className="bg-[#FFFDF5] border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="w-full md:w-auto">
-          <label className="relative block w-full">
-            <span className="text-[10px] font-black uppercase font-mono text-zinc-600 block mb-1">
-              🔍 Type your name to find your crew:
-            </span>
+    <div ref={containerRef} className="safari-crown-content max-w-5xl mx-auto px-2 md:px-4">
+      {/* Revamped Neo-Brutalist Search Bar */}
+      <section className="bg-[#FFFDF5] border-4 border-black rounded-2xl p-4 md:p-5 shadow-[8px_8px_0px_#000] mb-8">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-xl">🔍</span>
+            </div>
             <input
               type="search"
-              placeholder="e.g. Desmond, Sarah..."
+              placeholder="Type your name to find your crew..."
               value={filterQuery}
               onChange={(event) => setFilterQuery(event.target.value)}
-              className="w-full md:w-80 px-4 py-2.5 border-3 border-black rounded-xl font-bold text-base bg-white shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-4 focus:ring-[#FACC15]"
+              className="w-full pl-12 pr-4 py-3 border-3 border-black rounded-xl font-bold text-base md:text-lg bg-white shadow-[3px_3px_0px_#000] focus:outline-none focus:ring-4 focus:ring-[#FACC15] placeholder:text-zinc-400 transition-all"
             />
-          </label>
-        </div>
+          </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           {cleanQuery && (
-            <button
-              type="button"
-              className="text-xs font-black uppercase font-mono bg-[#FF8B8B] text-black px-3 py-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]"
-              onClick={() => setFilterQuery("")}
-            >
-              {matchCount > 0 ? `${matchCount} found · clear` : "No match · clear"}
-            </button>
+            <div className="flex items-center gap-2 justify-end">
+              <span
+                className={`text-xs font-black uppercase font-mono px-3.5 py-2.5 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] ${
+                  matchCount > 0
+                    ? "bg-[#B7DF77] text-black"
+                    : "bg-[#FF8B8B] text-black"
+                }`}
+              >
+                {matchCount > 0 ? `✨ ${matchCount} ${matchCount === 1 ? 'Explorer' : 'Explorers'} Found` : "No match found"}
+              </span>
+              <button
+                type="button"
+                className="text-xs font-black uppercase font-mono bg-white text-black hover:bg-zinc-100 px-4 py-2.5 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] active:translate-x-0.5 active:translate-y-0.5 transition-all"
+                onClick={() => setFilterQuery("")}
+              >
+                ✕ Clear
+              </button>
+            </div>
           )}
-          <button
-            type="button"
-            className="text-xs font-black uppercase font-mono bg-white text-black px-3 py-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]"
-            aria-pressed={soundOn}
-            onClick={() => setSoundOn((current) => !current)}
-          >
-            Sound {soundOn ? "🔊" : "🔇"}
-          </button>
-          <Link
-            href={`/showcase/standings${rawData ? `?t=${rawData}` : ""}`}
-            className="text-xs font-black uppercase font-mono bg-[#FACC15] text-black px-4 py-2.5 border-3 border-black rounded-xl shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-center"
-          >
-            🏆 Hall Results
-          </Link>
         </div>
       </section>
 
       {teams.length === 0 && (
-        <section className="safari-empty-lookout p-8 border-4 border-black rounded-2xl bg-[#FFFDF5] text-center shadow-[6px_6px_0px_#000]">
+        <section className="safari-empty-lookout p-8 border-4 border-black rounded-2xl bg-[#FFFDF5] text-center shadow-[8px_8px_0px_#000]">
           <div className="safari-empty-copy">
             <p className="safari-eyebrow">The clearing is quiet</p>
-            <h2 id="empty-lookout-title" className="brutal-font text-2xl uppercase my-2">No animal crews have arrived yet.</h2>
-            <p className="text-xs font-bold text-zinc-600 uppercase max-w-md mx-auto mb-4">Form the crews in Herd Maker, then scan this QR code to view team assignments.</p>
-            <Link href="/mixer" className="inline-block bg-[#FACC15] text-black px-6 py-2.5 border-3 border-black rounded-xl font-black uppercase shadow-[3px_3px_0px_#000]">
+            <h2 id="empty-lookout-title" className="brutal-font text-2xl md:text-3xl uppercase my-2">No animal crews have arrived yet.</h2>
+            <p className="text-xs md:text-sm font-bold text-zinc-600 uppercase max-w-md mx-auto mb-6">Form the crews in Herd Maker, then scan the QR code to view team assignments.</p>
+            <Link href="/mixer" className="inline-block bg-[#FACC15] text-black px-6 py-3 border-3 border-black rounded-xl font-black uppercase shadow-[4px_4px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
               Form animal crews
             </Link>
           </div>
@@ -181,81 +145,110 @@ function RosterViewerContent() {
 
       {teams.length > 0 && (
         <section aria-labelledby="herd-rollcall-title">
-          <div className="flex justify-between items-end border-b-4 border-black pb-3 mb-6">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 font-mono block">
-                Official Roster
-              </span>
-              <h2 id="herd-rollcall-title" className="brutal-font text-2xl md:text-3xl text-black uppercase leading-none">
-                Animal Crew Rosters
-              </h2>
+          {/* Header Box Card */}
+          <div className="bg-[#FFFDF5] border-4 border-black rounded-2xl p-5 shadow-[8px_8px_0px_#000] mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-[#FACC15] border-3 border-black flex items-center justify-center text-2xl shadow-[3px_3px_0px_#000] shrink-0">
+                🐾
+              </div>
+              <div>
+                <span className="text-[10px] md:text-xs font-black uppercase tracking-wider text-amber-900 font-mono block mb-0.5">
+                  Official Gathering Rollcall
+                </span>
+                <h2 id="herd-rollcall-title" className="brutal-font text-2xl md:text-3xl text-black uppercase leading-none">
+                  Animal Crew Rosters
+                </h2>
+              </div>
             </div>
-            <span className="text-xs font-black font-mono bg-[#B7DF77] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase rounded-md">
-              👥 {totalExplorers} Explorers · {teams.length} Herds
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs md:text-sm font-black font-mono bg-[#B7DF77] text-black px-4 py-2 border-3 border-black shadow-[3px_3px_0px_#000] uppercase rounded-xl">
+                👥 {totalExplorers} Explorers · {teams.length} Herds
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
-            {teams.map((team, index) => (
-              <article
-                key={team.name}
-                className="showcase-team-card border-4 border-black rounded-2xl bg-white shadow-[6px_6px_0px_#000] overflow-hidden flex flex-col justify-between"
-                style={{ backgroundColor: getTeamAccent(team.color, index) }}
-              >
-                <div>
-                  <header className="flex items-center gap-3 p-4 border-b-3 border-black bg-white/60">
-                    <TeamMark name={team.name} compact />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[9px] font-black uppercase tracking-wider font-mono text-zinc-700 block">
-                        👥 {team.members.length} Explorers
-                      </span>
-                      <h3 className="brutal-font text-lg text-black uppercase leading-tight truncate">
-                        {getSafariTeamLabel(team.name)}
-                      </h3>
-                    </div>
-                    {typeof team.score === "number" && (
-                      <span className="brutal-font text-xl text-black bg-[#FACC15] px-3 py-1 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000]">
-                        {team.score} <small className="text-[9px] font-mono font-bold">PTS</small>
-                      </span>
-                    )}
-                  </header>
+          {/* Team Cards Grid - Sorted so matching teams & players appear at the top */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+            {(cleanQuery
+              ? [...teams].sort((a, b) => {
+                  const aMatches = a.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length;
+                  const bMatches = b.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length;
+                  return bMatches - aMatches;
+                })
+              : teams
+            ).map((team, index) => {
+              const teamMatches = cleanQuery
+                ? team.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length
+                : 0;
 
-                  <ul className="p-4 space-y-2 max-h-72 overflow-y-auto">
-                    {team.members.map((member, memberIndex) => {
-                      const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
-                      return (
-                        <li
-                          key={`${member.name}-${memberIndex}`}
-                          className={`flex items-center justify-between p-2.5 border-2 border-black rounded-xl font-bold text-sm transition-all ${
-                            highlighted
-                              ? "bg-[#FACC15] text-black scale-[1.02] ring-4 ring-[#FFFDF5] shadow-[3px_3px_0px_#000]"
-                              : "bg-white/80 text-black shadow-[1.5px_1.5px_0px_#000]"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-black text-zinc-500">
-                              #{String(memberIndex + 1).padStart(2, "0")}
-                            </span>
-                            <span className="brutal-font uppercase text-base">{member.name}</span>
-                          </div>
-                          {member.cg && (
-                            <span className="text-[9px] font-mono font-bold bg-zinc-100 text-zinc-700 px-2 py-0.5 border border-black/40 rounded">
-                              {member.cg}
-                            </span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+              const displayMembers = cleanQuery
+                ? team.members
+                    .map((member, idx) => ({ member, originalIndex: idx + 1 }))
+                    .sort((a, b) => {
+                      const aMatch = a.member.name.toLowerCase().includes(cleanQuery) ? 1 : 0;
+                      const bMatch = b.member.name.toLowerCase().includes(cleanQuery) ? 1 : 0;
+                      return bMatch - aMatch;
+                    })
+                : team.members.map((member, idx) => ({ member, originalIndex: idx + 1 }));
 
-                {team.members.length === 0 && (
-                  <p className="p-4 text-center text-xs font-bold uppercase font-mono text-zinc-600">
-                    This crew is waiting for explorers.
-                  </p>
-                )}
-              </article>
-            ))}
+              return (
+                <article
+                  key={team.name}
+                  className={`showcase-team-card border-4 border-black rounded-2xl bg-white shadow-[8px_8px_0px_#000] overflow-hidden flex flex-col justify-between hover:translate-y-[-2px] transition-all ${
+                    teamMatches > 0 ? "ring-4 ring-[#FACC15] shadow-[10px_10px_0px_#000]" : ""
+                  }`}
+                  style={{ backgroundColor: getTeamAccent(team.color, index) }}
+                >
+                  <div>
+                    <header className="flex items-center gap-3 p-4 border-b-3 border-black bg-white/75 backdrop-blur-xs">
+                      <TeamMark name={team.name} compact />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider font-mono text-zinc-700 block">
+                          👥 {team.members.length} {team.members.length === 1 ? 'Explorer' : 'Explorers'}
+                        </span>
+                        <h3 className="brutal-font text-xl md:text-2xl text-black uppercase leading-tight truncate">
+                          {getSafariTeamLabel(team.name)}
+                        </h3>
+                      </div>
+                      {teamMatches > 0 && (
+                        <span className="text-[10px] font-mono font-black uppercase bg-[#FACC15] text-black px-2.5 py-1 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]">
+                          ✨ Match
+                        </span>
+                      )}
+                    </header>
+
+                    <ul className="p-4 space-y-2.5 max-h-80 overflow-y-auto">
+                      {displayMembers.map(({ member, originalIndex }) => {
+                        const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
+                        return (
+                          <li
+                            key={`${member.name}-${originalIndex}`}
+                            className={`flex items-center justify-between p-3 border-2 border-black rounded-xl font-bold transition-all ${
+                              highlighted
+                                ? "bg-[#FACC15] text-black scale-[1.03] ring-4 ring-[#FFFDF5] shadow-[4px_4px_0px_#000]"
+                                : "bg-white/90 text-black shadow-[2px_2px_0px_#000]"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 rounded-md">
+                                #{String(originalIndex).padStart(2, "0")}
+                              </span>
+                              <span className="brutal-font uppercase text-base md:text-lg tracking-wide">{member.name}</span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  {team.members.length === 0 && (
+                    <p className="p-4 text-center text-xs font-bold uppercase font-mono text-zinc-600">
+                      This crew is waiting for explorers.
+                    </p>
+                  )}
+                </article>
+              );
+            })}
           </div>
         </section>
       )}
@@ -278,19 +271,7 @@ export default function ShowcasePage() {
   );
 
   return (
-    <div ref={containerRef} className="safari-crown-page min-h-screen selection:bg-[#F4B942] selection:text-[#243028]">
-      <header className="safari-crown-nav gsap-reveal">
-        <Link href="/home" className="safari-crown-back">Back to basecamp</Link>
-        <div className="safari-crown-brand">
-          <span className="safari-crown-brand-mark" aria-hidden="true"><i /><i /><i /></span>
-          <div>
-            <strong>📱 Explorer Team Viewer</strong>
-            <small>Find your animal crew and teammates</small>
-          </div>
-        </div>
-        <span className="safari-crown-live"><i aria-hidden="true" /> Mobile view</span>
-      </header>
-
+    <div ref={containerRef} className="safari-crown-page min-h-screen selection:bg-[#F4B942] selection:text-[#243028] py-6">
       <main className="safari-crown-shell gsap-reveal">
         <Suspense fallback={
           <div className="safari-crown-loading">
@@ -302,7 +283,7 @@ export default function ShowcasePage() {
         </Suspense>
       </main>
 
-      <footer className="safari-crown-footer">
+      <footer className="safari-crown-footer max-w-5xl mx-auto px-4 mt-8">
         <span>Animal Kingdom · Explorer Roster</span>
         <span>Find your crew. Support your teammates.</span>
       </footer>
