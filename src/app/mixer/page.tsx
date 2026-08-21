@@ -159,6 +159,7 @@ export default function MixerPage() {
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
+  const [selectedAnimals, setSelectedAnimals] = useState<number[]>([0, 1, 2, 3, 4]);
   const [namingPreset, setNamingPreset] = useState<"numbers" | "colors" | "heroes">("colors");
   
   // Output state
@@ -279,6 +280,18 @@ export default function MixerPage() {
         const savedCount = localStorage.getItem("cg_mixer_groupcount");
         if (savedCount) setGroupCount(parseInt(savedCount, 10));
 
+        const savedSelectedAnimals = localStorage.getItem("cg_mixer_selected_animals");
+        if (savedSelectedAnimals) {
+          try {
+            const parsed = JSON.parse(savedSelectedAnimals);
+            if (Array.isArray(parsed) && parsed.length >= 2) {
+              setSelectedAnimals(parsed);
+            }
+          } catch {
+            // fallback
+          }
+        }
+
         const savedPreset = localStorage.getItem("cg_mixer_preset");
         if (savedPreset) setNamingPreset(savedPreset as "numbers" | "colors" | "heroes");
         
@@ -333,6 +346,13 @@ export default function MixerPage() {
       localStorage.setItem("cg_mixer_groupcount", groupCount.toString());
     }
   }, [groupCount]);
+
+  useEffect(() => {
+    if (!isLoadedRef.current) return;
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cg_mixer_selected_animals", JSON.stringify(selectedAnimals));
+    }
+  }, [selectedAnimals]);
 
   useEffect(() => {
     if (!isLoadedRef.current) return;
@@ -645,25 +665,37 @@ export default function MixerPage() {
     }, 4000);
   };
 
-  // Get Naming Lists (Always Animal Realm)
-  const getTeamNames = (count: number): string[] => {
-    const colors = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
-    return Array.from({ length: count }, (_, i) => `Team ${colors[i % colors.length]}`);
+  // Set herd count (via slider, stepper, or quick chips) and auto-select first N animals
+  const changeHerdCount = (count: number) => {
+    const finalCount = Math.min(10, Math.max(2, count));
+    setGroupCount(finalCount);
+    setSelectedAnimals(Array.from({ length: finalCount }, (_, i) => i));
   };
 
-  // Select active animal herds by clicking on animal cards
-  const handleSelectHerd = (index: number) => {
-    const targetCount = index + 1;
-    let newCount = targetCount;
-    if (targetCount === groupCount && groupCount > 2) {
-      newCount = groupCount - 1;
+  // Toggle individual animal herd selection freely
+  const toggleAnimalSelection = (index: number) => {
+    let updated: number[];
+    if (selectedAnimals.includes(index)) {
+      if (selectedAnimals.length <= 2) {
+        showToast("Need at least 2 active animal herds!");
+        return;
+      }
+      updated = selectedAnimals.filter(idx => idx !== index);
+    } else {
+      if (selectedAnimals.length >= 10) {
+        showToast("Maximum 10 animal herds allowed!");
+        return;
+      }
+      updated = [...selectedAnimals, index].sort((a, b) => a - b);
     }
-    const maxAllowed = Math.min(10, Math.max(2, members.length || 10));
-    const finalCount = Math.min(Math.max(2, newCount), maxAllowed);
-
-    setGroupCount(finalCount);
+    setSelectedAnimals(updated);
+    setGroupCount(updated.length);
     playSynthSound(450, 0.08, "triangle");
-    showToast(`Set to ${finalCount} Herds (Active up to ${SAFARI_PROFILES[finalCount - 1].animal} ${SAFARI_PROFILES[finalCount - 1].collective})`);
+    showToast(
+      selectedAnimals.includes(index)
+        ? `Removed ${SAFARI_PROFILES[index].animal} (${updated.length} Herds Active)`
+        : `Added ${SAFARI_PROFILES[index].animal} (${updated.length} Herds Active)`
+    );
   };
 
   // Core Mixing Engine: Greedy Dealer with Smart Tie-breaking
@@ -709,12 +741,17 @@ export default function MixerPage() {
     bucketList.sort((a, b) => b.length - a.length);
 
     // 4. Initialize target groups
-    const teamNames = getTeamNames(groupCount);
-    const groups: Team[] = Array.from({ length: groupCount }, (_, i) => ({
+    const COLOR_NAMES = ["Yellows", "Blues", "Oranges", "Reds", "Purples", "Greens", "Pinks", "Teals", "Golds", "Silvers"];
+    const activeIndices = selectedAnimals.length === groupCount 
+      ? selectedAnimals 
+      : Array.from({ length: groupCount }, (_, i) => i);
+
+    const teamNames = activeIndices.map(animalIdx => `Team ${COLOR_NAMES[animalIdx % COLOR_NAMES.length]}`);
+    const groups: Team[] = activeIndices.map((animalIdx, i) => ({
       id: i + 1,
       name: teamNames[i],
       members: [],
-      color: TEAM_COLOR_PALETTES[i % TEAM_COLOR_PALETTES.length],
+      color: TEAM_COLOR_PALETTES[animalIdx % TEAM_COLOR_PALETTES.length],
       score: 0,
     }));
 
@@ -1168,7 +1205,7 @@ export default function MixerPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <button
                     type="button"
-                    onClick={() => setGroupCount(prev => Math.max(2, prev - 1))}
+                    onClick={() => changeHerdCount(groupCount - 1)}
                     disabled={groupCount <= 2}
                     className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
                     title="Decrease herds"
@@ -1181,13 +1218,13 @@ export default function MixerPage() {
                       min="2"
                       max={Math.max(2, members.length)}
                       value={groupCount}
-                      onChange={(e) => setGroupCount(parseInt(e.target.value, 10))}
+                      onChange={(e) => changeHerdCount(parseInt(e.target.value, 10))}
                       className="w-full accent-black cursor-pointer bg-black h-2 rounded-full outline-none"
                     />
                   </div>
                   <button
                     type="button"
-                    onClick={() => setGroupCount(prev => Math.min(Math.max(2, members.length), prev + 1))}
+                    onClick={() => changeHerdCount(groupCount + 1)}
                     disabled={groupCount >= Math.max(2, members.length)}
                     className="w-10 h-10 brutal-box bg-white text-black font-black text-lg border-2 border-black hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed shadow-[2px_2px_0px_#000] flex items-center justify-center cursor-pointer active:translate-y-0.5"
                     title="Increase herds"
@@ -1203,7 +1240,7 @@ export default function MixerPage() {
                       <button
                         key={num}
                         type="button"
-                        onClick={() => setGroupCount(Math.min(Math.max(2, members.length), num))}
+                        onClick={() => changeHerdCount(num)}
                         className={`text-[9px] font-black font-mono px-2.5 py-1 border-2 border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
                           groupCount === num
                             ? "bg-black text-[#FACC15]"
@@ -1242,29 +1279,29 @@ export default function MixerPage() {
                 </div>
 
                 <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed flex items-center justify-between">
-                  <span>Click any herd card below to select active expedition animals:</span>
+                  <span>Click any animal card to freely toggle individual herds ON or OFF:</span>
                   <span className="font-mono text-[9px] text-black bg-[#FACC15] px-2 py-0.5 border border-black font-black shadow-[1px_1px_0px_#000] shrink-0">
-                    {groupCount} / 10 ACTIVE
+                    {selectedAnimals.length} / 10 SELECTED
                   </span>
                 </p>
 
                 {/* Animal Herds Preview Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                   {SAFARI_PROFILES.map((profile, i) => {
-                    const isActive = i < groupCount;
+                    const isSelected = selectedAnimals.includes(i);
                     return (
                       <button
                         key={profile.animal}
                         type="button"
-                        onClick={() => handleSelectHerd(i)}
-                        title={`Click to ${isActive && i === groupCount - 1 ? "remove" : "select up to"} ${i + 1} herds (${profile.animal} ${profile.collective})`}
+                        onClick={() => toggleAnimalSelection(i)}
+                        title={`Click to ${isSelected ? "deselect" : "select"} ${profile.animal} ${profile.collective}`}
                         className={`p-2 border-2 border-black text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none rounded-lg relative ${
-                          isActive
+                          isSelected
                             ? "bg-white shadow-[2px_2px_0px_#000] hover:bg-[#FACC15] hover:scale-[1.04] active:translate-y-0.5"
                             : "bg-zinc-100/70 opacity-40 border-dashed hover:opacity-100 hover:border-black hover:border-solid hover:bg-white hover:shadow-[2px_2px_0px_#000]"
                         }`}
                       >
-                        {isActive && (
+                        {isSelected && (
                           <span className="absolute top-1 right-1 text-[8px] font-black text-black leading-none bg-[#4ADE80] px-1 py-0.5 rounded-sm border border-black shadow-[0.5px_0.5px_0px_#000]">
                             ✓
                           </span>
