@@ -145,6 +145,7 @@ function RosterViewerContent() {
 
       {teams.length > 0 && (
         <section aria-labelledby="herd-rollcall-title">
+          {/* Header Box Card */}
           <div className="bg-[#FFFDF5] border-4 border-black rounded-2xl p-5 shadow-[8px_8px_0px_#000] mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-xl bg-[#FACC15] border-3 border-black flex items-center justify-center text-2xl shadow-[3px_3px_0px_#000] shrink-0">
@@ -166,57 +167,88 @@ function RosterViewerContent() {
             </div>
           </div>
 
+          {/* Team Cards Grid - Sorted so matching teams & players appear at the top */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
-            {teams.map((team, index) => (
-              <article
-                key={team.name}
-                className="showcase-team-card border-4 border-black rounded-2xl bg-white shadow-[8px_8px_0px_#000] overflow-hidden flex flex-col justify-between hover:translate-y-[-2px] transition-transform"
-                style={{ backgroundColor: getTeamAccent(team.color, index) }}
-              >
-                <div>
-                  <header className="flex items-center gap-3 p-4 border-b-3 border-black bg-white/75 backdrop-blur-xs">
-                    <TeamMark name={team.name} compact />
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider font-mono text-zinc-700 block">
-                        👥 {team.members.length} {team.members.length === 1 ? 'Explorer' : 'Explorers'}
-                      </span>
-                      <h3 className="brutal-font text-xl md:text-2xl text-black uppercase leading-tight truncate">
-                        {getSafariTeamLabel(team.name)}
-                      </h3>
-                    </div>
-                  </header>
+            {(cleanQuery
+              ? [...teams].sort((a, b) => {
+                  const aMatches = a.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length;
+                  const bMatches = b.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length;
+                  return bMatches - aMatches;
+                })
+              : teams
+            ).map((team, index) => {
+              const teamMatches = cleanQuery
+                ? team.members.filter((m) => m.name.toLowerCase().includes(cleanQuery)).length
+                : 0;
 
-                  <ul className="p-4 space-y-2.5 max-h-80 overflow-y-auto">
-                    {team.members.map((member, memberIndex) => {
-                      const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
-                      return (
-                        <li
-                          key={`${member.name}-${memberIndex}`}
-                          className={`flex items-center justify-between p-3 border-2 border-black rounded-xl font-bold transition-all ${
-                            highlighted
-                              ? "bg-[#FACC15] text-black scale-[1.03] ring-4 ring-[#FFFDF5] shadow-[4px_4px_0px_#000]"
-                              : "bg-white/90 text-black shadow-[2px_2px_0px_#000]"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 rounded-md">
-                              #{String(memberIndex + 1).padStart(2, "0")}
-                            </span>
-                            <span className="brutal-font uppercase text-base md:text-lg tracking-wide">{member.name}</span>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+              const displayMembers = cleanQuery
+                ? team.members
+                    .map((member, idx) => ({ member, originalIndex: idx + 1 }))
+                    .sort((a, b) => {
+                      const aMatch = a.member.name.toLowerCase().includes(cleanQuery) ? 1 : 0;
+                      const bMatch = b.member.name.toLowerCase().includes(cleanQuery) ? 1 : 0;
+                      return bMatch - aMatch;
+                    })
+                : team.members.map((member, idx) => ({ member, originalIndex: idx + 1 }));
 
-                {team.members.length === 0 && (
-                  <p className="p-4 text-center text-xs font-bold uppercase font-mono text-zinc-600">
-                    This crew is waiting for explorers.
-                  </p>
-                )}
-              </article>
-            ))}
+              return (
+                <article
+                  key={team.name}
+                  className={`showcase-team-card border-4 border-black rounded-2xl bg-white shadow-[8px_8px_0px_#000] overflow-hidden flex flex-col justify-between hover:translate-y-[-2px] transition-all ${
+                    teamMatches > 0 ? "ring-4 ring-[#FACC15] shadow-[10px_10px_0px_#000]" : ""
+                  }`}
+                  style={{ backgroundColor: getTeamAccent(team.color, index) }}
+                >
+                  <div>
+                    <header className="flex items-center gap-3 p-4 border-b-3 border-black bg-white/75 backdrop-blur-xs">
+                      <TeamMark name={team.name} compact />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider font-mono text-zinc-700 block">
+                          👥 {team.members.length} {team.members.length === 1 ? 'Explorer' : 'Explorers'}
+                        </span>
+                        <h3 className="brutal-font text-xl md:text-2xl text-black uppercase leading-tight truncate">
+                          {getSafariTeamLabel(team.name)}
+                        </h3>
+                      </div>
+                      {teamMatches > 0 && (
+                        <span className="text-[10px] font-mono font-black uppercase bg-[#FACC15] text-black px-2.5 py-1 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]">
+                          ✨ Match
+                        </span>
+                      )}
+                    </header>
+
+                    <ul className="p-4 space-y-2.5 max-h-80 overflow-y-auto">
+                      {displayMembers.map(({ member, originalIndex }) => {
+                        const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
+                        return (
+                          <li
+                            key={`${member.name}-${originalIndex}`}
+                            className={`flex items-center justify-between p-3 border-2 border-black rounded-xl font-bold transition-all ${
+                              highlighted
+                                ? "bg-[#FACC15] text-black scale-[1.03] ring-4 ring-[#FFFDF5] shadow-[4px_4px_0px_#000]"
+                                : "bg-white/90 text-black shadow-[2px_2px_0px_#000]"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-mono font-black bg-black text-white px-2 py-0.5 rounded-md">
+                                #{String(originalIndex).padStart(2, "0")}
+                              </span>
+                              <span className="brutal-font uppercase text-base md:text-lg tracking-wide">{member.name}</span>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  {team.members.length === 0 && (
+                    <p className="p-4 text-center text-xs font-bold uppercase font-mono text-zinc-600">
+                      This crew is waiting for explorers.
+                    </p>
+                  )}
+                </article>
+              );
+            })}
           </div>
         </section>
       )}
