@@ -159,6 +159,7 @@ export default function MixerPage() {
   const [showRangerControls, setShowRangerControls] = useState(false);
   const [spotlightTeamId, setSpotlightTeamId] = useState<number | null>(null);
   const [isQrEnlarged, setIsQrEnlarged] = useState(false);
+  const [isPassCollapsed, setIsPassCollapsed] = useState(false);
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
@@ -1411,7 +1412,8 @@ export default function MixerPage() {
             <div className="safari-ledger-sheet">
               <div className="flex justify-between items-center border-b-4 border-black pb-4 mb-6">
                 <h3 className="brutal-font text-lg md:text-xl uppercase text-black">Today&apos;s ranger ledger</h3>
-                <span className="text-[9px] bg-black text-[#FFFDF5] font-black px-2.5 py-1 border-2 border-black uppercase tracking-wider font-mono">
+                <span className="bg-[#B7DF77] text-[#243028] font-black text-[10px] uppercase px-3 py-1 border-2 border-[#243028] rounded-md shadow-[2px_2px_0px_#243028] flex items-center gap-1.5 font-mono tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-[#1D4A35] animate-pulse" />
                   Ready for herd forming
                 </span>
               </div>
@@ -1514,50 +1516,7 @@ export default function MixerPage() {
                 </div>
               )}
 
-              {/* Quality Stats Board */}
-              {!isDealing && (
-                <div className="safari-mix-report">
-                  <div className="safari-mix-report-heading">
-                    <div>
-                      <p className="safari-eyebrow">Ranger&apos;s field report</p>
-                      <h3>The herds found their trail.</h3>
-                    </div>
-                    <p>Balanced across cell groups and ready for the first challenge.</p>
-                  </div>
 
-                  {/* Quality rating grade metric */}
-                  <div className="safari-mix-grade">
-                    <div className="safari-grade-medallion"><strong>{getMixQualityGrade().grade}</strong></div>
-                    <div>
-                      <span>Trail balance</span>
-                      <h4>{getMixQualityGrade().text}</h4>
-                      <small>{totalSameCGOverlaps() === 0 ? "No cell-group collisions" : `${totalSameCGOverlaps()} overlaps to watch`}</small>
-                    </div>
-                    <div className="safari-grade-trail" aria-hidden="true"><i /><i /><i /><i /></div>
-                  </div>
-
-                  <div className="safari-mix-counts">
-                    <div className="is-explorers">
-                      <i aria-hidden="true" />
-                      <span>Explorers</span>
-                      <strong>{members.length}</strong>
-                      <small>checked in</small>
-                    </div>
-                    <div className="is-overlaps">
-                      <i aria-hidden="true" />
-                      <span>Overlaps</span>
-                      <strong>{totalSameCGOverlaps()}</strong>
-                      <small>same-group pairs</small>
-                    </div>
-                    <div className="is-herds">
-                      <i aria-hidden="true" />
-                      <span>Animal herds</span>
-                      <strong>{finalTeams.length}</strong>
-                      <small>ready to roam</small>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Teams cards Deck Grid */}
               {!isDealing && (
@@ -2054,7 +2013,7 @@ function formatCellgroupRoster() {
               </div>
             </section>
 
-            <main className="safari-podium-layout">
+            <main className={`safari-podium-layout ${isPassCollapsed ? "is-pass-collapsed" : ""}`}>
               <LeaderboardSection
                 rankedTeams={rankedTeams}
                 topScore={topScore}
@@ -2070,52 +2029,96 @@ function formatCellgroupRoster() {
                 openDuelArena={openDuelArena}
               />
 
-              <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
-                <header>
-                  <span className="safari-viewer-eye" aria-hidden="true"><i /></span>
-                  <div><p>Audience access</p><h3>Your team viewer</h3></div>
-                  <b>Read only</b>
-                </header>
-
-                <div
-                  className={`safari-viewer-qr ${canRenderShareQr ? "is-clickable group" : ""}`}
-                  onClick={() => canRenderShareQr && setIsQrEnlarged(true)}
-                  title={canRenderShareQr ? "Click to enlarge QR code" : undefined}
+              {isPassCollapsed ? (
+                <button
+                  type="button"
+                  onClick={() => setIsPassCollapsed(false)}
+                  title="Expand Spectator Pass & QR Code"
+                  className="safari-viewer-collapsed-tab cursor-pointer"
                 >
-                  {canRenderShareQr ? (
-                    <QRCodeSVG value={shareUrl} size={220} level="M" marginSize={2} className="block" />
-                  ) : (
-                    <span>Roster is too large for a QR. Use the viewer link.</span>
-                  )}
-                </div>
-                <div className="safari-viewer-copy">
-                  <strong>Scan for teams + scores</strong>
-                  <p>Audience members can view standings and rosters on any phone camera.</p>
-                  <div>
-                    <a href={shareUrl} target="_blank" rel="noreferrer">Open viewer</a>
-                    <button type="button" onClick={copyShareLink}>Copy link</button>
-                    {canRenderShareQr && (
-                      <button type="button" onClick={() => setIsQrEnlarged(true)} className="is-enlarge">🔍 Enlarge</button>
+                  <span>🎟️ SPECTATOR PASS & QR ◀</span>
+                </button>
+              ) : (
+                <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
+                  <header className="flex justify-between items-center bg-[#FACC15] p-4 border-b-4 border-black">
+                    <div className="min-w-0">
+                      <span className="text-[9px] font-black font-mono bg-[#1D4A35] text-[#FFFDF5] px-2.5 py-0.5 border border-black rounded uppercase inline-block mb-1 shadow-[1px_1px_0px_#000]">
+                        Audience Pass · Read Only
+                      </span>
+                      <h3 className="brutal-font text-lg md:text-xl text-black uppercase leading-tight truncate">
+                        Spectator Access
+                      </h3>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsPassCollapsed(true)}
+                      title="Minimize spectator pass panel"
+                      className="flex items-center gap-1.5 text-xs font-black font-mono bg-[#1D4A35] text-white px-3 py-2 border-2 border-black rounded-xl shadow-[2.5px_2.5px_0px_#000] hover:bg-[#E8614D] transition-all uppercase cursor-pointer shrink-0"
+                    >
+                      <span>Minimize</span>
+                      <span className="text-xs">▶</span>
+                    </button>
+                  </header>
+
+                  <div
+                    className={`safari-viewer-qr ${canRenderShareQr ? "is-clickable group" : ""}`}
+                    onClick={() => canRenderShareQr && setIsQrEnlarged(true)}
+                    title={canRenderShareQr ? "Click to enlarge QR code" : undefined}
+                  >
+                    {canRenderShareQr ? (
+                      <div className="flex flex-col items-center">
+                        <QRCodeSVG value={shareUrl} size={260} level="M" marginSize={2} className="block" />
+                        <span className="text-[9px] font-mono font-black text-black bg-white px-2.5 py-0.5 border border-black rounded-full shadow-[1px_1px_0px_#000] mt-2.5 uppercase">
+                          🔍 Tap QR to enlarge
+                        </span>
+                      </div>
+                    ) : (
+                      <span>Roster is too large for a QR. Use the viewer link.</span>
                     )}
                   </div>
-                </div>
 
-                {spotlightTeam && (
-                  <section className="safari-viewer-roster" aria-label={`${getSafariTeamLabel(spotlightTeam.name)} team viewer`}>
-                    <div className="safari-viewer-team-heading"><TeamMark name={spotlightTeam.name} compact /><span><small>Selected herd · rank {getTeamRank(spotlightTeam.id)}</small><strong>{getSafariTeamLabel(spotlightTeam.name)}</strong></span><b>{spotlightTeam.score ?? 0}</b></div>
-                    <ul>
-                      {spotlightTeam.members.map((member, memberIndex) => <li key={member.id}><span>{String(memberIndex + 1).padStart(2, "0")}</span><strong>{member.name}</strong></li>)}
-                      {spotlightTeam.members.length === 0 && <li className="is-empty">This herd is waiting for explorers.</li>}
-                    </ul>
-                  </section>
-                )}
-              </aside>
+                  <div className="safari-viewer-copy p-4 bg-[#FFF3C4]">
+                    <strong className="brutal-font text-xs uppercase text-black block mb-1">
+                      Scan for Teams & Scores
+                    </strong>
+                    <p className="text-[10px] font-bold text-zinc-600 uppercase mb-3 leading-tight font-mono">
+                      Audience members can view rosters on their phones.
+                    </p>
+
+                    <div className="flex flex-col gap-2">
+                      <a
+                        href={shareUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#FACC15] text-black border-3 border-black rounded-xl font-mono font-black text-xs uppercase shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-center"
+                      >
+                        📱 Open Mobile Roster
+                      </a>
+                      <div className="grid grid-cols-2 gap-2">
+                        <a
+                          href={`/showcase/standings${shareUrl.includes("?") ? shareUrl.slice(shareUrl.indexOf("?")) : ""}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-[#B7DF77] text-black border-2 border-black rounded-lg font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-center"
+                        >
+                          🏆 Live Results
+                        </a>
+                        <button
+                          type="button"
+                          onClick={copyShareLink}
+                          className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-[#38BDF8] text-black border-2 border-black rounded-lg font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                        >
+                          🔗 Copy Link
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+              )}
             </main>
 
-            <footer className="safari-rally-footer">
-              <span>Live trail · standings update after every point</span>
-              <span>Quick awards: +1 · +2 · +3 · +5</span>
-            </footer>
+
           </div>
 
           {/* Enlarged Spectator Access QR Modal */}

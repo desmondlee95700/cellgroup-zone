@@ -287,7 +287,13 @@ export default function SafariExperience({
             </div>
 
             <div className="safari-nav-actions">
-              <span className="safari-camp-status"><i aria-hidden="true" />{roster.length} in camp</span>
+              <button
+                type="button"
+                onClick={() => router.push("/mixer")}
+                className="px-3 py-1.5 border-2 border-[#243028] rounded-xl bg-[#F4B942] text-[#243028] font-black text-xs uppercase shadow-[3px_3px_0px_#243028] hover:bg-[#f9d778] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <span>⚙️</span> Admin
+              </button>
               <GlobalFullscreenToggle />
               <button type="button" aria-pressed={soundOn} onClick={() => setSoundOn(!soundOn)}>
                 Sound {soundOn ? "on" : "off"}
@@ -307,9 +313,9 @@ export default function SafariExperience({
             <section className="safari-basecamp-hero" aria-labelledby="basecamp-heading">
               <div className="safari-hero-copy">
                 <p className="safari-eyebrow">THE RESERVE IS AWAKE</p>
-                <h1 id="basecamp-heading" className="brutal-font">Where will your crew roam first?</h1>
+                <h1 id="basecamp-heading" className="brutal-font">Ready for the Wild Field Games?</h1>
                 <p className="safari-hero-lede">
-                  Choose a destination on the expedition map, gather your animal crew, and lead the whole room into the wild.
+                  Enter the Savanna Activity Field to read game challenges, launch 1v1 duels, gather supplies, and cue the video reels.
                 </p>
                 <div className="safari-hero-status">
                   <span className="safari-hero-count brutal-font">{roster.length}</span>
@@ -334,10 +340,10 @@ export default function SafariExperience({
               <section className="safari-expedition-map safari-map-surface" aria-labelledby="map-heading">
                 <header className="safari-map-heading">
                   <div>
-                    <p className="safari-eyebrow">RANGER&apos;S EXPEDITION MAP</p>
-                    <h2 id="map-heading" className="brutal-font">Pick a wild destination</h2>
+                    <p className="safari-eyebrow">SAVANNA ACTIVITY FIELD</p>
+                    <h2 id="map-heading" className="brutal-font">Wild Field Games</h2>
                   </div>
-                  <p>Every trail opens a live part of the gathering.</p>
+                  <p>Your central basecamp for game reels, live duels, and team challenges.</p>
                 </header>
 
                 <div className="safari-map-canvas">
@@ -355,30 +361,10 @@ export default function SafariExperience({
                   <Link href="/games" className="safari-map-stop safari-map-stop-games">
                     <TrailMark kind="games" className="safari-stop-icon" />
                     <span className="safari-stop-copy">
-                      <small>SAVANNA ACTIVITY FIELD</small>
-                      <strong className="brutal-font">Wild Field Games</strong>
-                      <em>Read the challenges, gather supplies, and cue the game reel.</em>
+                      <small>ACTIVITY FIELD PORTAL</small>
+                      <strong className="brutal-font">Enter the Field Guide</strong>
+                      <em>Read challenge rules, gather game supplies, launch 1v1 duels, and cue video reels.</em>
                       <b>Open the field guide <span aria-hidden="true">→</span></b>
-                    </span>
-                  </Link>
-
-                  <Link href="/mixer" className="safari-map-stop safari-map-stop-herds">
-                    <TrailMark kind="herds" className="safari-stop-icon" />
-                    <span className="safari-stop-copy">
-                      <small>RANGER ROUND-UP</small>
-                      <strong className="brutal-font">Gather the Herds</strong>
-                      <em>Turn the explorer roster into fair animal crews.</em>
-                      <b>Build the teams <span aria-hidden="true">→</span></b>
-                    </span>
-                  </Link>
-
-                  <Link href="/showcase" className="safari-map-stop safari-map-stop-crown">
-                    <TrailMark kind="crown" className="safari-stop-icon" />
-                    <span className="safari-stop-copy">
-                      <small>PRIDE ROCK OVERLOOK</small>
-                      <strong className="brutal-font">Raise the Safari Crown</strong>
-                      <em>Send live animal-team standings to the room display.</em>
-                      <b>View live standings <span aria-hidden="true">→</span></b>
                     </span>
                   </Link>
                 </div>
@@ -512,8 +498,7 @@ export default function SafariExperience({
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
+              )}            </div>
           </main>
 
           <footer className="safari-basecamp-footer">

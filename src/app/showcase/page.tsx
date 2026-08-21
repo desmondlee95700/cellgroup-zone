@@ -9,7 +9,6 @@ import { useGSAP } from "@gsap/react";
 import { decodeShowcaseTeams } from "@/lib/showcase-share";
 import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
-import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 interface TeamMember {
   name: string;
@@ -40,13 +39,11 @@ function TeamMark({ name, compact = false }: { name: string; compact?: boolean }
   );
 }
 
-function ShowcaseContent() {
+function RosterViewerContent() {
   const searchParams = useSearchParams();
   const rawData = searchParams.get("t");
   const [teams, setTeams] = useState<TeamData[]>([]);
   const [filterQuery, setFilterQuery] = useState("");
-  const [broadcastMode, setBroadcastMode] = useState(false);
-  const [activeBroadcastIdx, setActiveBroadcastIdx] = useState(0);
   const [soundOn, setSoundOn] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -100,20 +97,6 @@ function ShowcaseContent() {
   }, [soundOn]);
 
   useEffect(() => {
-    if (!broadcastMode || teams.length === 0) return;
-
-    const interval = setInterval(() => {
-      setActiveBroadcastIdx((previous) => {
-        const next = (previous + 1) % teams.length;
-        playChirp(440 + next * 40, 0.08, "triangle");
-        return next;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [broadcastMode, teams.length, playChirp]);
-
-  useEffect(() => {
     const query = filterQuery.trim().toLowerCase();
     if (!query || teams.length === 0) return;
     if (teams.some((team) => team.members.some((member) => member.name.toLowerCase().includes(query)))) {
@@ -122,262 +105,158 @@ function ShowcaseContent() {
   }, [filterQuery, teams, playChirp]);
 
   useGSAP(() => {
-    if (teams.length > 0 && !broadcastMode) {
+    if (teams.length > 0) {
       gsap.fromTo(
         ".showcase-team-card",
         { y: 28, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: "power2.out" },
       );
     }
-  }, [teams, broadcastMode]);
+  }, [teams]);
 
   const cleanQuery = filterQuery.trim().toLowerCase();
-  const rankedTeams = [...teams].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-  const topScore = rankedTeams[0]?.score ?? 0;
-  const runnerUpScore = rankedTeams[1]?.score ?? 0;
-  const leadMargin = Math.max(0, topScore - runnerUpScore);
-  const leaderTeam = rankedTeams[0];
-  const challengerTeams = rankedTeams.slice(1);
-  const liveReferenceScore = Math.max(topScore, 1);
-  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
-  const activeTeam = teams[activeBroadcastIdx];
+  const totalExplorers = teams.reduce((acc, t) => acc + t.members.length, 0);
   const matchCount = cleanQuery
     ? teams.reduce((count, team) => count + team.members.filter((member) => member.name.toLowerCase().includes(cleanQuery)).length, 0)
     : 0;
 
-  const getTeamRank = (teamName: string) => rankedTeams.findIndex((team) => team.name === teamName) + 1;
-
   return (
-    <div ref={containerRef} className="safari-crown-content">
-      <section className="safari-lookout-rail" aria-label="Viewer tools">
-        <label className="safari-explorer-search">
-          <span>Find my team</span>
-          <input
-            type="search"
-            placeholder="Find an explorer by name"
-            value={filterQuery}
-            onChange={(event) => setFilterQuery(event.target.value)}
-          />
-          <i aria-hidden="true" />
-        </label>
+    <div ref={containerRef} className="safari-crown-content max-w-4xl mx-auto px-4 py-6">
+      {/* Top Controls & Navigation Bar */}
+      <section className="bg-[#FFFDF5] border-4 border-black rounded-2xl p-4 shadow-[6px_6px_0px_#000] mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="w-full md:w-auto">
+          <label className="relative block w-full">
+            <span className="text-[10px] font-black uppercase font-mono text-zinc-600 block mb-1">
+              🔍 Type your name to find your crew:
+            </span>
+            <input
+              type="search"
+              placeholder="e.g. Desmond, Sarah..."
+              value={filterQuery}
+              onChange={(event) => setFilterQuery(event.target.value)}
+              className="w-full md:w-80 px-4 py-2.5 border-3 border-black rounded-xl font-bold text-base bg-white shadow-[2px_2px_0px_#000] focus:outline-none focus:ring-4 focus:ring-[#FACC15]"
+            />
+          </label>
+        </div>
 
-        <div className="safari-lookout-actions">
-          <GlobalFullscreenToggle />
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           {cleanQuery && (
-            <button type="button" className="safari-tool-button is-coral" onClick={() => setFilterQuery("")}>
+            <button
+              type="button"
+              className="text-xs font-black uppercase font-mono bg-[#FF8B8B] text-black px-3 py-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]"
+              onClick={() => setFilterQuery("")}
+            >
               {matchCount > 0 ? `${matchCount} found · clear` : "No match · clear"}
             </button>
           )}
           <button
             type="button"
-            className={`safari-tool-button${broadcastMode ? " is-active" : ""}`}
-            onClick={() => {
-              setBroadcastMode((current) => !current);
-              playChirp(broadcastMode ? 300 : 600, 0.15, "triangle");
-            }}
-          >
-            {broadcastMode ? "Return to standings" : "Start safari parade"}
-          </button>
-          <button
-            type="button"
-            className="safari-sound-button"
+            className="text-xs font-black uppercase font-mono bg-white text-black px-3 py-2 border-2 border-black rounded-lg shadow-[2px_2px_0px_#000]"
             aria-pressed={soundOn}
             onClick={() => setSoundOn((current) => !current)}
           >
-            <span className={soundOn ? "is-on" : ""} aria-hidden="true" />
-            Sound {soundOn ? "on" : "off"}
+            Sound {soundOn ? "🔊" : "🔇"}
           </button>
+          <Link
+            href={`/showcase/standings${rawData ? `?t=${rawData}` : ""}`}
+            className="text-xs font-black uppercase font-mono bg-[#FACC15] text-black px-4 py-2.5 border-3 border-black rounded-xl shadow-[3px_3px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-center"
+          >
+            🏆 Hall Results
+          </Link>
         </div>
       </section>
 
       {teams.length === 0 && (
-        <section className="safari-empty-lookout" aria-labelledby="empty-lookout-title">
-          <div className="safari-empty-sun" aria-hidden="true" />
-          <div className="safari-empty-tree" aria-hidden="true"><i /><i /><i /></div>
+        <section className="safari-empty-lookout p-8 border-4 border-black rounded-2xl bg-[#FFFDF5] text-center shadow-[6px_6px_0px_#000]">
           <div className="safari-empty-copy">
             <p className="safari-eyebrow">The clearing is quiet</p>
-            <h2 id="empty-lookout-title">No animal crews have arrived yet.</h2>
-            <p>Form the crews in Herd Maker, then return here to begin the live points ceremony.</p>
-            <Link href="/mixer">Form animal crews</Link>
+            <h2 id="empty-lookout-title" className="brutal-font text-2xl uppercase my-2">No animal crews have arrived yet.</h2>
+            <p className="text-xs font-bold text-zinc-600 uppercase max-w-md mx-auto mb-4">Form the crews in Herd Maker, then scan this QR code to view team assignments.</p>
+            <Link href="/mixer" className="inline-block bg-[#FACC15] text-black px-6 py-2.5 border-3 border-black rounded-xl font-black uppercase shadow-[3px_3px_0px_#000]">
+              Form animal crews
+            </Link>
           </div>
         </section>
       )}
 
-      {!broadcastMode && teams.length > 0 && leaderTeam && (
-        <>
-          <section className="safari-pride-stage" aria-labelledby="pride-stage-title">
-            <div className="safari-stage-sky" aria-hidden="true">
-              <i className="safari-stage-sun" />
-              <i className="safari-stage-cloud cloud-one" />
-              <i className="safari-stage-cloud cloud-two" />
-              <i className="safari-stage-bird bird-one" />
-              <i className="safari-stage-bird bird-two" />
+      {teams.length > 0 && (
+        <section aria-labelledby="herd-rollcall-title">
+          <div className="flex justify-between items-end border-b-4 border-black pb-3 mb-6">
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 font-mono block">
+                Official Roster
+              </span>
+              <h2 id="herd-rollcall-title" className="brutal-font text-2xl md:text-3xl text-black uppercase leading-none">
+                Animal Crew Rosters
+              </h2>
             </div>
+            <span className="text-xs font-black font-mono bg-[#B7DF77] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase rounded-md">
+              👥 {totalExplorers} Explorers · {teams.length} Herds
+            </span>
+          </div>
 
-            <div className="safari-stage-heading">
-              <div>
-                <p className="safari-eyebrow">Live at Pride Rock</p>
-                <h2 id="pride-stage-title">The Safari Crown</h2>
-                <p>
-                  {topScore > 0
-                    ? leadMargin > 0
-                      ? `${getSafariTeamLabel(leaderTeam.name)} leads the migration by ${leadMargin} points.`
-                      : `The herds are level at ${topScore} points.`
-                    : "The herds are assembled. The first points will set the trail."}
-                </p>
-              </div>
-              <div className="safari-crown-goal">
-                <span>Points recorded</span>
-                <strong>{totalLivePoints}</strong>
-                <small>open-ended count</small>
-              </div>
-            </div>
-
-            <div className="safari-pride-landscape">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+            {teams.map((team, index) => (
               <article
-                className="safari-summit-team"
-                style={{ "--team-accent": getTeamAccent(leaderTeam.color, 0) } as CSSProperties}
+                key={team.name}
+                className="showcase-team-card border-4 border-black rounded-2xl bg-white shadow-[6px_6px_0px_#000] overflow-hidden flex flex-col justify-between"
+                style={{ backgroundColor: getTeamAccent(team.color, index) }}
               >
-                <div className="safari-leader-crown" aria-hidden="true"><i /><i /><i /></div>
-                <TeamMark name={leaderTeam.name} />
-                <div className="safari-summit-name">
-                  <span>Current trail leader</span>
-                  <h3>{getSafariTeamLabel(leaderTeam.name)}</h3>
-                  <small>{leaderTeam.members.length} explorers</small>
-                </div>
-                <div className="safari-summit-score">
-                  <strong>{topScore}</strong>
-                  <span>points</span>
-                </div>
-                <div className="safari-summit-progress" aria-label={`${getSafariTeamLabel(leaderTeam.name)} is the current live leader`}>
-                  <i style={{ width: topScore > 0 ? "100%" : "6%" }} />
-                </div>
-              </article>
-
-              <div className="safari-rock-terraces" aria-label="Chasing teams">
-                {challengerTeams.map((team, index) => {
-                  const score = team.score ?? 0;
-                  const gap = Math.max(0, topScore - score);
-                  const progress = topScore === 0 ? 6 : Math.max(6, (score / liveReferenceScore) * 100);
-
-                  return (
-                    <article
-                      key={team.name}
-                      className="safari-rock-terrace"
-                      style={{ "--team-accent": getTeamAccent(team.color, index + 1) } as CSSProperties}
-                    >
-                      <span className="safari-terrace-rank">{index + 2}</span>
-                      <TeamMark name={team.name} compact />
-                      <div className="safari-terrace-name">
-                        <small>{gap === 0 ? "Neck and neck" : `${gap} points behind`}</small>
-                        <h3>{getSafariTeamLabel(team.name)}</h3>
-                      </div>
-                      <div className="safari-terrace-trail"><i style={{ width: `${progress}%` }} /></div>
-                      <strong className="safari-terrace-score">{score}<small> pts</small></strong>
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="safari-scoring-path" aria-label="Scoring guide">
-              <span><b>+100</b> Round win</span>
-              <span><b>+60</b> Runner-up</span>
-              <span><b>+25</b> Team spirit</span>
-              <span><b>−10</b> Penalty</span>
-            </div>
-          </section>
-
-          <section className="safari-herd-rollcall" aria-labelledby="herd-rollcall-title">
-            <div className="safari-rollcall-heading">
-              <div>
-                <p className="safari-eyebrow">Herd roll call</p>
-                <h2 id="herd-rollcall-title">Every explorer on the trail</h2>
-              </div>
-              <p>Search above to light up an explorer&apos;s camp flag.</p>
-            </div>
-
-            <div className="safari-herd-camps">
-              {rankedTeams.map((team, index) => (
-                <article
-                  key={team.name}
-                  className="showcase-team-card safari-herd-camp"
-                  style={{ "--team-accent": getTeamAccent(team.color, index) } as CSSProperties}
-                >
-                  <div className="safari-camp-pennant" aria-hidden="true" />
-                  <header>
+                <div>
+                  <header className="flex items-center gap-3 p-4 border-b-3 border-black bg-white/60">
                     <TeamMark name={team.name} compact />
-                    <div>
-                      <span>Rank {index + 1} · {team.score ?? 0} points</span>
-                      <h3>{getSafariTeamLabel(team.name)}</h3>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[9px] font-black uppercase tracking-wider font-mono text-zinc-700 block">
+                        👥 {team.members.length} Explorers
+                      </span>
+                      <h3 className="brutal-font text-lg text-black uppercase leading-tight truncate">
+                        {getSafariTeamLabel(team.name)}
+                      </h3>
                     </div>
+                    {typeof team.score === "number" && (
+                      <span className="brutal-font text-xl text-black bg-[#FACC15] px-3 py-1 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000]">
+                        {team.score} <small className="text-[9px] font-mono font-bold">PTS</small>
+                      </span>
+                    )}
                   </header>
-                  <ul>
+
+                  <ul className="p-4 space-y-2 max-h-72 overflow-y-auto">
                     {team.members.map((member, memberIndex) => {
                       const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
                       return (
-                        <li key={`${member.name}-${memberIndex}`} className={highlighted ? "is-found" : ""}>
-                          <span>{member.name}</span>
+                        <li
+                          key={`${member.name}-${memberIndex}`}
+                          className={`flex items-center justify-between p-2.5 border-2 border-black rounded-xl font-bold text-sm transition-all ${
+                            highlighted
+                              ? "bg-[#FACC15] text-black scale-[1.02] ring-4 ring-[#FFFDF5] shadow-[3px_3px_0px_#000]"
+                              : "bg-white/80 text-black shadow-[1.5px_1.5px_0px_#000]"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono font-black text-zinc-500">
+                              #{String(memberIndex + 1).padStart(2, "0")}
+                            </span>
+                            <span className="brutal-font uppercase text-base">{member.name}</span>
+                          </div>
+                          {member.cg && (
+                            <span className="text-[9px] font-mono font-bold bg-zinc-100 text-zinc-700 px-2 py-0.5 border border-black/40 rounded">
+                              {member.cg}
+                            </span>
+                          )}
                         </li>
                       );
                     })}
                   </ul>
-                  {team.members.length === 0 && <p className="safari-no-explorers">This camp is waiting for explorers.</p>}
-                </article>
-              ))}
-            </div>
-          </section>
-        </>
-      )}
+                </div>
 
-      {broadcastMode && activeTeam && (
-        <section
-          className="safari-parade-stage"
-          aria-labelledby="safari-parade-title"
-          style={{ "--team-accent": getTeamAccent(activeTeam.color, activeBroadcastIdx) } as CSSProperties}
-        >
-          <div className="safari-parade-sun" aria-hidden="true" />
-          <div className="safari-parade-canopy" aria-hidden="true"><i /><i /><i /><i /></div>
-          <div className="safari-parade-copy">
-            <p className="safari-eyebrow">Now crossing the savanna</p>
-            <TeamMark name={activeTeam.name} />
-            <h2 id="safari-parade-title">{getSafariTeamLabel(activeTeam.name)}</h2>
-            <p>Rank {getTeamRank(activeTeam.name)} · {activeTeam.score ?? 0} points · {activeTeam.members.length} explorers</p>
+                {team.members.length === 0 && (
+                  <p className="p-4 text-center text-xs font-bold uppercase font-mono text-zinc-600">
+                    This crew is waiting for explorers.
+                  </p>
+                )}
+              </article>
+            ))}
           </div>
-
-          <ul className="safari-parade-roster">
-            {activeTeam.members.map((member, index) => {
-              const highlighted = cleanQuery !== "" && member.name.toLowerCase().includes(cleanQuery);
-              return (
-                <li key={`${member.name}-${index}`} className={highlighted ? "is-found" : ""}>
-                  <span>{member.name}</span>
-                </li>
-              );
-            })}
-            {activeTeam.members.length === 0 && <li className="is-empty">This herd is waiting for explorers.</li>}
-          </ul>
-
-          <footer className="safari-parade-controls">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveBroadcastIdx((previous) => (previous - 1 + teams.length) % teams.length);
-                playChirp(350, 0.08, "triangle");
-              }}
-            >
-              Previous herd
-            </button>
-            <span><b>{activeBroadcastIdx + 1}</b> of {teams.length} · changes every 5 seconds</span>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveBroadcastIdx((previous) => (previous + 1) % teams.length);
-                playChirp(450, 0.08, "triangle");
-              }}
-            >
-              Next herd
-            </button>
-          </footer>
         </section>
       )}
     </div>
@@ -405,27 +284,27 @@ export default function ShowcasePage() {
         <div className="safari-crown-brand">
           <span className="safari-crown-brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <div>
-            <strong>Pride Rock Ceremony</strong>
-            <small>Teams and live safari points</small>
+            <strong>📱 Explorer Team Viewer</strong>
+            <small>Find your animal crew and teammates</small>
           </div>
         </div>
-        <span className="safari-crown-live"><i aria-hidden="true" /> Read-only spectator view</span>
+        <span className="safari-crown-live"><i aria-hidden="true" /> Mobile view</span>
       </header>
 
       <main className="safari-crown-shell gsap-reveal">
         <Suspense fallback={
           <div className="safari-crown-loading">
             <span aria-hidden="true" />
-            <p>Opening the ranger ledger...</p>
+            <p>Loading team rosters...</p>
           </div>
         }>
-          <ShowcaseContent />
+          <RosterViewerContent />
         </Suspense>
       </main>
 
       <footer className="safari-crown-footer">
-        <span>Animal Kingdom · Pride Rock</span>
-        <span>Cheer loudly. Score clearly. Celebrate every herd.</span>
+        <span>Animal Kingdom · Explorer Roster</span>
+        <span>Find your crew. Support your teammates.</span>
       </footer>
     </div>
   );
