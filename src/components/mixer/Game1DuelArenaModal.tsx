@@ -108,7 +108,7 @@ export function Game1DuelArenaModal({
               >
                 {finalTeams.map(team => (
                   <option key={team.id} value={team.id} className="bg-white text-black">
-                    🔴 {getSafariTeamLabel(team.name)}
+                    {getSafariTeamLabel(team.name)}
                   </option>
                 ))}
               </select>
@@ -140,7 +140,7 @@ export function Game1DuelArenaModal({
               >
                 {finalTeams.map(team => (
                   <option key={team.id} value={team.id} className="bg-white text-black">
-                    🔵 {getSafariTeamLabel(team.name)}
+                    {getSafariTeamLabel(team.name)}
                   </option>
                 ))}
               </select>
