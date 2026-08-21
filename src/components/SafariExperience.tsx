@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { QRCodeSVG } from "qrcode.react";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 type TrailMarkKind = "compass" | "games" | "herds" | "crown";
 
@@ -246,19 +247,23 @@ export default function SafariExperience({
           <div className="safari-foreground-fronds safari-foreground-fronds-left" aria-hidden="true" />
           <div className="safari-foreground-fronds safari-foreground-fronds-right" aria-hidden="true" />
 
+          {/* Small Floating Fullscreen Button */}
+          <div className="fixed top-4 right-4 z-[9999]">
+            <GlobalFullscreenToggle compact />
+          </div>
+
           <section className="safari-welcome-sign" aria-labelledby="reserve-title">
             <div className="safari-sign-rope safari-sign-rope-left" aria-hidden="true" />
             <div className="safari-sign-rope safari-sign-rope-right" aria-hidden="true" />
             <div className="safari-ranger-plaque">
               <p className="safari-ranger-kicker">GAMES PRESENTS</p>
-              <h1 id="reserve-title" className="safari-reserve-title brutal-font">ANIMAL KINGDOM</h1>
+              <h1 id="reserve-title" className="safari-reserve-title brutal-font">VICTOR ZONE</h1>
               <div className="safari-sign-divider" aria-hidden="true"><span /> <span /> <span /></div>
-              <p className="safari-reserve-subtitle">SAFARI BASECAMP FOR 50+ EXPLORERS</p>
               <button
                 onClick={enterSafariReserve}
                 className="safari-reserve-button brutal-font"
               >
-                ENTER THE RESERVE <span aria-hidden="true">→</span>
+                ENTER THE RESERVE <span aria-hidden="true"></span>
               </button>
             </div>
           </section>
@@ -283,6 +288,7 @@ export default function SafariExperience({
 
             <div className="safari-nav-actions">
               <span className="safari-camp-status"><i aria-hidden="true" />{roster.length} in camp</span>
+              <GlobalFullscreenToggle />
               <button type="button" aria-pressed={soundOn} onClick={() => setSoundOn(!soundOn)}>
                 Sound {soundOn ? "on" : "off"}
               </button>

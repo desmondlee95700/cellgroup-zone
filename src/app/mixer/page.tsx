@@ -12,6 +12,9 @@ import {
 } from "@/lib/showcase-share";
 import { getSafariTeamLabel, getSafariTeamProfile, SAFARI_PROFILES } from "@/lib/safari-theme";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
+import { Game1DuelArenaModal } from "@/components/mixer/Game1DuelArenaModal";
+import { LeaderboardSection } from "@/components/mixer/LeaderboardSection";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 interface Member {
   id: string;
@@ -164,6 +167,28 @@ export default function MixerPage() {
   
   // Output state
   const [finalTeams, setFinalTeams] = useState<Team[]>([]);
+
+  // Game 1 1v1 Duel Arena state
+  const [showDuelModal, setShowDuelModal] = useState(false);
+  const [duelTeamAId, setDuelTeamAId] = useState<number | null>(null);
+  const [duelTeamBId, setDuelTeamBId] = useState<number | null>(null);
+
+  // Open 1v1 Duel Arena with 2 teams pre-selected
+  const openDuelArena = () => {
+    if (finalTeams.length < 2) {
+      showToast("Form at least 2 animal herds first!");
+      return;
+    }
+    const tA = duelTeamAId && finalTeams.some(t => t.id === duelTeamAId) ? duelTeamAId : finalTeams[0].id;
+    const tB = duelTeamBId && finalTeams.some(t => t.id === duelTeamBId) && duelTeamBId !== tA
+      ? duelTeamBId
+      : (finalTeams.find(t => t.id !== tA)?.id ?? finalTeams[1]?.id ?? finalTeams[0].id);
+
+    setDuelTeamAId(tA);
+    setDuelTeamBId(tB);
+    setShowDuelModal(true);
+    playSynthSound(520, 0.12, "square");
+  };
   const [isDealing, setIsDealing] = useState(false);
   const [dealIndex, setDealIndex] = useState(-1);
   const [activeTab, setActiveTab] = useState<"roster" | "teams">("roster");
@@ -914,20 +939,6 @@ export default function MixerPage() {
     showToast("Safari trail reset. A fresh expedition is ready!");
   };
 
-  const toggleRallyFullscreen = async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        return;
-      }
-      const rallyScreen = document.querySelector<HTMLElement>(".safari-control-overlay");
-      await rallyScreen?.requestFullscreen();
-    } catch (error) {
-      console.warn("Fullscreen mode is unavailable", error);
-      showToast("Fullscreen is unavailable in this browser.");
-    }
-  };
-
   // GSAP animations for active parts
   useGSAP(() => {
     if (activeTab === "teams" && finalTeams.length > 0 && !isDealing) {
@@ -947,7 +958,7 @@ export default function MixerPage() {
   return (
     <div ref={containerRef} className="safari-mixer-page min-h-screen text-[#243028] selection:bg-[#F4B942] selection:text-[#243028]">
       <header className="safari-mixer-nav-wrap">
-        <div className="safari-mixer-nav">
+        <div className="safari-mixer-nav flex items-center justify-between">
           <Link
             href="/home"
             className="safari-mixer-back"
@@ -958,11 +969,14 @@ export default function MixerPage() {
             <span className="safari-mixer-brand-mark" aria-hidden="true"><i /><i /><i /></span>
             <span><small>Animal Kingdom</small> Ranger Registration Camp</span>
           </h1>
-          {isAuthenticated && (
-            <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
-              Clear roster
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <GlobalFullscreenToggle />
+            {isAuthenticated && (
+              <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
+                Clear roster
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1921,11 +1935,19 @@ function formatCellgroupRoster() {
               </div>
 
               <div className="safari-rally-tools">
+                <button
+                  type="button"
+                  onClick={openDuelArena}
+                  className="!bg-[#4ADE80] !text-black font-black uppercase text-[10px] px-3 py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:!bg-[#34d399] transition-all cursor-pointer flex items-center gap-1"
+                  title="Launch Game 1 1v1 Head-to-Head Duel Arena"
+                >
+                  <span>⚔️</span> Game 1 Duel
+                </button>
                 <span className="safari-rally-live"><i aria-hidden="true" /> Live counting</span>
                 <button type="button" onClick={() => setShowRangerControls((visible) => !visible)}>
                   {showRangerControls ? "Hide controls" : "Ranger controls"}
                 </button>
-                <button type="button" onClick={toggleRallyFullscreen}>Full screen</button>
+                <GlobalFullscreenToggle />
               </div>
             </header>
 
@@ -2033,175 +2055,20 @@ function formatCellgroupRoster() {
             </section>
 
             <main className="safari-podium-layout">
-              <section className="safari-podium-board" aria-labelledby="live-podium-title">
-                <div className="flex justify-between items-end border-b-4 border-black pb-3 mb-4">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600 font-mono block">
-                      Live Savanna Standings
-                    </span>
-                    <h3 id="live-podium-title" className="brutal-font text-xl md:text-2xl text-black uppercase leading-none">
-                      Today&apos;s Trail Leaderboard
-                    </h3>
-                  </div>
-                  <span className="text-[9px] font-mono font-black bg-[#FACC15] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase">
-                    {topScore === 0 ? "Awaiting First Score" : `${getSafariTeamLabel(leaderTeam?.name ?? "")} Leads`}
-                  </span>
-                </div>
-
-                {/* Top 3 Hero Leaderboard Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch mb-4" aria-live="polite">
-                  {rankedTeams.slice(0, 3).map((team, idx) => {
-                    const rank = idx + 1;
-                    const score = team.score ?? 0;
-                    const teamAhead = rankedTeams[idx - 1];
-                    const isSpotlight = spotlightTeam?.id === team.id;
-                    const status = topScore === 0
-                      ? "Waiting for points"
-                      : rank === 1
-                        ? leadMargin === 0 ? "Tied for 1st" : `${leadMargin} pts clear`
-                        : `${Math.max(0, (teamAhead?.score ?? 0) - score)} pts to #${rank - 1}`;
-
-                    const rankBadgeColor = rank === 1 ? "bg-[#FACC15] text-black" : rank === 2 ? "bg-[#E2E8F0] text-black" : "bg-[#F59E0B] text-white";
-                    const rankTitle = rank === 1 ? "1ST PLACE 👑" : rank === 2 ? "2ND PLACE 🥈" : "3RD PLACE 🥉";
-
-                    return (
-                      <div
-                        key={team.id}
-                        className={`border-4 border-black rounded-2xl p-4 flex flex-col justify-between transition-all duration-200 shadow-[5px_5px_0px_#000] relative overflow-hidden ${
-                          isSpotlight ? "ring-4 ring-[#FFFDF5] outline-4 outline-black scale-[1.02]" : "hover:shadow-[7px_7px_0px_#000]"
-                        }`}
-                        style={{ backgroundColor: getTeamAccent(team.color, rank - 1) }}
-                      >
-                        {/* Top Header: Rank Banner & Status */}
-                        <div className="flex justify-between items-center mb-3">
-                          <span className={`text-[10px] font-black font-mono uppercase px-2.5 py-0.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] rounded-md ${rankBadgeColor}`}>
-                            {rankTitle}
-                          </span>
-                          <span className="text-[8px] font-black uppercase tracking-wider font-mono text-zinc-700 bg-white/70 px-2 py-0.5 border border-black/40 rounded">
-                            {status}
-                          </span>
-                        </div>
-
-                        {/* Card Body: Interactive Click Target */}
-                        <button
-                          type="button"
-                          onClick={() => setSpotlightTeamId(team.id)}
-                          className="flex flex-col items-center text-center w-full cursor-pointer bg-transparent border-0 p-0 my-1 group"
-                        >
-                          {/* Animal Avatar Icon */}
-                          <div className="relative mb-2">
-                            <TeamMark name={team.name} />
-                          </div>
-
-                          {/* Team Name */}
-                          <h4 className="brutal-font text-base md:text-lg text-black uppercase leading-tight tracking-wide my-1 text-center w-full px-1">
-                            {getSafariTeamLabel(team.name)}
-                          </h4>
-
-                          {/* Explorer Count */}
-                          <span className="text-[9px] font-bold uppercase font-mono text-zinc-700 bg-white/80 px-2.5 py-0.5 border border-black shadow-[1px_1px_0px_#000] rounded-full my-1">
-                            👥 {team.members.length} Explorer{team.members.length === 1 ? "" : "s"}
-                          </span>
-                        </button>
-
-                        {/* Bottom Score Box */}
-                        <div className="mt-3">
-                          <div className={`bg-[#1D4A35] text-[#FACC15] p-2.5 border-3 border-black shadow-[2px_2px_0px_#000] rounded-xl text-center flex items-center justify-between px-4 ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}>
-                            <span className="text-[9px] font-black uppercase tracking-widest text-[#FFFDF5] font-mono">
-                              TOTAL SCORE
-                            </span>
-                            <div className="flex items-baseline gap-1">
-                              <span className="brutal-font text-2xl md:text-3xl leading-none text-[#FACC15]">{score}</span>
-                              <span className="text-[9px] font-black text-[#FFFDF5] font-mono uppercase">PTS</span>
-                            </div>
-                          </div>
-
-                          {/* Ranger Controls */}
-                          {showRangerControls && (
-                            <div className="mt-2 pt-2 border-t-2 border-black/20">
-                              <ScoreAwardControls team={team} onAward={updateTeamScore} compact />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Chasing Herds Section for 4th Place & Beyond */}
-                {rankedTeams.length > 3 && (
-                  <div className="mt-6 pt-4 border-t-4 border-black">
-                    <div className="flex justify-between items-center mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">🏃</span>
-                        <h4 className="brutal-font text-xs uppercase tracking-wider text-black">
-                          Chasing Herds ({rankedTeams.length - 3} Runners)
-                        </h4>
-                      </div>
-                      <span className="text-[8px] font-mono font-bold text-zinc-500 uppercase">
-                        Tap any herd to spotlight on stage
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {rankedTeams.slice(3).map((team, idx) => {
-                        const teamRank = idx + 4;
-                        const score = team.score ?? 0;
-                        const teamAhead = rankedTeams[teamRank - 2];
-                        const isSpotlight = spotlightTeam?.id === team.id;
-                        const status = topScore === 0
-                          ? "Waiting for points"
-                          : `${Math.max(0, (teamAhead?.score ?? 0) - score)} pts to #${teamRank - 1}`;
-
-                        return (
-                          <div
-                            key={team.id}
-                            className={`p-3 border-3 border-black rounded-xl bg-white shadow-[3px_3px_0px_#000] flex flex-col justify-between transition-all hover:shadow-[5px_5px_0px_#000] hover:scale-[1.01] ${
-                              isSpotlight ? "ring-4 ring-[#FFFDF5] outline-2 outline-black" : ""
-                            }`}
-                            style={{ backgroundColor: getTeamAccent(team.color, teamRank - 1) }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setSpotlightTeamId(team.id)}
-                              className="flex items-center justify-between gap-3 text-left w-full cursor-pointer border-0 bg-transparent p-0"
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                <span className="w-7 h-7 rounded-full border-2 border-black bg-[#FFFDF5] flex items-center justify-center font-black font-mono text-[10px] shadow-[1px_1px_0px_#000] shrink-0 text-black">
-                                  #{teamRank}
-                                </span>
-                                <TeamMark name={team.name} compact />
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[8px] font-black uppercase text-zinc-700 block leading-tight tracking-wide font-mono">
-                                    {status}
-                                  </span>
-                                  <strong className="brutal-font text-xs sm:text-sm text-black uppercase block leading-tight mt-0.5">
-                                    {getSafariTeamLabel(team.name)}
-                                  </strong>
-                                  <em className="text-[8px] font-bold text-zinc-600 uppercase block font-mono not-italic mt-0.5">
-                                    {team.members.length} explorer{team.members.length === 1 ? "" : "s"}
-                                  </em>
-                                </div>
-                              </div>
-
-                              <div className={`bg-[#1d4a35] text-[#facc15] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] text-center shrink-0 min-w-[3.4rem] ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}>
-                                <span className="brutal-font text-lg leading-none block">{score}</span>
-                                <span className="text-[6.5px] text-[#fff3c4] font-black uppercase tracking-widest block font-mono">PTS</span>
-                              </div>
-                            </button>
-
-                            {showRangerControls && (
-                              <div className="mt-2 pt-2 border-t-2 border-black/20">
-                                <ScoreAwardControls team={team} onAward={updateTeamScore} compact />
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </section>
+              <LeaderboardSection
+                rankedTeams={rankedTeams}
+                topScore={topScore}
+                leadMargin={leadMargin}
+                leaderTeam={leaderTeam}
+                spotlightTeam={spotlightTeam}
+                setSpotlightTeamId={setSpotlightTeamId}
+                scoreFlashTeamId={scoreFlashTeamId}
+                showRangerControls={showRangerControls}
+                updateTeamScore={updateTeamScore}
+                TeamMark={TeamMark}
+                ScoreAwardControls={ScoreAwardControls}
+                openDuelArena={openDuelArena}
+              />
 
               <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
                 <header>
@@ -2658,9 +2525,41 @@ function formatCellgroupRoster() {
               ))}
             </div>}
 
+            {/* Game 1: 1v1 Head-to-Head Duel Arena Modal (Inside Fullscreen Stage) */}
+            <Game1DuelArenaModal
+              isOpen={showDuelModal}
+              onClose={() => setShowDuelModal(false)}
+              finalTeams={finalTeams}
+              duelTeamAId={duelTeamAId}
+              duelTeamBId={duelTeamBId}
+              setDuelTeamAId={setDuelTeamAId}
+              setDuelTeamBId={setDuelTeamBId}
+              showRangerControls={showRangerControls}
+              isAuthenticated={isAuthenticated}
+              scoreFlashTeamId={scoreFlashTeamId}
+              updateTeamScore={updateTeamScore}
+              TeamMark={TeamMark}
+            />
+
           </div>
         </div>
       )}
+
+      {/* Game 1: 1v1 Head-to-Head Duel Arena Modal (Fallback for non-rally view) */}
+      <Game1DuelArenaModal
+        isOpen={showDuelModal}
+        onClose={() => setShowDuelModal(false)}
+        finalTeams={finalTeams}
+        duelTeamAId={duelTeamAId}
+        duelTeamBId={duelTeamBId}
+        setDuelTeamAId={setDuelTeamAId}
+        setDuelTeamBId={setDuelTeamBId}
+        showRangerControls={showRangerControls}
+        isAuthenticated={isAuthenticated}
+        scoreFlashTeamId={scoreFlashTeamId}
+        updateTeamScore={updateTeamScore}
+        TeamMark={TeamMark}
+      />
 
       {/* Floating Notifications Toast */}
       {toastMessage && (
