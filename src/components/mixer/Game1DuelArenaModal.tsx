@@ -81,54 +81,68 @@ export function Game1DuelArenaModal({
             </h2>
           </div>
 
-          {/* Quick Team Matchmaker Controls */}
-          <div className="flex items-center gap-2 flex-wrap flex-1 max-w-xl justify-center">
-            <select
-              value={duelTeamAId ?? ""}
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                setDuelTeamAId(val);
-                if (val === duelTeamBId) {
-                  const other = finalTeams.find(t => t.id !== val);
-                  if (other) setDuelTeamBId(other.id);
-                }
-              }}
-              className="bg-white text-black font-black text-xs px-3 py-1.5 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer min-w-[150px]"
-            >
-              {finalTeams.map(team => (
-                <option key={team.id} value={team.id}>
-                  {getSafariTeamLabel(team.name)}
-                </option>
-              ))}
-            </select>
+          {/* Premium Matchmaker Controls Bar */}
+          <div className="flex items-center justify-center gap-2 flex-wrap flex-1 max-w-2xl bg-[#18181B] p-2 border-3 border-black rounded-2xl shadow-[4px_4px_0px_#000]">
+            {/* Red Corner Selector */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
+              <span className="text-[10px] font-black uppercase tracking-wider text-red-400 font-mono pl-1 shrink-0 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block animate-ping"></span> RED
+              </span>
+              <select
+                value={duelTeamAId ?? ""}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  setDuelTeamAId(val);
+                  if (val === duelTeamBId) {
+                    const other = finalTeams.find(t => t.id !== val);
+                    if (other) setDuelTeamBId(other.id);
+                  }
+                }}
+                className="flex-1 bg-[#FFFDF5] text-black font-black text-xs sm:text-sm px-3 py-2 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer hover:bg-white transition-all truncate"
+              >
+                {finalTeams.map(team => (
+                  <option key={team.id} value={team.id}>
+                    {getSafariTeamLabel(team.name)} ({team.members.length} player{team.members.length === 1 ? "" : "s"})
+                  </option>
+                ))}
+              </select>
+            </div>
 
+            {/* Swap Button */}
             <button
               type="button"
               onClick={swapCorners}
-              title="Swap Teams"
-              className="bg-zinc-200 text-black font-black text-xs p-1.5 border-2 border-black rounded-lg hover:bg-zinc-300 shadow-[1px_1px_0px_#000] cursor-pointer"
+              title="Swap Red & Blue Corners"
+              className="brutal-box bg-[#FACC15] text-black font-mono font-black text-xs px-2.5 py-2 border-2 border-black rounded-xl hover:bg-[#eab308] active:translate-y-0.5 shadow-[2px_2px_0px_#000] cursor-pointer flex items-center gap-1 shrink-0"
             >
-              🔀
+              <span className="text-sm">🔀</span>
+              <span className="hidden sm:inline">SWAP</span>
             </button>
 
-            <select
-              value={duelTeamBId ?? ""}
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                setDuelTeamBId(val);
-                if (val === duelTeamAId) {
-                  const other = finalTeams.find(t => t.id !== val);
-                  if (other) setDuelTeamBId(other.id);
-                }
-              }}
-              className="bg-white text-black font-black text-xs px-3 py-1.5 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer min-w-[150px]"
-            >
-              {finalTeams.map(team => (
-                <option key={team.id} value={team.id}>
-                  {getSafariTeamLabel(team.name)}
-                </option>
-              ))}
-            </select>
+            {/* Blue Corner Selector */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-[180px]">
+              <select
+                value={duelTeamBId ?? ""}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  setDuelTeamBId(val);
+                  if (val === duelTeamAId) {
+                    const other = finalTeams.find(t => t.id !== val);
+                    if (other) setDuelTeamBId(other.id);
+                  }
+                }}
+                className="flex-1 bg-[#FFFDF5] text-black font-black text-xs sm:text-sm px-3 py-2 border-2 border-black rounded-xl shadow-[2px_2px_0px_#000] outline-none cursor-pointer hover:bg-white transition-all truncate"
+              >
+                {finalTeams.map(team => (
+                  <option key={team.id} value={team.id}>
+                    {getSafariTeamLabel(team.name)} ({team.members.length} player{team.members.length === 1 ? "" : "s"})
+                  </option>
+                ))}
+              </select>
+              <span className="text-[10px] font-black uppercase tracking-wider text-sky-400 font-mono pr-1 shrink-0 flex items-center gap-1">
+                BLUE <span className="w-2 h-2 rounded-full bg-sky-500 inline-block animate-ping"></span>
+              </span>
+            </div>
           </div>
 
           <button
