@@ -27,7 +27,7 @@ interface Team {
   score?: number;
 }
 
-const PRESET_CG_NAMES = ["Jason", "Victor", "Lemuel"];
+const PRESET_CG_NAMES = ["Jason", "Lemuel", "Rebecca", "Jackson"];
 
 const SCORE_AWARDS = [
   { label: "+1", delta: 1, title: "Add 1 point" },
