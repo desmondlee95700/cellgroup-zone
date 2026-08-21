@@ -14,6 +14,7 @@ import { getSafariTeamLabel, getSafariTeamProfile, SAFARI_PROFILES } from "@/lib
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
 import { Game1DuelArenaModal } from "@/components/mixer/Game1DuelArenaModal";
 import { LeaderboardSection } from "@/components/mixer/LeaderboardSection";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 interface Member {
   id: string;
@@ -938,19 +939,6 @@ export default function MixerPage() {
     showToast("Safari trail reset. A fresh expedition is ready!");
   };
 
-  const toggleAppFullscreen = async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        return;
-      }
-      await document.documentElement.requestFullscreen();
-    } catch (error) {
-      console.warn("Fullscreen mode is unavailable", error);
-      showToast("Fullscreen is unavailable in this browser.");
-    }
-  };
-
   // GSAP animations for active parts
   useGSAP(() => {
     if (activeTab === "teams" && finalTeams.length > 0 && !isDealing) {
@@ -982,14 +970,7 @@ export default function MixerPage() {
             <span><small>Animal Kingdom</small> Ranger Registration Camp</span>
           </h1>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={toggleAppFullscreen}
-              className="safari-nav-btn safari-fullscreen-btn"
-              title="Toggle Fullscreen Mode across the webapp"
-            >
-              <span>📺</span> Full Screen
-            </button>
+            <GlobalFullscreenToggle />
             {isAuthenticated && (
               <button onClick={handleClearRoster} disabled={members.length === 0} className="safari-clear-roster">
                 Clear roster
@@ -1966,7 +1947,7 @@ function formatCellgroupRoster() {
                 <button type="button" onClick={() => setShowRangerControls((visible) => !visible)}>
                   {showRangerControls ? "Hide controls" : "Ranger controls"}
                 </button>
-                <button type="button" onClick={toggleAppFullscreen}>Full screen</button>
+                <GlobalFullscreenToggle />
               </div>
             </header>
 

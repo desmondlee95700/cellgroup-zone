@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { decodeShowcaseTeams } from "@/lib/showcase-share";
 import { getSafariTeamLabel, getSafariTeamProfile } from "@/lib/safari-theme";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 interface TeamMember {
   name: string;
@@ -167,6 +168,7 @@ function ShowcaseContent() {
         </label>
 
         <div className="safari-lookout-actions">
+          <GlobalFullscreenToggle />
           {cleanQuery && (
             <button type="button" className="safari-tool-button is-coral" onClick={() => setFilterQuery("")}>
               {matchCount > 0 ? `${matchCount} found · clear` : "No match · clear"}

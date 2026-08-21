@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import Link from "next/link";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 type MissionKey = "blanket" | "balloon";
 
@@ -154,7 +155,10 @@ export default function GamesPage() {
           <span className="safari-field-brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <div><strong className="brutal-font">Wild Field Guide</strong><span>Animal Kingdom expeditions</span></div>
         </div>
-        <span className="safari-field-open"><i aria-hidden="true" />Field open</span>
+        <div className="flex items-center gap-2">
+          <GlobalFullscreenToggle />
+          <span className="safari-field-open"><i aria-hidden="true" />Field open</span>
+        </div>
       </nav>
 
       <header className="safari-field-hero field-reveal">

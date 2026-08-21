@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { QRCodeSVG } from "qrcode.react";
 import { CartoonAnimalIcon } from "@/components/CartoonAnimalIcon";
+import { GlobalFullscreenToggle } from "@/components/GlobalFullscreenToggle";
 
 type TrailMarkKind = "compass" | "games" | "herds" | "crown";
 
@@ -283,6 +284,7 @@ export default function SafariExperience({
 
             <div className="safari-nav-actions">
               <span className="safari-camp-status"><i aria-hidden="true" />{roster.length} in camp</span>
+              <GlobalFullscreenToggle />
               <button type="button" aria-pressed={soundOn} onClick={() => setSoundOn(!soundOn)}>
                 Sound {soundOn ? "on" : "off"}
               </button>
