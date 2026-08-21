@@ -2043,11 +2043,10 @@ function formatCellgroupRoster() {
                 </div>
 
                 <div className="safari-live-podium" aria-live="polite">
-                  {rankedTeams.map((team, idx) => {
+                  {rankedTeams.slice(0, 3).map((team, idx) => {
                     const rank = idx + 1;
                     const score = team.score ?? 0;
                     const teamAhead = rankedTeams[idx - 1];
-                    const teamBehind = rankedTeams[idx + 1];
                     const isSpotlight = spotlightTeam?.id === team.id;
                     const status = topScore === 0
                       ? "Waiting for first points"
@@ -2079,6 +2078,80 @@ function formatCellgroupRoster() {
                     );
                   })}
                 </div>
+
+                {/* Chasing Herds Section for 4th Place & Beyond */}
+                {rankedTeams.length > 3 && (
+                  <div className="mt-4 pt-3 border-t-4 border-black">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🏃</span>
+                        <h4 className="brutal-font text-xs uppercase tracking-wider text-black">
+                          Chasing Herds ({rankedTeams.length - 3} Runners)
+                        </h4>
+                      </div>
+                      <span className="text-[8px] font-mono font-bold text-zinc-500 uppercase">
+                        Tap any herd to spotlight
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {rankedTeams.slice(3).map((team, idx) => {
+                        const teamRank = idx + 4;
+                        const score = team.score ?? 0;
+                        const teamAhead = rankedTeams[teamRank - 2];
+                        const isSpotlight = spotlightTeam?.id === team.id;
+                        const status = topScore === 0
+                          ? "Waiting for points"
+                          : `${Math.max(0, (teamAhead?.score ?? 0) - score)} pts to #${teamRank - 1}`;
+
+                        return (
+                          <article
+                            key={team.id}
+                            className={`p-3 border-3 border-black rounded-xl bg-white shadow-[3px_3px_0px_#000] flex flex-col justify-between transition-all hover:shadow-[5px_5px_0px_#000] hover:scale-[1.01] ${
+                              isSpotlight ? "ring-4 ring-[#FFFDF5] outline-2 outline-black" : ""
+                            }`}
+                            style={{ backgroundColor: getTeamAccent(team.color, teamRank - 1) }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setSpotlightTeamId(team.id)}
+                              className="flex items-center justify-between gap-2.5 text-left w-full cursor-pointer border-0 bg-transparent p-0"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                <span className="w-7 h-7 rounded-full border-2 border-black bg-[#FFFDF5] flex items-center justify-center font-black font-mono text-[10px] shadow-[1px_1px_0px_#000] shrink-0 text-black">
+                                  #{teamRank}
+                                </span>
+                                <TeamMark name={team.name} compact />
+                                <div className="min-w-0 flex-1">
+                                  <span className="text-[8px] font-black uppercase text-zinc-700 block leading-tight tracking-wide font-mono">
+                                    {status}
+                                  </span>
+                                  <strong className="brutal-font text-xs sm:text-sm text-black uppercase block truncate leading-none mt-0.5">
+                                    {getSafariTeamLabel(team.name)}
+                                  </strong>
+                                  <em className="text-[8px] font-bold text-zinc-600 uppercase block font-mono not-italic mt-0.5">
+                                    {team.members.length} explorer{team.members.length === 1 ? "" : "s"}
+                                  </em>
+                                </div>
+                              </div>
+
+                              <div className={`bg-[#1d4a35] text-[#facc15] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] text-center shrink-0 min-w-[3.2rem] ${scoreFlashTeamId === team.id ? "score-pop" : ""}`}>
+                                <span className="brutal-font text-lg leading-none block">{score}</span>
+                                <span className="text-[6.5px] text-[#fff3c4] font-black uppercase tracking-widest block font-mono">PTS</span>
+                              </div>
+                            </button>
+
+                            {showRangerControls && (
+                              <div className="mt-2 pt-2 border-t-2 border-black/20">
+                                <ScoreAwardControls team={team} onAward={updateTeamScore} compact />
+                              </div>
+                            )}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </section>
 
               <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>
