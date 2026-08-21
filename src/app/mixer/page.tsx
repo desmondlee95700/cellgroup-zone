@@ -1391,7 +1391,7 @@ export default function MixerPage() {
                         <th className="p-3.5 font-black uppercase text-left w-12 font-mono">#</th>
                         <th className="p-3.5 font-black uppercase">Explorer</th>
                         <th className="p-3.5 font-black uppercase">Home group</th>
-                        <th className="p-3.5 font-black uppercase text-right w-24">Action</th>
+                        <th className="p-3.5 font-black uppercase text-right w-28 whitespace-nowrap">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y-2 divide-black bg-[#FFFDF5]">
@@ -1404,12 +1404,15 @@ export default function MixerPage() {
                               {m.cg}
                             </span>
                           </td>
-                          <td className="p-3.5 text-right">
+                          <td className="p-3.5 text-right whitespace-nowrap">
                             <button
+                              type="button"
                               onClick={() => handleRemoveMember(m.id)}
-                              className="text-red-600 hover:text-red-700 font-black uppercase text-[10px] tracking-wide border border-transparent hover:border-red-600 px-2 py-1 transition-all rounded"
+                              className="inline-flex items-center gap-1 bg-[#E8614D] text-white hover:bg-[#d54e3a] font-black uppercase text-[9px] px-2.5 py-1 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[2.5px_2.5px_0px_#000] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all cursor-pointer rounded-md whitespace-nowrap"
+                              title={`Remove ${m.name} from roster`}
                             >
-                              [ REMOVE ]
+                              <span>✕</span>
+                              <span>Remove</span>
                             </button>
                           </td>
                         </tr>
