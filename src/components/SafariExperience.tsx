@@ -247,6 +247,11 @@ export default function SafariExperience({
           <div className="safari-foreground-fronds safari-foreground-fronds-left" aria-hidden="true" />
           <div className="safari-foreground-fronds safari-foreground-fronds-right" aria-hidden="true" />
 
+          {/* Small Floating Fullscreen Button */}
+          <div className="fixed top-4 right-4 z-[9999]">
+            <GlobalFullscreenToggle compact />
+          </div>
+
           <section className="safari-welcome-sign" aria-labelledby="reserve-title">
             <div className="safari-sign-rope safari-sign-rope-left" aria-hidden="true" />
             <div className="safari-sign-rope safari-sign-rope-right" aria-hidden="true" />
