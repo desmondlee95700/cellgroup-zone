@@ -149,12 +149,6 @@ function ShowcaseContent() {
 
   return (
     <div ref={containerRef} className="safari-crown-content">
-      <section className="safari-view-only-notice" aria-label="Audience viewer permissions">
-        <span aria-hidden="true"><i /></span>
-        <div><strong>Audience team viewer</strong><small>Read-only access to team rosters and current scores</small></div>
-        <b>No score controls</b>
-      </section>
-
       <section className="safari-lookout-rail" aria-label="Viewer tools">
         <label className="safari-explorer-search">
           <span>Find my team</span>
