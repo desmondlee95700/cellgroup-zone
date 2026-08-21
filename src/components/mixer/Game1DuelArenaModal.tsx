@@ -143,12 +143,25 @@ export function Game1DuelArenaModal({
         {/* 1v1 Arena Split Cards */}
         <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
           
-          {/* Center VS Circle */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 hidden md:flex items-center justify-center pointer-events-none">
-            <div className="w-12 h-12 rounded-full bg-[#FACC15] border-4 border-black flex items-center justify-center shadow-[3px_3px_0px_#000]">
-              <span className="brutal-font text-lg text-black uppercase italic">
-                VS
-              </span>
+          {/* Epic Animated Center VS Clash Badge */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-center justify-center pointer-events-none">
+            <div className="relative flex items-center justify-center">
+              {/* Outer Pulsing Aura Ring */}
+              <span className="absolute w-20 h-20 rounded-full bg-[#FACC15] animate-ping opacity-60"></span>
+              
+              {/* Secondary Glow */}
+              <span className="absolute w-16 h-16 rounded-full bg-red-500 animate-pulse opacity-40 blur-sm"></span>
+
+              {/* Center VS Shield */}
+              <div className="w-16 h-16 rounded-full bg-[#FACC15] border-4 border-black flex items-center justify-center shadow-[4px_4px_0px_#000] relative z-10 animate-bounce">
+                <span className="brutal-font text-2xl text-black uppercase italic tracking-tighter drop-shadow-[1px_1px_0px_#fff]">
+                  VS
+                </span>
+              </div>
+
+              {/* Flashing Lightning Bolts */}
+              <span className="absolute -left-5 text-xl animate-pulse">⚡</span>
+              <span className="absolute -right-5 text-xl animate-pulse">⚡</span>
             </div>
           </div>
 
