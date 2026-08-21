@@ -164,6 +164,9 @@ export default function MixerPage() {
   const [selectedAnimals, setSelectedAnimals] = useState<number[]>([0, 1, 2, 3, 4]);
   const [namingPreset, setNamingPreset] = useState<"numbers" | "colors" | "heroes">("colors");
   
+  // Output state
+  const [finalTeams, setFinalTeams] = useState<Team[]>([]);
+
   // Game 1 1v1 Duel Arena state
   const [showDuelModal, setShowDuelModal] = useState(false);
   const [duelTeamAId, setDuelTeamAId] = useState<number | null>(null);
@@ -185,7 +188,6 @@ export default function MixerPage() {
     setShowDuelModal(true);
     playSynthSound(520, 0.12, "square");
   };
-  const [finalTeams, setFinalTeams] = useState<Team[]>([]);
   const [isDealing, setIsDealing] = useState(false);
   const [dealIndex, setDealIndex] = useState(-1);
   const [activeTab, setActiveTab] = useState<"roster" | "teams">("roster");
@@ -2533,11 +2535,27 @@ function formatCellgroupRoster() {
               ))}
             </div>}
 
+            {/* Game 1: 1v1 Head-to-Head Duel Arena Modal (Inside Fullscreen Stage) */}
+            <Game1DuelArenaModal
+              isOpen={showDuelModal}
+              onClose={() => setShowDuelModal(false)}
+              finalTeams={finalTeams}
+              duelTeamAId={duelTeamAId}
+              duelTeamBId={duelTeamBId}
+              setDuelTeamAId={setDuelTeamAId}
+              setDuelTeamBId={setDuelTeamBId}
+              showRangerControls={showRangerControls}
+              isAuthenticated={isAuthenticated}
+              scoreFlashTeamId={scoreFlashTeamId}
+              updateTeamScore={updateTeamScore}
+              TeamMark={TeamMark}
+            />
+
           </div>
         </div>
       )}
 
-      {/* Game 1: 1v1 Head-to-Head Duel Arena Modal */}
+      {/* Game 1: 1v1 Head-to-Head Duel Arena Modal (Fallback for non-rally view) */}
       <Game1DuelArenaModal
         isOpen={showDuelModal}
         onClose={() => setShowDuelModal(false)}
