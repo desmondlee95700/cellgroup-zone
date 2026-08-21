@@ -651,6 +651,21 @@ export default function MixerPage() {
     return Array.from({ length: count }, (_, i) => `Team ${colors[i % colors.length]}`);
   };
 
+  // Select active animal herds by clicking on animal cards
+  const handleSelectHerd = (index: number) => {
+    const targetCount = index + 1;
+    let newCount = targetCount;
+    if (targetCount === groupCount && groupCount > 2) {
+      newCount = groupCount - 1;
+    }
+    const maxAllowed = Math.min(10, Math.max(2, members.length || 10));
+    const finalCount = Math.min(Math.max(2, newCount), maxAllowed);
+
+    setGroupCount(finalCount);
+    playSynthSound(450, 0.08, "triangle");
+    showToast(`Set to ${finalCount} Herds (Active up to ${SAFARI_PROFILES[finalCount - 1].animal} ${SAFARI_PROFILES[finalCount - 1].collective})`);
+  };
+
   // Core Mixing Engine: Greedy Dealer with Smart Tie-breaking
   const generateTeams = () => {
     if (members.length < 2) {
@@ -1226,30 +1241,44 @@ export default function MixerPage() {
                   </span>
                 </div>
 
-                <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed">
-                  Explorers will be randomly dispersed across wild safari herds:
+                <p className="text-[10px] font-bold text-zinc-600 mb-3 uppercase leading-relaxed flex items-center justify-between">
+                  <span>Click any herd card below to select active expedition animals:</span>
+                  <span className="font-mono text-[9px] text-black bg-[#FACC15] px-2 py-0.5 border border-black font-black shadow-[1px_1px_0px_#000] shrink-0">
+                    {groupCount} / 10 ACTIVE
+                  </span>
                 </p>
 
                 {/* Animal Herds Preview Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-                  {SAFARI_PROFILES.map((profile, i) => (
-                    <div
-                      key={profile.animal}
-                      className={`p-1.5 border-2 border-black text-center flex flex-col items-center justify-center transition-all ${
-                        i < groupCount
-                          ? "bg-white shadow-[2px_2px_0px_#000]"
-                          : "bg-zinc-100/60 opacity-40 border-dashed"
-                      }`}
-                    >
-                      <span className="text-base leading-none mb-0.5">{profile.emoji}</span>
-                      <span className="text-[9px] font-black uppercase text-black truncate w-full">
-                        {profile.animal}
-                      </span>
-                      <span className="text-[7px] font-bold font-mono text-zinc-500 uppercase truncate w-full">
-                        {profile.collective}
-                      </span>
-                    </div>
-                  ))}
+                  {SAFARI_PROFILES.map((profile, i) => {
+                    const isActive = i < groupCount;
+                    return (
+                      <button
+                        key={profile.animal}
+                        type="button"
+                        onClick={() => handleSelectHerd(i)}
+                        title={`Click to ${isActive && i === groupCount - 1 ? "remove" : "select up to"} ${i + 1} herds (${profile.animal} ${profile.collective})`}
+                        className={`p-2 border-2 border-black text-center flex flex-col items-center justify-center transition-all cursor-pointer select-none rounded-lg relative ${
+                          isActive
+                            ? "bg-white shadow-[2px_2px_0px_#000] hover:bg-[#FACC15] hover:scale-[1.04] active:translate-y-0.5"
+                            : "bg-zinc-100/70 opacity-40 border-dashed hover:opacity-100 hover:border-black hover:border-solid hover:bg-white hover:shadow-[2px_2px_0px_#000]"
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute top-1 right-1 text-[8px] font-black text-black leading-none bg-[#4ADE80] px-1 py-0.5 rounded-sm border border-black shadow-[0.5px_0.5px_0px_#000]">
+                            ✓
+                          </span>
+                        )}
+                        <span className="text-lg leading-none mb-0.5">{profile.emoji}</span>
+                        <span className="text-[9px] font-black uppercase text-black truncate w-full">
+                          {profile.animal}
+                        </span>
+                        <span className="text-[7px] font-bold font-mono text-zinc-500 uppercase truncate w-full">
+                          {profile.collective}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
