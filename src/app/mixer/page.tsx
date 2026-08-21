@@ -272,7 +272,19 @@ export default function MixerPage() {
         if (savedMembers) setMembers(JSON.parse(savedMembers));
 
         const savedGroups = localStorage.getItem("cg_mixer_cellgroups");
-        if (savedGroups) setCellGroups(JSON.parse(savedGroups));
+        if (savedGroups) {
+          try {
+            const parsed = JSON.parse(savedGroups);
+            if (JSON.stringify(parsed) === JSON.stringify(["Jason", "Victor", "Lemuel"]) || parsed.length === 3 && parsed.includes("Victor")) {
+              setCellGroups(PRESET_CG_NAMES);
+              localStorage.setItem("cg_mixer_cellgroups", JSON.stringify(PRESET_CG_NAMES));
+            } else {
+              setCellGroups(parsed);
+            }
+          } catch {
+            setCellGroups(PRESET_CG_NAMES);
+          }
+        }
 
         const savedTeams = localStorage.getItem("cg_mixer_teams");
         if (savedTeams) setFinalTeams(JSON.parse(savedTeams));
@@ -1142,9 +1154,23 @@ export default function MixerPage() {
             <div className="border-t-4 border-black pt-4">
               <div className="flex justify-between items-center mb-3">
                 <label className="block text-[10px] font-black uppercase">Cell-group trail markers</label>
-                <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
-                  {cellGroups.length} GROUPS
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCellGroups(PRESET_CG_NAMES);
+                      showToast("Reset trail markers to Jason, Lemuel, Rebecca, Jackson");
+                      playSynthSound(450, 0.08, "sine");
+                    }}
+                    className="text-[8px] font-mono text-black bg-white hover:bg-zinc-100 px-2 py-0.5 border border-black font-black shadow-[1px_1px_0px_#000] cursor-pointer"
+                    title="Reset trail markers to default presets"
+                  >
+                    Reset presets
+                  </button>
+                  <span className="text-[9px] bg-gray-200 font-bold px-2 py-0.5 border border-black uppercase font-mono">
+                    {cellGroups.length} GROUPS
+                  </span>
+                </div>
               </div>
               
               {/* Dynamic Groups Badges */}
