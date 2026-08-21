@@ -1412,16 +1412,6 @@ export default function MixerPage() {
             >
               Animal herds ({finalTeams.length})
             </button>
-            <button
-              type="button"
-              onClick={openDuelArena}
-              disabled={finalTeams.length < 2}
-              title="Launch 1st Game 1v1 Head-to-Head Duel Arena"
-              className="brutal-font text-base sm:text-lg px-6 py-4 uppercase border-4 border-black border-b-0 rounded-t-2xl transition-all duration-200 shadow-[4px_0_0_#000] bg-[#4ADE80] text-black hover:bg-[#34d399] disabled:opacity-50 disabled:cursor-not-allowed mt-2 h-13 cursor-pointer flex items-center gap-1.5"
-            >
-              <span>⚔️</span>
-              <span>Game 1 Duel</span>
-            </button>
           </div>
 
           {/* Roster Ledger sheet Tab */}
@@ -2085,6 +2075,7 @@ function formatCellgroupRoster() {
                 updateTeamScore={updateTeamScore}
                 TeamMark={TeamMark}
                 ScoreAwardControls={ScoreAwardControls}
+                openDuelArena={openDuelArena}
               />
 
               <aside className="safari-viewer-pass" style={{ "--team-accent": getTeamAccent(spotlightTeam?.color ?? "", Math.max(0, getTeamRank(spotlightTeam?.id ?? 0) - 1)) } as CSSProperties}>

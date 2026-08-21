@@ -16,6 +16,7 @@ interface LeaderboardSectionProps {
   updateTeamScore: (teamId: number, delta: number) => void;
   TeamMark: React.ComponentType<{ name: string; compact?: boolean }>;
   ScoreAwardControls: React.ComponentType<{ team: Team; onAward: (teamId: number, delta: number) => void; compact?: boolean }>;
+  openDuelArena?: () => void;
 }
 
 const FALLBACK_ACCENT_HEXES = [
@@ -41,6 +42,7 @@ export function LeaderboardSection({
   updateTeamScore,
   TeamMark,
   ScoreAwardControls,
+  openDuelArena,
 }: LeaderboardSectionProps) {
   const getTeamAccent = (colorClass: string, fallbackIdx: number) => {
     if (!colorClass) return FALLBACK_ACCENT_HEXES[fallbackIdx % FALLBACK_ACCENT_HEXES.length];
@@ -62,9 +64,21 @@ export function LeaderboardSection({
             Today&apos;s Trail Leaderboard
           </h3>
         </div>
-        <span className="text-[9px] font-mono font-black bg-[#FACC15] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase">
-          {topScore === 0 ? "Awaiting First Score" : `${getSafariTeamLabel(leaderTeam?.name ?? "")} Leads`}
-        </span>
+        <div className="flex items-center gap-2">
+          {openDuelArena && (
+            <button
+              type="button"
+              onClick={openDuelArena}
+              className="brutal-box bg-[#4ADE80] text-black font-mono font-black text-[9px] uppercase px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-[#34d399] cursor-pointer flex items-center gap-1"
+              title="Launch 1st Game 1v1 Head-to-Head Duel Arena"
+            >
+              <span>⚔️</span> Game 1 Duel
+            </button>
+          )}
+          <span className="text-[9px] font-mono font-black bg-[#FACC15] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase">
+            {topScore === 0 ? "Awaiting First Score" : `${getSafariTeamLabel(leaderTeam?.name ?? "")} Leads`}
+          </span>
+        </div>
       </div>
 
       {/* Top 3 Hero Leaderboard Cards */}
