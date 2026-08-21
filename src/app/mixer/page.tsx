@@ -155,6 +155,7 @@ export default function MixerPage() {
   const [showTeamRosters, setShowTeamRosters] = useState(false);
   const [showRangerControls, setShowRangerControls] = useState(false);
   const [spotlightTeamId, setSpotlightTeamId] = useState<number | null>(null);
+  const [isQrEnlarged, setIsQrEnlarged] = useState(false);
   
   // Mixer settings
   const [groupCount, setGroupCount] = useState(5);
@@ -292,6 +293,17 @@ export default function MixerPage() {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+
+  // Handle ESC key to dismiss enlarged QR modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isQrEnlarged) {
+        setIsQrEnlarged(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isQrEnlarged]);
 
   // Sync states to localStorage
   useEffect(() => {
@@ -1981,7 +1993,11 @@ function formatCellgroupRoster() {
                   <b>Read only</b>
                 </header>
 
-                <div className="safari-viewer-qr">
+                <div
+                  className={`safari-viewer-qr ${canRenderShareQr ? "is-clickable group" : ""}`}
+                  onClick={() => canRenderShareQr && setIsQrEnlarged(true)}
+                  title={canRenderShareQr ? "Click to enlarge QR code" : undefined}
+                >
                   {canRenderShareQr ? (
                     <QRCodeSVG value={shareUrl} size={220} level="M" marginSize={2} className="block" />
                   ) : (
@@ -1990,10 +2006,13 @@ function formatCellgroupRoster() {
                 </div>
                 <div className="safari-viewer-copy">
                   <strong>Scan for teams + scores</strong>
-                  <p>Audience members can view the standings and team rosters. They cannot award, reset, or edit points.</p>
+                  <p>Audience members can view standings and rosters on any phone camera.</p>
                   <div>
                     <a href={shareUrl} target="_blank" rel="noreferrer">Open viewer</a>
                     <button type="button" onClick={copyShareLink}>Copy link</button>
+                    {canRenderShareQr && (
+                      <button type="button" onClick={() => setIsQrEnlarged(true)} className="is-enlarge">🔍 Enlarge</button>
+                    )}
                   </div>
                 </div>
 
@@ -2001,7 +2020,7 @@ function formatCellgroupRoster() {
                   <section className="safari-viewer-roster" aria-label={`${getSafariTeamLabel(spotlightTeam.name)} team viewer`}>
                     <div className="safari-viewer-team-heading"><TeamMark name={spotlightTeam.name} compact /><span><small>Selected herd · rank {getTeamRank(spotlightTeam.id)}</small><strong>{getSafariTeamLabel(spotlightTeam.name)}</strong></span><b>{spotlightTeam.score ?? 0}</b></div>
                     <ul>
-                      {spotlightTeam.members.map((member, memberIndex) => <li key={member.id}><span>{String(memberIndex + 1).padStart(2, "0")}</span><strong>{member.name}</strong><small className={getGroupColor(member.cg)}>{member.cg}</small></li>)}
+                      {spotlightTeam.members.map((member, memberIndex) => <li key={member.id}><span>{String(memberIndex + 1).padStart(2, "0")}</span><strong>{member.name}</strong></li>)}
                       {spotlightTeam.members.length === 0 && <li className="is-empty">This herd is waiting for explorers.</li>}
                     </ul>
                   </section>
@@ -2014,6 +2033,87 @@ function formatCellgroupRoster() {
               <span>Quick awards: +1 · +2 · +3 · +5</span>
             </footer>
           </div>
+
+          {/* Enlarged Spectator Access QR Modal */}
+          {isQrEnlarged && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity"
+              onClick={() => setIsQrEnlarged(false)}
+            >
+              <div
+                className="relative w-full max-w-md bg-[#FFFDF5] text-black border-4 border-black p-6 sm:p-8 rounded-3xl shadow-[10px_10px_0px_#000] flex flex-col items-center gap-5 text-center transform transition-transform"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Close button */}
+                <button
+                  type="button"
+                  onClick={() => setIsQrEnlarged(false)}
+                  className="absolute top-4 right-4 w-9 h-9 rounded-full border-3 border-black bg-[#E8614D] text-white font-black text-sm flex items-center justify-center shadow-[2px_2px_0px_#000] hover:bg-[#d54e3a] hover:scale-105 transition-all cursor-pointer"
+                  aria-label="Close enlarged QR modal"
+                >
+                  ✕
+                </button>
+
+                {/* Modal Header */}
+                <div>
+                  <span className="inline-block bg-[#FACC15] text-black text-[10px] font-black uppercase tracking-widest px-3 py-1 border-2 border-black rounded-full mb-2.5 shadow-[2px_2px_0px_#000]">
+                    SPECTATOR ACCESS QR
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-black brutal-font uppercase leading-none text-black">
+                    SCAN FOR LIVE STANDINGS & ROSTERS
+                  </h2>
+                  <p className="text-xs font-bold text-zinc-600 mt-2 max-w-xs mx-auto leading-relaxed">
+                    Point your phone camera to view live team scores, standings, and player lists on any device.
+                  </p>
+                </div>
+
+                {/* Giant QR Code Display */}
+                <div className="bg-[#38BDF8] p-5 sm:p-6 border-4 border-black rounded-2xl shadow-[6px_6px_0px_#000] w-full flex flex-col items-center justify-center">
+                  <div className="bg-[#FFFDF5] p-4 border-4 border-black rounded-xl shadow-[4px_4px_0px_#000] w-full flex justify-center items-center">
+                    {canRenderShareQr ? (
+                      <QRCodeSVG
+                        value={shareUrl}
+                        size={280}
+                        level="M"
+                        marginSize={2}
+                        className="w-full max-w-[260px] h-auto block select-none"
+                      />
+                    ) : (
+                      <div className="py-8 px-4 text-center">
+                        <span className="text-3xl mb-2 block" aria-hidden="true">⚠️</span>
+                        <p className="text-xs font-black uppercase text-red-600">
+                          Roster is too large for QR encoding. Use the direct link below.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col sm:flex-row gap-3 w-full">
+                  <button
+                    type="button"
+                    onClick={copyShareLink}
+                    className="flex-1 min-h-[44px] px-4 py-2.5 bg-[#FACC15] text-black border-3 border-black rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0px_#000] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    <span>📋</span> Copy Link
+                  </button>
+                  <a
+                    href={shareUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 min-h-[44px] px-4 py-2.5 bg-[#4ADE80] text-black border-3 border-black rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[2px_2px_0px_#000] transition-all text-center flex items-center justify-center gap-1.5"
+                  >
+                    <span>↗</span> Open Viewer
+                  </a>
+                </div>
+
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                  Press <kbd className="px-1.5 py-0.5 bg-zinc-200 border border-black rounded text-[9px] font-mono text-black">ESC</kbd> or click outside to dismiss
+                </span>
+              </div>
+            </div>
+          )}
 
           <div className="safari-legacy-control-panel max-w-7xl mx-auto w-full space-y-6" aria-hidden="true">
             
@@ -2330,9 +2430,6 @@ function formatCellgroupRoster() {
                         <span className="flex items-center gap-2 truncate pr-1">
                           <span className="font-mono text-[9px] text-zinc-400">P{mIdx + 1}</span>
                           <span className="truncate uppercase">{m.name}</span>
-                        </span>
-                        <span className={`text-[9px] ${getGroupColor(m.cg)} text-black border border-black px-2 py-0.5 uppercase font-black shrink-0 shadow-[1px_1px_0px_#000]`}>
-                          {m.cg}
                         </span>
                       </li>
                     ))}

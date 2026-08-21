@@ -22,27 +22,7 @@ interface TeamData {
   score?: number;
 }
 
-const CG_COLORS = [
-  "bg-[#5CC8E8]",
-  "bg-[#F4B942]",
-  "bg-[#F2A85B]",
-  "bg-[#B7DF77]",
-  "bg-[#E6D27A]",
-  "bg-[#79C8B5]",
-  "bg-[#D8A56F]",
-  "bg-[#E8614D]",
-];
-
 const TEAM_ACCENTS = ["#F4B942", "#5CC8E8", "#F2A85B", "#E8614D", "#B7DF77", "#79C8B5"];
-
-const getGroupColor = (name: string) => {
-  if (!name) return "bg-[#FFFDF5]";
-  let hash = 0;
-  for (let index = 0; index < name.length; index += 1) {
-    hash = name.charCodeAt(index) + ((hash << 5) - hash);
-  }
-  return CG_COLORS[Math.abs(hash) % CG_COLORS.length];
-};
 
 const getTeamAccent = (color: string, index: number) => {
   const match = color?.match(/#[0-9a-fA-F]{6}/)?.[0];
@@ -342,7 +322,6 @@ function ShowcaseContent() {
                       return (
                         <li key={`${member.name}-${memberIndex}`} className={highlighted ? "is-found" : ""}>
                           <span>{member.name}</span>
-                          <small className={getGroupColor(member.cg)}>{member.cg}</small>
                         </li>
                       );
                     })}
@@ -376,7 +355,6 @@ function ShowcaseContent() {
               return (
                 <li key={`${member.name}-${index}`} className={highlighted ? "is-found" : ""}>
                   <span>{member.name}</span>
-                  <small className={getGroupColor(member.cg)}>{member.cg}</small>
                 </li>
               );
             })}
