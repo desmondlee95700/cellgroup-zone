@@ -1,5 +1,1 @@
-import SafariExperience from "@/components/SafariExperience";
-
-export default function EntryLandingPage() {
-  return <SafariExperience initialStage="gathering" />;
-}
+export { default } from "./EntryLandingPage";
