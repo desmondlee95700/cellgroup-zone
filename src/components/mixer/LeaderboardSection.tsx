@@ -70,6 +70,15 @@ export function LeaderboardSection({
           </h3>
         </div>
         <div className="flex items-center gap-2">
+          {openDuelArena && (
+            <button
+              type="button"
+              onClick={openDuelArena}
+              className="text-[9px] font-mono font-black bg-[#38BDF8] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-sky-300 active:translate-y-0.5 uppercase cursor-pointer transition-all"
+            >
+              ⚔️ 1v1 Duel
+            </button>
+          )}
           <span className="text-[9px] font-mono font-black bg-[#FACC15] text-black px-3 py-1 border-2 border-black shadow-[2px_2px_0px_#000] uppercase">
             {topScore === 0 ? "Awaiting First Score" : (leadMargin === 0 ? `Tied for 1st (${topScore} PTS)` : `${getSafariTeamLabel(leaderTeam?.name ?? "")} Leads`)}
           </span>

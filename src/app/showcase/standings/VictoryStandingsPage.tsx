@@ -1,7 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import gsap from "gsap";
@@ -93,8 +92,6 @@ function StandingsContent() {
   const topScore = rankedTeams[0]?.score ?? 0;
   const runnerUpScore = rankedTeams[1]?.score ?? 0;
   const leadMargin = Math.max(0, topScore - runnerUpScore);
-  const liveReferenceScore = Math.max(topScore, 1);
-  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
 
   // Unique scores for teams with >0 points, sorted descending
   const uniqueScoredScores = Array.from(
