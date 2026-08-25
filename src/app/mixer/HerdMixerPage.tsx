@@ -36,6 +36,7 @@ const SCORE_AWARDS = [
   { label: "+1", delta: 1, title: "Add 1 point" },
   { label: "+2", delta: 2, title: "Add 2 points" },
   { label: "+3", delta: 3, title: "Add 3 points" },
+  { label: "-1", delta: -1, title: "Subtract 1 point" },
 ] as const;
 
 function ScoreAwardControls({
@@ -57,11 +58,13 @@ function ScoreAwardControls({
           aria-label={`${award.title} for ${team.name}`}
           onClick={() => onAward(team.id, award.delta)}
           className={
-            award.delta === 3
-              ? "is-major"
+            award.delta === 1
+              ? "is-plus1"
               : award.delta === 2
                 ? "is-mid"
-                : ""
+                : award.delta === 3
+                  ? "is-major"
+                  : "is-negative"
           }
         >
           {award.label}
@@ -864,30 +867,6 @@ export default function HerdMixerPage() {
     }
   };
 
-  // Calculate same CG overlaps count
-  const totalSameCGOverlaps = () => {
-    let overlaps = 0;
-    finalTeams.forEach(team => {
-      const cgCounts: { [key: string]: number } = {};
-      team.members.forEach(m => {
-        cgCounts[m.cg] = (cgCounts[m.cg] || 0) + 1;
-      });
-      Object.values(cgCounts).forEach(cnt => {
-        if (cnt > 1) overlaps += (cnt - 1);
-      });
-    });
-    return overlaps;
-  };
-
-  // Calculate rating grade
-  const getMixQualityGrade = () => {
-    const overlaps = totalSameCGOverlaps();
-    if (overlaps === 0) return { grade: "S", text: "Perfectly dispersed" };
-    if (overlaps <= 2) return { grade: "A", text: "Beautifully balanced" };
-    if (overlaps <= 5) return { grade: "B", text: "Trail-ready balance" };
-    return { grade: "C", text: "Try another shuffle" };
-  };
-
   const rankedTeams = [...finalTeams].sort((a, b) => {
     const scoreDifference = (b.score ?? 0) - (a.score ?? 0);
     return scoreDifference !== 0 ? scoreDifference : a.id - b.id;
@@ -899,10 +878,7 @@ export default function HerdMixerPage() {
   const leaderTeam = rankedTeams[0];
   const challengerTeams = rankedTeams.slice(1);
   const liveReferenceScore = Math.max(topScore, 1);
-  const totalLivePoints = rankedTeams.reduce((total, team) => total + (team.score ?? 0), 0);
   const spotlightTeam = rankedTeams.find((team) => team.id === spotlightTeamId) ?? leaderTeam;
-  const podiumTeams = [rankedTeams[1], rankedTeams[0], rankedTeams[2]].filter((team): team is Team => Boolean(team));
-  const chasingTeams = rankedTeams.slice(3);
   const leaderTargetProgress = topScore === 0 ? 0 : 100;
   const hasChampion = false;
 
@@ -1895,15 +1871,23 @@ function formatCellgroupRoster() {
                 <button
                   type="button"
                   onClick={openDuelArena}
-                  className="!bg-[#4ADE80] !text-black font-black uppercase text-[10px] px-3 py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:!bg-[#34d399] transition-all cursor-pointer flex items-center gap-1"
+                  className="safari-rally-btn-duel"
                   title="Launch Game 1 1v1 Head-to-Head Duel Arena"
                 >
-                  <span>⚔️</span> Game 1 Duel
+                  <span className="text-xs sm:text-sm">⚔️</span>
+                  <span>Game 1 Duel</span>
                 </button>
-                <span className="safari-rally-live"><i aria-hidden="true" /> Live counting</span>
-                <button type="button" onClick={() => setShowRangerControls((visible) => !visible)}>
-                  {showRangerControls ? "Hide controls" : "Ranger controls"}
+
+                <button
+                  type="button"
+                  onClick={() => setShowRangerControls((visible) => !visible)}
+                  className={`safari-rally-btn-ranger ${showRangerControls ? "is-active" : ""}`}
+                  title="Toggle host scoring controls"
+                >
+                  <span className="text-xs sm:text-sm">{showRangerControls ? "🛠️" : "⚙️"}</span>
+                  <span>{showRangerControls ? "Controls On" : "Ranger controls"}</span>
                 </button>
+
                 <GlobalFullscreenToggle />
               </div>
             </header>
@@ -2540,6 +2524,7 @@ function formatCellgroupRoster() {
               scoreFlashTeamId={scoreFlashTeamId}
               updateTeamScore={updateTeamScore}
               TeamMark={TeamMark}
+              ScoreAwardControls={ScoreAwardControls}
             />
 
           </div>
@@ -2560,6 +2545,7 @@ function formatCellgroupRoster() {
         scoreFlashTeamId={scoreFlashTeamId}
         updateTeamScore={updateTeamScore}
         TeamMark={TeamMark}
+        ScoreAwardControls={ScoreAwardControls}
       />
 
       {/* Floating Notifications Toast */}

@@ -1962,22 +1962,26 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.45rem;
-  padding: .55rem .8rem;
+  gap: .4rem;
+  min-height: 2.35rem;
+  padding: .45rem .85rem;
   color: var(--rally-ink);
   border: 3px solid var(--rally-ink);
   border-radius: 999px;
   background: var(--rally-sun);
   box-shadow: 3px 3px 0 var(--rally-ink);
-  font-size: .55rem;
+  font-family: var(--font-mono), monospace, sans-serif;
+  font-size: .65rem;
   font-weight: 950;
+  letter-spacing: .03em;
   text-transform: uppercase;
   cursor: pointer;
+  white-space: nowrap;
   transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease;
 }
 .safari-rally-close { justify-self: start; color: #fffdf5; background: #e8614d; }
 .safari-rally-close::before { content: "×"; margin-right: .4rem; font-size: 1rem; line-height: .5; }
-.safari-rally-close:hover, .safari-rally-tools button:hover, .safari-rally-share button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--rally-ink); }
+.safari-rally-close:hover, .safari-rally-tools button:hover, .safari-rally-share button:hover { transform: translate(-2px, -2px); box-shadow: 4.5px 4.5px 0 var(--rally-ink); }
 .safari-rally-close:focus-visible, .safari-rally-tools button:focus-visible, .safari-rally-share button:focus-visible { outline: 4px solid #5cc8e8; outline-offset: 3px; }
 
 .safari-rally-brand { display: flex; align-items: center; gap: .65rem; }
@@ -1988,10 +1992,41 @@ body {
 .safari-rally-brand-mark i { position: absolute; bottom: .45rem; width: 1.35rem; height: 1.05rem; border: 3px solid var(--rally-ink); border-radius: 50% 50% 42% 42%; background: var(--rally-sun); }
 .safari-rally-brand-mark i:first-child { top: .42rem; left: .48rem; bottom: auto; width: .55rem; height: .66rem; border-radius: 50%; }
 .safari-rally-brand-mark i:nth-child(2) { top: .42rem; right: .48rem; bottom: auto; width: .55rem; height: .66rem; border-radius: 50%; }
-.safari-rally-tools { justify-self: end; display: flex; align-items: center; justify-content: flex-end; gap: .625rem; }
-.safari-rally-tools button:last-child { background: #5cc8e8; }
-.safari-rally-live { display: inline-flex; align-items: center; gap: .35rem; font-size: .48rem; font-weight: 950; letter-spacing: .08em; text-transform: uppercase; }
-.safari-rally-live i { width: .65rem; aspect-ratio: 1; border: 2px solid var(--rally-ink); border-radius: 50%; background: #6d974c; animation: safari-glow 1s ease-in-out infinite alternate; }
+.safari-rally-tools { justify-self: end; display: flex; align-items: center; justify-content: flex-end; gap: .5rem; }
+.safari-rally-tools .safari-rally-btn-duel { background: #4ade80; color: #000; }
+.safari-rally-tools .safari-rally-btn-duel:hover { background: #34d399; }
+.safari-rally-tools .safari-rally-btn-ranger { background: #facc15; color: #000; }
+.safari-rally-tools .safari-rally-btn-ranger:hover { background: #eab308; }
+.safari-rally-tools .safari-rally-btn-ranger.is-active { background: #f59e0b; box-shadow: inset 0 0 0 2px var(--rally-ink), 3px 3px 0 var(--rally-ink); }
+.safari-rally-tools button:last-child { background: #38bdf8; }
+.safari-rally-tools button:last-child:hover { background: #7dd3fc; }
+
+.safari-rally-live {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .35rem .75rem;
+  background: #1d4a35;
+  color: #fffdf5;
+  border: 2.5px solid var(--rally-ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--rally-ink);
+  font-family: var(--font-mono), monospace, sans-serif;
+  font-size: .62rem;
+  font-weight: 950;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.safari-rally-live i {
+  width: .55rem;
+  aspect-ratio: 1;
+  border: 2px solid #fffdf5;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  animation: safari-glow 1s ease-in-out infinite alternate;
+}
 
 .safari-rally-hero {
   position: relative;
@@ -2058,12 +2093,35 @@ body {
 .safari-rally-track-tree.tree-b { left: 72%; transform: scale(.75); }
 .safari-rally-award-dock { display: flex; align-items: center; justify-content: flex-end; gap: .6rem; padding: .45rem .65rem; border-top: 3px solid var(--rally-ink); background: #1d4a35; color: var(--rally-cream); }
 .safari-rally-award-dock > span { font-size: .45rem; font-weight: 950; letter-spacing: .09em; text-transform: uppercase; }
-.safari-score-awards { display: grid; grid-template-columns: repeat(5, minmax(2.8rem, 1fr)); gap: .35rem; }
-.safari-score-awards button { min-height: 2rem; padding: .35rem .45rem; color: var(--rally-ink); border: 2px solid var(--rally-ink); border-radius: .5rem; background: var(--rally-cream); box-shadow: 2px 2px 0 var(--rally-ink); font-size: .5rem; font-weight: 950; cursor: pointer; }
-.safari-score-awards button:hover { background: var(--rally-leaf); transform: translateY(-1px); }
+.safari-score-awards { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.safari-score-awards button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.15rem;
+  padding: .35rem .4rem;
+  color: #000000;
+  border: 2.5px solid #000000;
+  border-radius: .65rem;
+  background: #4ade80;
+  box-shadow: 2.5px 2.5px 0 #000000;
+  font-family: var(--font-mono), monospace, sans-serif;
+  font-size: .75rem;
+  font-weight: 950;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.safari-score-awards button:hover { transform: translateY(-1px); box-shadow: 3.5px 3.5px 0 #000000; }
+.safari-score-awards button:active { transform: translateY(1px); box-shadow: 1px 1px 0 #000000; }
 .safari-score-awards button:focus-visible { outline: 3px solid #5cc8e8; outline-offset: 2px; }
-.safari-score-awards button.is-negative { color: #fffdf5; background: #e8614d; }
-.safari-score-awards button.is-major { background: var(--rally-sun); }
+.safari-score-awards button.is-plus1 { background: #4ade80; color: #000000; }
+.safari-score-awards button.is-plus1:hover { background: #34d399; }
+.safari-score-awards button.is-mid { background: #38bdf8; color: #000000; }
+.safari-score-awards button.is-mid:hover { background: #0284c7; color: #ffffff; }
+.safari-score-awards button.is-major { background: #facc15; color: #000000; }
+.safari-score-awards button.is-major:hover { background: #eab308; }
+.safari-score-awards button.is-negative { background: #fecdd3; color: #881337; }
+.safari-score-awards button.is-negative:hover { background: #fca5a5; }
 
 .safari-rally-spotlight { position: relative; overflow: hidden; align-self: start; border-radius: 2rem 3.5rem 1.5rem 1.5rem; }
 .safari-spotlight-habitat { position: relative; height: 8rem; overflow: hidden; border-bottom: 4px solid var(--rally-ink); background: linear-gradient(180deg, var(--rally-sky) 0 58%, var(--team-accent) 59% 100%); }
@@ -3305,14 +3363,33 @@ body {
 .safari-podium-next { display: none; }
 .safari-podium-place > .safari-score-awards { padding: .45rem .65rem .6rem; border-top: 2px dashed rgba(35, 56, 45, 0.25); background: rgba(255, 255, 255, 0.45); border-radius: 0 0 .8rem .8rem; }
 
-.safari-score-awards { grid-template-columns: repeat(3, 1fr); gap: .6rem; }
-.safari-score-awards button { min-height: 2.3rem; border: 2px solid var(--rally-ink); border-radius: .6rem; background: #ffffff; color: var(--rally-ink); box-shadow: 2px 2px 0 var(--rally-ink); font-weight: 900; font-size: .82rem; transition: all 0.12s ease; cursor: pointer; }
-.safari-score-awards button:hover { transform: translateY(-1.5px); box-shadow: 3.5px 3.5px 0 var(--rally-ink); }
-.safari-score-awards button:active { transform: translateY(1px); box-shadow: 1px 1px 0 var(--rally-ink); }
-.safari-score-awards button.is-mid { background: #5cc8e8; color: var(--rally-ink); }
-.safari-score-awards button.is-mid:hover { background: #48b6d6; }
-.safari-score-awards button.is-major { background: #ffd166; color: var(--rally-ink); }
-.safari-score-awards button.is-major:hover { background: #ffc745; }
+.safari-score-awards { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+.safari-score-awards button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  border: 2.5px solid #000000;
+  border-radius: .75rem;
+  background: #4ade80;
+  color: #000000;
+  box-shadow: 2.5px 2.5px 0 #000000;
+  font-family: var(--font-mono), monospace, sans-serif;
+  font-weight: 950;
+  font-size: .85rem;
+  transition: all 0.12s ease;
+  cursor: pointer;
+}
+.safari-score-awards button:hover { transform: translateY(-1.5px); box-shadow: 3.5px 3.5px 0 #000000; }
+.safari-score-awards button:active { transform: translateY(1px); box-shadow: 1px 1px 0 #000000; }
+.safari-score-awards button.is-plus1 { background: #4ade80; color: #000000; }
+.safari-score-awards button.is-plus1:hover { background: #34d399; }
+.safari-score-awards button.is-mid { background: #38bdf8; color: #000000; }
+.safari-score-awards button.is-mid:hover { background: #0284c7; color: #ffffff; }
+.safari-score-awards button.is-major { background: #facc15; color: #000000; }
+.safari-score-awards button.is-major:hover { background: #eab308; }
+.safari-score-awards button.is-negative { background: #fecdd3; color: #881337; }
+.safari-score-awards button.is-negative:hover { background: #fca5a5; }
 
 .safari-viewer-pass { border-radius: 1.25rem; }
 .safari-viewer-pass::before { padding: .35rem .8rem; background: #3d8057; }

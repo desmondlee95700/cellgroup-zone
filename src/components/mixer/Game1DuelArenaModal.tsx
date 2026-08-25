@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Team } from "./types";
 import { getSafariTeamLabel } from "@/lib/safari-theme";
 
@@ -17,6 +17,7 @@ interface Game1DuelArenaModalProps {
   scoreFlashTeamId: number | null;
   updateTeamScore: (teamId: number, delta: number) => void;
   TeamMark: React.ComponentType<{ name: string; compact?: boolean }>;
+  ScoreAwardControls: React.ComponentType<{ team: Team; onAward: (teamId: number, delta: number) => void; compact?: boolean }>;
 }
 
 const FALLBACK_ACCENT_HEXES = [
@@ -43,7 +44,19 @@ export function Game1DuelArenaModal({
   scoreFlashTeamId,
   updateTeamScore,
   TeamMark,
+  ScoreAwardControls,
 }: Game1DuelArenaModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const getTeamAccent = (colorClass: string, fallbackIdx: number) => {
@@ -69,7 +82,12 @@ export function Game1DuelArenaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-[99999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="duel-modal-title"
+    >
       <div className="bg-[#FFFDF5] border-4 border-black rounded-3xl p-4 sm:p-6 shadow-[10px_10px_0px_#000] w-full max-w-5xl my-auto relative">
         
         {/* Product-Designer Header Bar */}
@@ -84,7 +102,7 @@ export function Game1DuelArenaModal({
               <span className="text-[9px] font-black uppercase tracking-wider text-zinc-500 font-mono block">
                 1v1 Head-to-Head Duel
               </span>
-              <h2 className="brutal-font text-xl sm:text-2xl text-black uppercase leading-none">
+              <h2 id="duel-modal-title" className="brutal-font text-xl sm:text-2xl text-black uppercase leading-none">
                 Savanna Duel
               </h2>
             </div>
@@ -221,35 +239,8 @@ export function Game1DuelArenaModal({
               </div>
 
               {(showRangerControls || isAuthenticated) && (
-                <div className="grid grid-cols-4 gap-1.5 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamA.id, 1)}
-                    className="bg-[#4ADE80] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#34d399] active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamA.id, 2)}
-                    className="bg-[#38BDF8] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#0284c7] hover:text-white active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +2
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamA.id, 3)}
-                    className="bg-[#FACC15] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#eab308] active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +3
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamA.id, -1)}
-                    className="bg-red-200 text-red-950 font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-red-300 active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    -1
-                  </button>
+                <div className="mt-3 pt-2.5 border-t-2 border-black/20">
+                  <ScoreAwardControls team={teamA} onAward={updateTeamScore} compact />
                 </div>
               )}
             </div>
@@ -294,35 +285,8 @@ export function Game1DuelArenaModal({
               </div>
 
               {(showRangerControls || isAuthenticated) && (
-                <div className="grid grid-cols-4 gap-1.5 mt-2">
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamB.id, 1)}
-                    className="bg-[#4ADE80] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#34d399] active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamB.id, 2)}
-                    className="bg-[#38BDF8] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#0284c7] hover:text-white active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +2
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamB.id, 3)}
-                    className="bg-[#FACC15] text-black font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-[#eab308] active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    +3
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => updateTeamScore(teamB.id, -1)}
-                    className="bg-red-200 text-red-950 font-black text-xs py-1.5 border-2 border-black shadow-[1.5px_1.5px_0px_#000] hover:bg-red-300 active:translate-y-0.5 cursor-pointer rounded-lg"
-                  >
-                    -1
-                  </button>
+                <div className="mt-3 pt-2.5 border-t-2 border-black/20">
+                  <ScoreAwardControls team={teamB} onAward={updateTeamScore} compact />
                 </div>
               )}
             </div>
