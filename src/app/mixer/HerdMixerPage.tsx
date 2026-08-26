@@ -36,6 +36,7 @@ const SCORE_AWARDS = [
   { label: "+1", delta: 1, title: "Add 1 point" },
   { label: "+2", delta: 2, title: "Add 2 points" },
   { label: "+3", delta: 3, title: "Add 3 points" },
+  { label: "+5", delta: 5, title: "Add 5 bonus points" },
   { label: "-1", delta: -1, title: "Subtract 1 point" },
 ] as const;
 
@@ -64,7 +65,9 @@ function ScoreAwardControls({
                 ? "is-mid"
                 : award.delta === 3
                   ? "is-major"
-                  : "is-negative"
+                  : award.delta === 5
+                    ? "is-bonus"
+                    : "is-negative"
           }
         >
           {award.label}
