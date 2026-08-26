@@ -602,6 +602,109 @@ body {
   background: var(--safari-parchment);
   box-shadow: 0 0 0 14px rgba(244, 185, 66, .35);
   animation: safari-basecamp-daylight 5.5s ease-in-out infinite alternate;
+  transition: background-color 0.7s ease, box-shadow 0.7s ease;
+}
+
+/* Dynamic Canopy Lighting Modes */
+.safari-canopy-game1 {
+  background-color: #1D4A35;
+  transition: background-color 0.7s ease;
+}
+
+.safari-canopy-game2 {
+  background-color: #0E3540;
+  transition: background-color 0.7s ease;
+}
+
+.safari-sun-game1 {
+  background: #F4B942 !important;
+  box-shadow: 0 0 0 20px rgba(244, 185, 66, 0.55), 0 0 160px 60px rgba(244, 185, 66, 0.45) !important;
+}
+
+.safari-sun-game2 {
+  background: #5CC8E8 !important;
+  box-shadow: 0 0 0 20px rgba(92, 200, 232, 0.55), 0 0 160px 60px rgba(92, 200, 232, 0.45) !important;
+}
+
+/* Drifting Jungle Leaves Particle Atmosphere */
+@keyframes safari-leaf-float-1 {
+  0% {
+    transform: translate(0, -40px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(160px, 600px) rotate(320deg);
+    opacity: 0;
+  }
+}
+
+@keyframes safari-leaf-float-2 {
+  0% {
+    transform: translate(0, -40px) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-180px, 650px) rotate(-360deg);
+    opacity: 0;
+  }
+}
+
+.safari-leaf-particle {
+  position: fixed;
+  pointer-events: none;
+  z-index: 40;
+  font-size: 2.2rem;
+  user-select: none;
+  filter: drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.6));
+}
+
+.safari-leaf-particle:nth-child(1) {
+  top: 5vh;
+  left: 8vw;
+  animation: safari-leaf-float-1 11s infinite linear;
+}
+
+.safari-leaf-particle:nth-child(2) {
+  top: 12vh;
+  right: 12vw;
+  animation: safari-leaf-float-2 14s infinite linear 2s;
+}
+
+.safari-leaf-particle:nth-child(3) {
+  top: 35vh;
+  left: 18vw;
+  animation: safari-leaf-float-1 16s infinite linear 5s;
+}
+
+.safari-leaf-particle:nth-child(4) {
+  top: 52vh;
+  right: 8vw;
+  animation: safari-leaf-float-2 13s infinite linear 1s;
+}
+
+.safari-leaf-particle:nth-child(5) {
+  top: 68vh;
+  left: 10vw;
+  animation: safari-leaf-float-1 15s infinite linear 3.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .safari-leaf-particle {
+    animation: none !important;
+    opacity: 0.25;
+  }
 }
 
 .safari-basecamp-hills {

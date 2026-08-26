@@ -6,17 +6,29 @@ import { CartoonAnimalIcon } from "../CartoonAnimalIcon";
 export function Game1NameChallenge() {
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="rounded-3xl border-5 border-[#243028] bg-[#FFF3C4] p-6 shadow-[10px_10px_0px_#243028] md:p-8">
+      {/* Header Banner with Tactile Stamps & Folded Badges */}
+      <div className="relative overflow-hidden rounded-3xl border-5 border-[#243028] bg-[#FFF3C4] p-6 shadow-[10px_10px_0px_#243028] md:p-8">
+        {/* Tactile Stamp Overlay */}
+        <div className="absolute right-4 top-4 pointer-events-none hidden sm:block">
+          <div className="rotate-3 rounded-xl border-3 border-dashed border-[#E8614D] bg-rose-50/90 px-3 py-1.5 text-[11px] font-black uppercase text-[#E8614D] shadow-[3px_3px_0px_#E8614D]">
+            ✦ OFFICIAL DISPATCH #01
+          </div>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-[#243028] pb-5">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-[#243028] bg-[#F4B942] p-2 shadow-[4px_4px_0px_#243028]">
               <CartoonAnimalIcon animal="lion" />
             </div>
             <div>
-              <span className="rounded-md border-2 border-[#243028] bg-[#F4B942] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028]">
-                OFFICIAL GAME RULES & REGULATIONS
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-md border-2 border-[#243028] bg-[#F4B942] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028]">
+                  OFFICIAL GAME RULES & REGULATIONS
+                </span>
+                <span className="-rotate-2 rounded border-2 border-[#243028] bg-sky-200 px-2 py-0.5 text-[9px] font-black uppercase text-[#243028]">
+                  PROJECTIONIST READY 📽️
+                </span>
+              </div>
               <h2 className="brutal-font mt-1 text-2xl text-[#243028] md:text-4xl">
                 Game 1: Get the Name Right 🦁
               </h2>
@@ -40,7 +52,12 @@ export function Game1NameChallenge() {
         {/* Left Column: Match Structure & Tournament Brackets */}
         <div className="lg:col-span-5 space-y-6">
           {/* Tournament Format Card */}
-          <div className="rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028]">
+          <div className="relative rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028]">
+            {/* Tactile Stamp */}
+            <div className="absolute -top-3 -right-2 rotate-6 rounded-lg border-2 border-[#243028] bg-[#B7DF77] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028]">
+              TOURNAMENT BRACKET 🏆
+            </div>
+
             <h3 className="brutal-font text-xl text-[#243028] flex items-center gap-2">
               <span>🏆</span> Match Structure (4 Herds)
             </h3>
@@ -84,7 +101,7 @@ export function Game1NameChallenge() {
           </div>
 
           {/* Grand Winner Bonus Banner */}
-          <div className="rounded-3xl border-4 border-[#243028] bg-[#F4B942] p-6 text-[#243028] shadow-[8px_8px_0px_#243028]">
+          <div className="relative rounded-3xl border-4 border-[#243028] bg-[#F4B942] p-6 text-[#243028] shadow-[8px_8px_0px_#243028]">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🌟</span>
               <div>
