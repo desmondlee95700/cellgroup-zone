@@ -2093,13 +2093,13 @@ body {
 .safari-rally-track-tree.tree-b { left: 72%; transform: scale(.75); }
 .safari-rally-award-dock { display: flex; align-items: center; justify-content: flex-end; gap: .6rem; padding: .45rem .65rem; border-top: 3px solid var(--rally-ink); background: #1d4a35; color: var(--rally-cream); }
 .safari-rally-award-dock > span { font-size: .45rem; font-weight: 950; letter-spacing: .09em; text-transform: uppercase; }
-.safari-score-awards { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.safari-score-awards { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
 .safari-score-awards button {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 2.15rem;
-  padding: .35rem .4rem;
+  padding: .35rem .25rem;
   color: #000000;
   border: 2.5px solid #000000;
   border-radius: .65rem;
@@ -2120,6 +2120,8 @@ body {
 .safari-score-awards button.is-mid:hover { background: #0284c7; color: #ffffff; }
 .safari-score-awards button.is-major { background: #facc15; color: #000000; }
 .safari-score-awards button.is-major:hover { background: #eab308; }
+.safari-score-awards button.is-bonus { background: #e8614d; color: #ffffff; }
+.safari-score-awards button.is-bonus:hover { background: #c8412d; }
 .safari-score-awards button.is-negative { background: #fecdd3; color: #881337; }
 .safari-score-awards button.is-negative:hover { background: #fca5a5; }
 
@@ -3363,7 +3365,7 @@ body {
 .safari-podium-next { display: none; }
 .safari-podium-place > .safari-score-awards { padding: .45rem .65rem .6rem; border-top: 2px dashed rgba(35, 56, 45, 0.25); background: rgba(255, 255, 255, 0.45); border-radius: 0 0 .8rem .8rem; }
 
-.safari-score-awards { display: grid; grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+.safari-score-awards { display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem; }
 .safari-score-awards button {
   display: flex;
   align-items: center;
@@ -3388,6 +3390,8 @@ body {
 .safari-score-awards button.is-mid:hover { background: #0284c7; color: #ffffff; }
 .safari-score-awards button.is-major { background: #facc15; color: #000000; }
 .safari-score-awards button.is-major:hover { background: #eab308; }
+.safari-score-awards button.is-bonus { background: #e8614d; color: #ffffff; }
+.safari-score-awards button.is-bonus:hover { background: #c8412d; }
 .safari-score-awards button.is-negative { background: #fecdd3; color: #881337; }
 .safari-score-awards button.is-negative:hover { background: #fca5a5; }
 
