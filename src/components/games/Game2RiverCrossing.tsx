@@ -6,17 +6,29 @@ import { CartoonAnimalIcon } from "../CartoonAnimalIcon";
 export function Game2RiverCrossing() {
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="rounded-3xl border-5 border-[#243028] bg-[#FFF3C4] p-6 shadow-[10px_10px_0px_#243028] md:p-8">
+      {/* Header Banner with Stamp Overlay */}
+      <div className="relative overflow-hidden rounded-3xl border-5 border-[#243028] bg-[#FFF3C4] p-6 shadow-[10px_10px_0px_#243028] md:p-8">
+        {/* Tactile Stamp Overlay */}
+        <div className="absolute right-4 top-4 pointer-events-none hidden sm:block">
+          <div className="-rotate-2 rounded-xl border-3 border-dashed border-[#5CC8E8] bg-sky-50/90 px-3 py-1.5 text-[11px] font-black uppercase text-[#5CC8E8] shadow-[3px_3px_0px_#5CC8E8]">
+            ✦ CLASSIFIED DOSSIER #02
+          </div>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-[#243028] pb-5">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-[#243028] bg-[#5CC8E8] p-2 shadow-[4px_4px_0px_#243028]">
               <CartoonAnimalIcon animal="elephant" />
             </div>
             <div>
-              <span className="rounded-md border-2 border-[#243028] bg-[#5CC8E8] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028]">
-                GAME RULES & REGULATIONS
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-md border-2 border-[#243028] bg-[#5CC8E8] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028]">
+                  OFFICIAL GAME RULES & REGULATIONS
+                </span>
+                <span className="rotate-2 rounded border-2 border-[#243028] bg-amber-200 px-2 py-0.5 text-[9px] font-black uppercase text-[#243028]">
+                  A4 BRIDGE MISSION 🎈
+                </span>
+              </div>
               <h2 className="brutal-font mt-1 text-2xl text-[#243028] md:text-4xl">
                 Game 2: Balloon River Crossing 🎈
               </h2>
@@ -40,7 +52,12 @@ export function Game2RiverCrossing() {
         {/* Left Column: Balloon Preparation & Materials */}
         <div className="lg:col-span-5 space-y-6">
           {/* Balloon Prep Instructions Card */}
-          <div className="rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028]">
+          <div className="relative rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028]">
+            {/* Tactile Stamp */}
+            <div className="absolute -top-3 -right-2 -rotate-3 rounded-lg border-2 border-[#243028] bg-[#F4B942] px-2.5 py-0.5 text-[10px] font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028]">
+              BALLOON PREP 🎈
+            </div>
+
             <h3 className="brutal-font text-xl text-[#243028] flex items-center gap-2">
               <span>🎈</span> Balloon Preparation & Setup
             </h3>
@@ -55,7 +72,7 @@ export function Game2RiverCrossing() {
                 📐 <strong>A4 Paper Formula:</strong> Number of A4 Papers = Team Members + 2 <em>(e.g., 10 players → 12 A4 papers)</em>.
               </li>
               <li className="rounded-xl border-2 border-[#243028] bg-sky-50 p-3 shadow-[2px_2px_0px_#243028]">
-                ⏱️ <strong>Strategy Time:</strong> Allow 5–10 minutes for team strategy discussion before starting!
+                💡 <strong>Strategy Time:</strong> Allow 5–10 minutes for team strategy discussion before starting!
               </li>
             </ul>
 
@@ -157,7 +174,7 @@ export function Game2RiverCrossing() {
           </div>
 
           {/* Official Game Rules Box */}
-          <div className="rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028] md:p-8">
+          <div className="relative rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028] md:p-8">
             <h3 className="brutal-font text-2xl text-[#243028] flex items-center gap-2 mb-4">
               <span>🚨</span> Official Game Rules
             </h3>
