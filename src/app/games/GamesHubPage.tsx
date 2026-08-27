@@ -37,10 +37,6 @@ export default function GamesHubPage() {
     { scope: containerRef }
   );
 
-  const scrollToStoryline = () => {
-    storylineRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   const scrollToDossier = (gameKey: SelectedGameKey) => {
     setActiveGame(gameKey);
     dossierRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -63,14 +59,6 @@ export default function GamesHubPage() {
       <div className="safari-basecamp-hills safari-basecamp-hills-back" aria-hidden="true" />
       <div className="safari-basecamp-hills safari-basecamp-hills-front" aria-hidden="true" />
 
-      {/* Drifting Jungle Leaves Particle Atmosphere */}
-      <div className="fixed inset-0 pointer-events-none z-40 overflow-hidden" aria-hidden="true">
-        <span className="safari-leaf-particle">🍃</span>
-        <span className="safari-leaf-particle">🌿</span>
-        <span className="safari-leaf-particle">🍂</span>
-        <span className="safari-leaf-particle">🍃</span>
-        <span className="safari-leaf-particle">🌿</span>
-      </div>
 
       {/* Top Safari Expedition Navigation Bar */}
       <header className="safari-mixer-nav-wrap relative z-50 pt-4 px-4 md:px-8">
@@ -183,66 +171,57 @@ export default function GamesHubPage() {
         </aside>
       ) : (
         <aside
-          className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 flex flex-wrap items-center justify-center sm:justify-end gap-2 rounded-2xl border-4 border-[#243028] bg-[#FFF3C4] p-2.5 shadow-[6px_6px_0px_#243028] transition-all"
+          className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 rounded-2xl border-4 border-[#243028] bg-[#FFF3C4] p-3 shadow-[6px_6px_0px_#243028] transition-all w-64 max-w-[calc(100vw-2rem)]"
           aria-label="Expedition Tactical Dock"
         >
-          <button
-            type="button"
-            onClick={scrollToStoryline}
-            className="rounded-xl border-2 border-[#243028] bg-[#B7DF77] px-3 py-1.5 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] hover:bg-lime-400 active:translate-x-[1px] active:translate-y-[1px]"
-          >
-            📜 Storyline
-          </button>
+          {/* Vertical Dock Header with Title and Minimize Button */}
+          <div className="flex items-center justify-between border-b-2 border-[#243028]/20 pb-2 px-0.5">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#243028]/80 flex items-center gap-1.5">
+              🧭 Expedition Dock
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsDockMinimized(true)}
+              className="flex h-6 w-6 items-center justify-center rounded-lg border-2 border-[#243028] bg-zinc-200 text-[10px] font-black text-[#243028] shadow-[2px_2px_0px_#243028] hover:bg-zinc-300 active:translate-x-[1px] active:translate-y-[1px]"
+              title="Minimize Action Dock (PIP Mode)"
+              aria-label="Minimize Action Dock"
+            >
+              ▼
+            </button>
+          </div>
 
+          {/* Action Links & Buttons in Vertical Stack */}
           <button
             type="button"
             onClick={() => scrollToDossier("game1")}
-            className={`rounded-xl border-2 border-[#243028] px-3 py-1.5 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] transition-all ${
+            className={`flex w-full items-center justify-between rounded-xl border-2 border-[#243028] px-3.5 py-2 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] transition-all ${
               activeGame === "game1" ? "bg-[#F4B942]" : "bg-white hover:bg-amber-50"
             }`}
           >
-            🦁 Game 1
+            <span>🦁 Game 1</span>
           </button>
 
           <button
             type="button"
             onClick={() => scrollToDossier("game2")}
-            className={`rounded-xl border-2 border-[#243028] px-3 py-1.5 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] transition-all ${
+            className={`flex w-full items-center justify-between rounded-xl border-2 border-[#243028] px-3.5 py-2 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] transition-all ${
               activeGame === "game2" ? "bg-[#5CC8E8]" : "bg-white hover:bg-sky-50"
             }`}
           >
-            🎈 Game 2
+            <span>🎈 Game 2</span>
           </button>
-
-          <Link
-            href="/showcase/standings"
-            className="rounded-xl border-2 border-[#243028] bg-[#F4B942] px-3 py-1.5 text-xs font-black uppercase text-[#243028] shadow-[2px_2px_0px_#243028] hover:bg-yellow-400 active:translate-x-[1px] active:translate-y-[1px]"
-          >
-            🏆 Standings
-          </Link>
 
           {/* Admin Only Link to Herd Mixer */}
           <Link
             href="/mixer"
-            className="flex items-center gap-1.5 rounded-xl border-2 border-[#243028] bg-[#E8614D] px-3 py-1.5 text-xs font-black uppercase text-[#FFF3C4] shadow-[2px_2px_0px_#243028] hover:bg-rose-600 active:translate-x-[1px] active:translate-y-[1px]"
+            className="flex w-full items-center justify-between gap-2 rounded-xl border-2 border-[#243028] bg-[#E8614D] px-3.5 py-2 text-xs font-black uppercase text-[#FFF3C4] shadow-[2px_2px_0px_#243028] hover:bg-rose-600 active:translate-x-[1px] active:translate-y-[1px] transition-all"
             title="Staff & MC Admin Lodge Access"
           >
             <span>🔑 Ranger Lodge</span>
-            <span className="rounded border border-[#243028] bg-black/40 px-1.5 py-0.2 text-[9px] font-black text-[#FFF3C4]">
+            <span className="rounded border border-[#243028] bg-black/40 px-1.5 py-0.5 text-[9px] font-black text-[#FFF3C4]">
               ADMIN ONLY 🔒
             </span>
           </Link>
-
-          {/* Minimize PIP Button */}
-          <button
-            type="button"
-            onClick={() => setIsDockMinimized(true)}
-            className="flex h-7 w-7 items-center justify-center rounded-xl border-2 border-[#243028] bg-zinc-200 text-xs font-black text-[#243028] shadow-[2px_2px_0px_#243028] hover:bg-zinc-300 active:translate-x-[1px] active:translate-y-[1px] ml-1"
-            title="Minimize Action Dock (PIP Mode)"
-            aria-label="Minimize Action Dock"
-          >
-            ▼
-          </button>
         </aside>
       )}
 
