@@ -88,12 +88,11 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
   const [displayedText, setDisplayedText] = useState("");
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [prevActiveActId, setPrevActiveActId] = useState(activeActId);
 
-  const activeAct = STORY_ACTS[currentActIndex] || STORY_ACTS[0];
-  const { theme } = activeAct;
-
-  // Synchronize activeActId prop if provided from parent
-  useEffect(() => {
+  // Synchronize activeActId prop directly during render
+  if (activeActId !== prevActiveActId) {
+    setPrevActiveActId(activeActId);
     if (activeActId) {
       const idx = STORY_ACTS.findIndex((a) => a.id === activeActId);
       if (idx !== -1 && idx !== currentActIndex) {
@@ -102,7 +101,10 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
         setIsPlaying(true);
       }
     }
-  }, [activeActId, currentActIndex]);
+  }
+
+  const activeAct = STORY_ACTS[currentActIndex] || STORY_ACTS[0];
+  const { theme } = activeAct;
 
   // Web Audio Synth for Typewriter Click Sound
   const playTypewriterSound = useCallback(() => {
@@ -137,25 +139,30 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
     if (!isPlaying) return;
 
     const fullText = activeAct.narrativeText;
-    if (displayedText.length < fullText.length) {
-      const delay = 24;
-
-      timerRef.current = setTimeout(() => {
-        const nextChar = fullText[displayedText.length];
-        setDisplayedText((prev) => prev + nextChar);
-
-        if (nextChar && nextChar.trim().length > 0 && displayedText.length % 2 === 0) {
-          playTypewriterSound();
-        }
-      }, delay);
-    } else {
-      setIsPlaying(false);
+    if (displayedText.length >= fullText.length) {
+      return;
     }
+
+    const delay = 24;
+    timerRef.current = setTimeout(() => {
+      const nextChar = fullText[displayedText.length];
+      setDisplayedText((prev) => {
+        const nextText = prev + nextChar;
+        if (nextText.length >= fullText.length) {
+          setIsPlaying(false);
+        }
+        return nextText;
+      });
+
+      if (nextChar && nextChar.trim().length > 0 && displayedText.length % 2 === 0) {
+        playTypewriterSound();
+      }
+    }, delay);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [displayedText, isPlaying, activeAct, playTypewriterSound]);
+  }, [displayedText, isPlaying, activeAct.narrativeText, playTypewriterSound]);
 
   const handleTogglePlay = () => {
     if (!isPlaying && displayedText.length >= activeAct.narrativeText.length) {
@@ -217,11 +224,11 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
                 {[0, 1, 2, 3, 4].map((i) => (
                   <span
                     key={i}
-                    className="w-1 rounded-full transition-all"
+                    className={`w-1 rounded-full transition-all ${isPlaying ? "animate-pulse" : ""}`}
                     style={{
                       backgroundColor: theme.accentColor,
-                      height: isPlaying ? `${Math.sin(i * 1.5 + Date.now() * 0.01) * 6 + 8}px` : "4px",
-                      animationDelay: `${i * 100}ms`,
+                      height: isPlaying ? `${[12, 6, 14, 8, 10][i]}px` : "4px",
+                      animationDelay: `${i * 150}ms`,
                     }}
                   />
                 ))}
