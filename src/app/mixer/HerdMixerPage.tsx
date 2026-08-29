@@ -36,7 +36,6 @@ const SCORE_AWARDS = [
   { label: "+1", delta: 1, title: "Add 1 point" },
   { label: "+2", delta: 2, title: "Add 2 points" },
   { label: "+3", delta: 3, title: "Add 3 points" },
-  { label: "+5", delta: 5, title: "Add 5 bonus points" },
   { label: "-1", delta: -1, title: "Subtract 1 point" },
 ] as const;
 
@@ -65,9 +64,7 @@ function ScoreAwardControls({
                 ? "is-mid"
                 : award.delta === 3
                   ? "is-major"
-                  : award.delta === 5
-                    ? "is-bonus"
-                    : "is-negative"
+                  : "is-negative"
           }
         >
           {award.label}
@@ -2081,14 +2078,12 @@ function formatCellgroupRoster() {
                         Open Mobile Roster
                       </a>
                       <div className="grid grid-cols-2 gap-2">
-                        <a
+                        <Link
                           href={`/showcase/standings${shareUrl.includes("?") ? shareUrl.slice(shareUrl.indexOf("?")) : ""}`}
-                          target="_blank"
-                          rel="noreferrer"
                           className="flex items-center justify-center gap-1.5 py-2 px-2.5 bg-[#B7DF77] text-black border-2 border-black rounded-lg font-mono font-black text-[10px] uppercase shadow-[2px_2px_0px_#000] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-center"
                         >
                           Results
-                        </a>
+                        </Link>
                         <button
                           type="button"
                           onClick={copyShareLink}
