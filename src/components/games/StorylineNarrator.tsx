@@ -29,16 +29,16 @@ export interface StoryAct {
 export const STORY_ACTS: StoryAct[] = [
   {
     id: "act-1",
-    actTitle: "Act I: The Birthday Gathering",
+    actTitle: "Act I: Get the Name Right",
     subtitle: "Game 1 Storyline",
     gameTag: "Get the Name Right 🦁",
     animal: "lion",
     emoji: "🦁",
     narrativeText:
-      "Once upon a time, the Lion King was preparing for a grand birthday party! 🦁\n\n" +
-      "He invited four different herds from across the jungle to come and celebrate with him. " +
+      "Once upon a time, the Lion King was preparing for a banquet party! 🦁\n\n" +
+      "He invited four different herds from across the jungle to come and celebrate with him.\n\n" +
       "When all four herds arrived, the Lion King warmly welcomed everyone.\n\n" +
-      "To ensure harmony in the kingdom, the Lion King asked everyone to introduce themselves and remember each other's names!",
+      "The Lion King asked everyone to introduce themselves and remember each other's names.",
     theme: {
       avatarBg: "bg-[#F4B942]",
       screenBg: "bg-[#143525]",
@@ -59,10 +59,11 @@ export const STORY_ACTS: StoryAct[] = [
     animal: "elephant",
     emoji: "🎈",
     narrativeText:
-      "The Lion King led the four herds across the bridge towards his birthday celebration! 🦁🎂\n\n" +
-      "Suddenly, a strong wind blew across the river and scattered all the birthday balloons everywhere! 🎈\n\n" +
-      "Since the Lion King loved balloons very much, he asked the four herds to make new balloons and bring them safely to the other side of the river. " +
-      "But there was one major problem… the bridge had been completely destroyed! 🌊",
+      "The feast was ready, and the Lion King’s banquet was about to begin! 🦁🎂\n\n" +
+      "The four herds were proudly crossing the river, carrying special gifts and balloons for the King. 🎈\n\n" +
+      "Suddenly, disaster struck! A strong wind blew from the mountains, sending all the balloons into the rushing river and destroying the only bridge. 🌪️🌊\n\n" +
+      "Now, the four herds are stuck on the other side.\n\n" +
+      "They must work together, make new balloons, and cross the river safely to reach the banquet before it begins!",
     theme: {
       avatarBg: "bg-[#5CC8E8]",
       screenBg: "bg-[#0F2F3B]",
@@ -143,7 +144,7 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
       return;
     }
 
-    const delay = 24;
+    const delay = 20;
     timerRef.current = setTimeout(() => {
       const nextChar = fullText[displayedText.length];
       setDisplayedText((prev) => {

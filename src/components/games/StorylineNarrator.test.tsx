@@ -13,12 +13,12 @@ describe("STORY_ACTS data integrity", () => {
     expect(act1?.narrativeText).toContain("introduce themselves");
 
     expect(act2?.narrativeText).toContain("strong wind blew");
-    expect(act2?.narrativeText).toContain("bridge had been completely destroyed");
+    expect(act2?.narrativeText).toContain("destroying the only bridge");
   });
 
   it("renders StorylineNarrator statically without error", () => {
     const html = renderToStaticMarkup(<StorylineNarrator />);
     expect(html).toContain("FOREST GUARDIAN NARRATOR");
-    expect(html).toContain("Act I: The Birthday Gathering");
+    expect(html).toContain("Act I: Get the Name Right");
   });
 });

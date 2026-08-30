@@ -43,14 +43,14 @@ export function Game1NameChallenge() {
         </div>
 
         <p className="mt-4 text-base font-bold text-[#243028] leading-relaxed">
-          <strong className="text-black uppercase">Objective:</strong> Test how well team members can remember each other’s names when the dark canopy curtain drops!
+          <strong className="text-black uppercase">Objective:</strong> Test how well team members can remember each other’s names.
         </p>
       </div>
 
       {/* Main Rules & Regulations Dossier */}
       <div className="rounded-3xl border-4 border-[#243028] bg-[#FFF3C4] p-6 shadow-[8px_8px_0px_#243028] md:p-8 space-y-6">
         <h3 className="brutal-font text-2xl text-[#243028]">
-          How to Play & Round Regulations
+          How to Play Regulations
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -60,8 +60,8 @@ export function Game1NameChallenge() {
               01
             </span>
             <div>
-              <h4 className="font-black text-base text-[#243028] uppercase">1. Introduction Phase</h4>
-              <ul className="mt-1 space-y-1 text-xs font-bold text-zinc-700">
+              <h4 className="font-black text-base text-[#243028] uppercase">1. Introduction</h4>
+              <ul className="mt-1.5 space-y-1 text-xs font-bold text-zinc-700">
                 <li>• First, everyone introduces themselves and says their name clearly.</li>
                 <li>• Players should try their best to remember the names of members from the other teams.</li>
               </ul>
@@ -77,15 +77,15 @@ export function Game1NameChallenge() {
               <div className="flex items-center justify-between gap-2">
                 <h4 className="font-black text-base text-[#243028] uppercase">2. Round 1 – One Person</h4>
                 <span className="rounded border border-[#243028] bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-900">
-                  +1 Pt / Round
+                  Winner: 1 pt
                 </span>
               </div>
               <ul className="mt-1.5 space-y-1 text-xs font-bold text-zinc-700">
                 <li>• Each team sends <strong>1 person</strong> to the centre.</li>
-                <li>• A black curtain will separate the players.</li>
-                <li>• When the curtain drops, players must quickly identify and correctly say the names of people from other teams.</li>
-                <li>• The fastest player to correctly name the others wins the round.</li>
-                <li>• <strong>Play 3 rounds total.</strong></li>
+                <li>• A curtain will separate the players.</li>
+                <li>• When the curtain drops, the players must quickly identify and correctly say the names of the people from the other teams.</li>
+                <li>• The fastest player to correctly name the others wins.</li>
+                <li>• <strong>Play 3 rounds.</strong></li>
               </ul>
             </div>
           </div>
@@ -99,13 +99,13 @@ export function Game1NameChallenge() {
               <div className="flex items-center justify-between gap-2">
                 <h4 className="font-black text-base text-[#243028] uppercase">3. Round 2 – Two People</h4>
                 <span className="rounded border border-[#243028] bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-900">
-                  +2 Pts / Round
+                  Winner: 2 pts
                 </span>
               </div>
               <ul className="mt-1.5 space-y-1 text-xs font-bold text-zinc-700">
                 <li>• Each team sends <strong>2 people</strong> to the centre.</li>
-                <li>• When curtain drops, shout opponent names!</li>
-                <li>• <strong>Play 3 rounds total.</strong></li>
+                <li>• When the curtain drops, quickly identify and name the opposing players.</li>
+                <li>• <strong>Play 2 rounds.</strong></li>
               </ul>
             </div>
           </div>
@@ -119,20 +119,38 @@ export function Game1NameChallenge() {
               <div className="flex items-center justify-between gap-2">
                 <h4 className="font-black text-base text-[#243028] uppercase">4. Round 3 – Three People</h4>
                 <span className="rounded border border-[#243028] bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-900">
-                  +3 Pts
+                  Winner: 3 pts
                 </span>
               </div>
               <ul className="mt-1.5 space-y-1 text-xs font-bold text-zinc-700">
                 <li>• Each team sends <strong>3 people</strong> to the centre.</li>
-                <li>• <strong>Play 1 intense grand round!</strong></li>
+                <li>• <strong>Play 1 round.</strong></li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Reminder Box */}
-        <div className="rounded-2xl border-3 border-[#243028] bg-amber-100 p-4 text-xs font-bold text-amber-950">
-          📌 <strong>Reminder:</strong> Listen carefully during the introductions and try to remember as many names as possible!
+        {/* Bonus Points Badge & Reminder Box */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center gap-3 rounded-2xl border-3 border-[#243028] bg-[#F4B942] p-4 text-xs font-black text-[#243028] shadow-[4px_4px_0px_#243028]">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border-2 border-[#243028] bg-white text-lg">
+              ⭐
+            </span>
+            <div>
+              <div className="uppercase tracking-wider">Tournament Bonus</div>
+              <div className="text-sm font-black">The final winning herd gets +3 extra points!</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-2xl border-3 border-[#243028] bg-amber-100 p-4 text-xs font-bold text-amber-950 shadow-[4px_4px_0px_#243028]">
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border-2 border-[#243028] bg-white text-lg">
+              📌
+            </span>
+            <div>
+              <div className="uppercase font-black tracking-wider text-amber-900">Pro-Tip Reminder</div>
+              <div>Listen carefully during the introductions and try to remember as many names as possible!</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
