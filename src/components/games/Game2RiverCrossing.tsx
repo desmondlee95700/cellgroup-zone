@@ -43,7 +43,7 @@ export function Game2RiverCrossing() {
         </div>
 
         <p className="mt-4 text-base font-bold text-[#243028] leading-relaxed">
-          <strong className="text-black uppercase">Mission:</strong> Transport your team and all birthday balloons safely across the river using a paper bridge of A4 sheets after the original wooden bridge was destroyed by a wild windstorm!
+          <strong className="text-black uppercase">Mission:</strong> Transport your team and all balloons safely across the rushing river to reach the Lion King’s banquet before it begins!
         </p>
       </div>
 
@@ -55,16 +55,16 @@ export function Game2RiverCrossing() {
             How to Play Regulations
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Step 1 */}
             <div className="flex items-start gap-4 rounded-2xl border-3 border-[#243028] bg-white p-4 shadow-[4px_4px_0px_#243028]">
               <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-3 border-[#243028] bg-[#5CC8E8] font-black text-[#243028]">
                 01
               </span>
               <div>
-                <h4 className="font-black text-base text-[#243028] uppercase">1. Start Position</h4>
-                <p className="mt-1 text-xs font-bold text-zinc-700">
-                  All team members begin behind the starting line carrying their balloons. The first player places an A4 paper on the floor and steps onto it.
+                <h4 className="font-black text-base text-[#243028] uppercase">1. Start</h4>
+                <p className="mt-1.5 text-xs font-bold text-zinc-700 leading-relaxed">
+                  All team members begin behind the starting line with their balloons. The first player places an A4 paper on the floor and steps onto it.
                 </p>
               </div>
             </div>
@@ -76,8 +76,8 @@ export function Game2RiverCrossing() {
               </span>
               <div>
                 <h4 className="font-black text-base text-[#243028] uppercase">2. Build the Bridge</h4>
-                <p className="mt-1 text-xs font-bold text-zinc-700">
-                  The team must continuously move A4 papers forward. Players pass spare A4 papers from the back to the front so the team keeps moving forward.
+                <p className="mt-1.5 text-xs font-bold text-zinc-700 leading-relaxed">
+                  The team must continuously move the A4 papers forward. Players pass the spare A4 paper from the back to the front so that the team can keep moving towards the finish line.
                 </p>
               </div>
             </div>
@@ -88,9 +88,9 @@ export function Game2RiverCrossing() {
                 03
               </span>
               <div>
-                <h4 className="font-black text-base text-[#243028] uppercase">3. Protect the Balloons</h4>
-                <p className="mt-1 text-xs font-bold text-zinc-700">
-                  Bring all balloons across safely. Players cannot throw balloons across the river! Balloons must physically stay with the team.
+                <h4 className="font-black text-base text-[#243028] uppercase">3. Protect Balloons 🎈</h4>
+                <p className="mt-1.5 text-xs font-bold text-zinc-700 leading-relaxed">
+                  At the same time, the team must bring all their balloons across the river. Players cannot simply throw the balloons across the river — the balloons must stay with the team and reach the finish line.
                 </p>
               </div>
             </div>
@@ -101,10 +101,40 @@ export function Game2RiverCrossing() {
                 04
               </span>
               <div>
-                <h4 className="font-black text-base text-[#243028] uppercase">4. Reaching the Finish Line</h4>
+                <h4 className="font-black text-base text-[#243028] uppercase">4. Teamwork</h4>
                 <p className="mt-1 text-xs font-bold text-zinc-700">
-                  The team finishes when: ✅ All members reach the other side, ✅ All balloons reach the other side, and ✅ Nobody is standing in the river!
+                  Players can pass balloons to one another while moving. Communicate and decide:
                 </p>
+                <ul className="mt-1.5 space-y-1 text-xs font-bold text-zinc-700">
+                  <li>• Who will carry the balloons?</li>
+                  <li>• Who will move the A4 papers?</li>
+                  <li>• Who will pass the papers forward?</li>
+                  <li>• How can everyone stay on the &ldquo;bridge&rdquo;?</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="flex items-start gap-4 rounded-2xl border-3 border-[#243028] bg-white p-4 shadow-[4px_4px_0px_#243028] md:col-span-2 lg:col-span-2">
+              <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-3 border-[#243028] bg-[#F4B942] font-black text-[#243028]">
+                05
+              </span>
+              <div className="w-full">
+                <h4 className="font-black text-base text-[#243028] uppercase">5. Reaching the Finish</h4>
+                <p className="mt-1 text-xs font-bold text-zinc-700">
+                  The team is considered finished when:
+                </p>
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="rounded-xl border-2 border-[#243028] bg-emerald-50 p-2.5 text-xs font-bold text-emerald-950">
+                    ✅ All team members have reached the other side
+                  </div>
+                  <div className="rounded-xl border-2 border-[#243028] bg-emerald-50 p-2.5 text-xs font-bold text-emerald-950">
+                    ✅ All their balloons have reached the other side
+                  </div>
+                  <div className="rounded-xl border-2 border-[#243028] bg-emerald-50 p-2.5 text-xs font-bold text-emerald-950">
+                    ✅ Nobody is standing in the river
+                  </div>
+                </div>
               </div>
             </div>
           </div>
