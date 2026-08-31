@@ -167,6 +167,11 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
   const isFinished = revealedWordCount >= totalWords;
   const progressPercent = Math.round((revealedWordCount / totalWords) * 100);
 
+  // Stop playing when all words are revealed (render-time, avoids effect setState)
+  if (isFinished && isPlaying) {
+    setIsPlaying(false);
+  }
+
   // Cumulative char count at start of each word
   const wordCharStarts = useMemo(() => {
     let pos = 0;
@@ -403,10 +408,6 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
 
   useEffect(() => {
     if (!isPlaying) return;
-    if (isFinished) {
-      setIsPlaying(false);
-      return;
-    }
 
     if (voiceEnabled && voiceStartedRef.current) {
       // Voice-synced: reveal words up to where the voice has reached
