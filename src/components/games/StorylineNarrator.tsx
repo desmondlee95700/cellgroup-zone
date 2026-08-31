@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { CartoonAnimalIcon } from "../CartoonAnimalIcon";
 
 export interface StoryActTheme {
@@ -15,6 +15,17 @@ export interface StoryActTheme {
   accentColor: string;
 }
 
+export interface AudioSyncPoint {
+  /** Timestamp in seconds when this phrase starts being spoken */
+  start: number;
+  /** Timestamp in seconds when this phrase finishes being spoken */
+  end: number;
+  /** Character position in narrativeText where this phrase begins */
+  charStart: number;
+  /** Character position in narrativeText to reveal up to when this phrase completes */
+  charEnd: number;
+}
+
 export interface StoryAct {
   id: string;
   actTitle: string;
@@ -24,6 +35,10 @@ export interface StoryAct {
   animal: string;
   emoji: string;
   theme: StoryActTheme;
+  /** Path to pre-recorded narration audio (in /public) */
+  audioSrc?: string;
+  /** Phrase-level sync points mapping audio timestamps to text positions */
+  audioSync?: AudioSyncPoint[];
 }
 
 export const STORY_ACTS: StoryAct[] = [
@@ -38,7 +53,14 @@ export const STORY_ACTS: StoryAct[] = [
       "Once upon a time, the Lion King was preparing for a banquet party! 🦁\n\n" +
       "He invited four different herds from across the jungle to come and celebrate with him.\n\n" +
       "When all four herds arrived, the Lion King warmly welcomed everyone.\n\n" +
-      "The Lion King asked everyone to introduce themselves and remember each other's names.",
+      "The Lion King asked everyone to introduce themselves and to remember each other's names.",
+    audioSrc: "/audio/act1-narration.mp3",
+    audioSync: [
+      { start: 0, end: 4.67, charStart: 0, charEnd: 69 },
+      { start: 5.79, end: 10.20, charStart: 71, charEnd: 157 },
+      { start: 11.39, end: 15.24, charStart: 159, charEnd: 227 },
+      { start: 16.09, end: 20.53, charStart: 229, charEnd: 317 },
+    ],
     theme: {
       avatarBg: "bg-[#F4B942]",
       screenBg: "bg-[#143525]",
@@ -59,11 +81,19 @@ export const STORY_ACTS: StoryAct[] = [
     animal: "elephant",
     emoji: "🎈",
     narrativeText:
-      "The feast was ready, and the Lion King’s banquet was about to begin! 🦁🎂\n\n" +
+      "The feast was ready, and the Lion King's banquet was about to begin! 🦁🎂\n\n" +
       "The four herds were proudly crossing the river, carrying special gifts and balloons for the King. 🎈\n\n" +
       "Suddenly, disaster struck! A strong wind blew from the mountains, sending all the balloons into the rushing river and destroying the only bridge. 🌪️🌊\n\n" +
       "Now, the four herds are stuck on the other side.\n\n" +
       "They must work together, make new balloons, and cross the river safely to reach the banquet before it begins!",
+    audioSrc: "/audio/act2-narration.mp3",
+    audioSync: [
+      { start: 0, end: 3.27, charStart: 0, charEnd: 73 },
+      { start: 4.15, end: 9.17, charStart: 75, charEnd: 175 },
+      { start: 10.06, end: 17.28, charStart: 177, charEnd: 328 },
+      { start: 18.13, end: 20.52, charStart: 330, charEnd: 378 },
+      { start: 21.16, end: 26.96, charStart: 380, charEnd: 489 },
+    ],
     theme: {
       avatarBg: "bg-[#5CC8E8]",
       screenBg: "bg-[#0F2F3B]",
@@ -86,26 +116,266 @@ interface StorylineNarratorProps {
 
 export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
   const [currentActIndex, setCurrentActIndex] = useState(0);
-  const [displayedText, setDisplayedText] = useState("");
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [revealedWordCount, setRevealedWordCount] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceIndex, setSelectedVoiceIndex] = useState(0);
   const [prevActiveActId, setPrevActiveActId] = useState(activeActId);
 
-  // Synchronize activeActId prop directly during render
+  // How far the voice has reached in the *original* text
+  const voiceTargetRef = useRef(0);
+  const voiceStartedRef = useRef(false);
+  const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Tick counter to force re-renders while polling for voice target
+  const [pollTick, setPollTick] = useState(0);
+  // HTML5 Audio ref for pre-recorded narration
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Speech synthesis refs (fallback when no audioSrc)
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Synchronize activeActId prop directly during render (PR #23 pattern)
   if (activeActId !== prevActiveActId) {
     setPrevActiveActId(activeActId);
     if (activeActId) {
       const idx = STORY_ACTS.findIndex((a) => a.id === activeActId);
       if (idx !== -1 && idx !== currentActIndex) {
         setCurrentActIndex(idx);
-        setDisplayedText("");
-        setIsPlaying(true);
+        setRevealedWordCount(0);
+        setIsPlaying(false);
       }
     }
   }
 
   const activeAct = STORY_ACTS[currentActIndex] || STORY_ACTS[0];
   const { theme } = activeAct;
+  const hasPrerecorded = !!activeAct.audioSrc && !!activeAct.audioSync;
+
+  // Pre-split narrative into words, preserving whitespace structure
+  const words = useMemo(() => {
+    const result: { word: string; trailing: string }[] = [];
+    const regex = /(\S+)(\s*)/g;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(activeAct.narrativeText)) !== null) {
+      result.push({ word: match[1], trailing: match[2] });
+    }
+    return result;
+  }, [activeAct.narrativeText]);
+
+  const totalWords = words.length;
+  const isFinished = revealedWordCount >= totalWords;
+  const progressPercent = Math.round((revealedWordCount / totalWords) * 100);
+
+  // Stop playing when all words are revealed (render-time, avoids effect setState)
+  if (isFinished && isPlaying) {
+    setIsPlaying(false);
+  }
+
+  // Cumulative char count at start of each word
+  const wordCharStarts = useMemo(() => {
+    let pos = 0;
+    return words.map(({ word, trailing }) => {
+      const start = pos;
+      pos += word.length + trailing.length;
+      return start;
+    });
+  }, [words]);
+
+  // Convert a char position to how many words should be revealed
+  const charPosToWordCount = useCallback((charPos: number) => {
+    let count = 0;
+    for (const start of wordCharStarts) {
+      if (charPos >= start) count++;
+      else break;
+    }
+    return count;
+  }, [wordCharStarts]);
+
+  // Load available voices (only needed for speech synthesis fallback)
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoices = voices.filter((v) => v.lang.startsWith("en"));
+      const otherVoices = voices.filter((v) => !v.lang.startsWith("en"));
+      setAvailableVoices([...englishVoices, ...otherVoices]);
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+  // ── Pre-recorded audio: start playback (called from click handlers) ──
+  const startPrerecordedAudio = useCallback(() => {
+    if (!activeAct.audioSrc) return;
+
+    if (!audioRef.current || audioRef.current.src !== activeAct.audioSrc) {
+      audioRef.current = new Audio(activeAct.audioSrc);
+    }
+    const audio = audioRef.current;
+    audio.currentTime = 0;
+    voiceTargetRef.current = 0;
+
+    const syncPoints = activeAct.audioSync || [];
+
+    const syncAudio = () => {
+      const t = audio.currentTime;
+      let target = 0;
+
+      for (const sp of syncPoints) {
+        if (t < sp.start) {
+          break;
+        } else if (t >= sp.start && t <= sp.end) {
+          const speechDuration = sp.end - sp.start;
+          const elapsed = t - sp.start;
+          const progress = Math.min(elapsed / speechDuration, 1);
+          const phraseChars = sp.charEnd - sp.charStart;
+          target = Math.floor(sp.charStart + phraseChars * progress);
+          break;
+        } else {
+          target = sp.charEnd;
+        }
+      }
+
+      if (target > voiceTargetRef.current) {
+        voiceTargetRef.current = target;
+        setPollTick((tick) => tick + 1);
+      }
+    };
+
+    if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+    syncIntervalRef.current = setInterval(() => {
+      if (!audio.paused && !audio.ended) syncAudio();
+    }, 50);
+
+    audio.onended = () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+      voiceTargetRef.current = activeAct.narrativeText.length;
+      setPollTick((tick) => tick + 1);
+    };
+
+    voiceStartedRef.current = true;
+    audio.play().catch(() => {});
+  }, [activeAct]);
+
+  // ── Speech synthesis fallback: start narration (called from click handlers) ──
+  const startSynthesisVoice = useCallback(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+
+    const original = activeAct.narrativeText;
+    const cleanText = original
+      .replace(/[\u{1F000}-\u{1FFFF}]/gu, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ");
+
+    const wordEndPositions: number[] = [];
+    const wordRegex = /\S+/g;
+    let match: RegExpExecArray | null;
+    while ((match = wordRegex.exec(original)) !== null) {
+      let endPos = match.index + match[0].length;
+      while (endPos < original.length && /[\s\u{1F000}-\u{1FFFF}]/u.test(original[endPos])) {
+        endPos++;
+      }
+      wordEndPositions.push(endPos);
+    }
+    voiceTargetRef.current = 0;
+
+    const cleanWords: { start: number; end: number }[] = [];
+    const cleanWordRegex = /\S+/g;
+    let cm: RegExpExecArray | null;
+    while ((cm = cleanWordRegex.exec(cleanText)) !== null) {
+      cleanWords.push({ start: cm.index, end: cm.index + cm[0].length });
+    }
+
+    const utt = new SpeechSynthesisUtterance(cleanText);
+    utt.rate = 0.9;
+    utt.pitch = 1.0;
+    utt.volume = 1.0;
+    if (availableVoices.length > 0) {
+      utt.voice = availableVoices[selectedVoiceIndex] || availableVoices[0];
+    }
+
+    utt.onboundary = (event) => {
+      if (event.name === "word" || event.name === "sentence") {
+        const ci = event.charIndex;
+        let wordIdx = cleanWords.findIndex((w) => ci >= w.start && ci < w.end);
+        if (wordIdx === -1) {
+          wordIdx = cleanWords.findIndex((w) => w.start >= ci);
+          if (wordIdx === -1) wordIdx = cleanWords.length - 1;
+        }
+        const endPos = wordEndPositions[Math.min(wordIdx, wordEndPositions.length - 1)];
+        if (endPos !== undefined && endPos > voiceTargetRef.current) {
+          voiceTargetRef.current = endPos;
+          setPollTick((t) => t + 1);
+        }
+      }
+    };
+
+    utt.onend = () => {
+      voiceTargetRef.current = original.length;
+      setPollTick((t) => t + 1);
+    };
+
+    utteranceRef.current = utt;
+    voiceStartedRef.current = true;
+    window.speechSynthesis.speak(utt);
+  }, [activeAct.narrativeText, availableVoices, selectedVoiceIndex]);
+
+  // ── Unified start voice (picks pre-recorded or synthesis) ──
+  const startVoiceover = useCallback(() => {
+    if (hasPrerecorded) {
+      startPrerecordedAudio();
+    } else {
+      startSynthesisVoice();
+    }
+  }, [hasPrerecorded, startPrerecordedAudio, startSynthesisVoice]);
+
+  // ── Stop all audio ──
+  const stopAllAudio = useCallback(() => {
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    voiceStartedRef.current = false;
+  }, []);
+
+  // ── Pause/resume voice ──
+  const pauseVoice = useCallback(() => {
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    }
+    if (audioRef.current && hasPrerecorded) {
+      audioRef.current.pause();
+    } else if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.pause();
+    }
+  }, [hasPrerecorded]);
+
+  const resumeVoice = useCallback(() => {
+    if (audioRef.current && hasPrerecorded) {
+      audioRef.current.play().catch(() => {});
+    } else if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.resume();
+    }
+  }, [hasPrerecorded]);
+
+  // Cancel audio on unmount or act change
+  useEffect(() => {
+    return () => { stopAllAudio(); };
+  }, [currentActIndex, stopAllAudio]);
 
   // Web Audio Synth for Typewriter Click Sound
   const playTypewriterSound = useCallback(() => {
@@ -133,57 +403,76 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
     }
   }, [isMuted]);
 
-  // Typewriter Loop
+  // Word-by-word reveal loop — voice-synced or fixed-rate
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!isPlaying) return;
 
-    const fullText = activeAct.narrativeText;
-    if (displayedText.length >= fullText.length) {
-      return;
-    }
-
-    const delay = 20;
-    timerRef.current = setTimeout(() => {
-      const nextChar = fullText[displayedText.length];
-      setDisplayedText((prev) => {
-        const nextText = prev + nextChar;
-        if (nextText.length >= fullText.length) {
-          setIsPlaying(false);
-        }
-        return nextText;
-      });
-
-      if (nextChar && nextChar.trim().length > 0 && displayedText.length % 2 === 0) {
-        playTypewriterSound();
+    if (voiceEnabled && voiceStartedRef.current) {
+      // Voice-synced: reveal words up to where the voice has reached
+      const targetWordCount = charPosToWordCount(voiceTargetRef.current);
+      if (revealedWordCount < targetWordCount) {
+        timerRef.current = setTimeout(() => {
+          setRevealedWordCount((prev) => prev + 1);
+          playTypewriterSound();
+        }, 40); // fast catch-up, one word per 40ms
+      } else {
+        // Polling — wait for voice to advance
+        timerRef.current = setTimeout(() => {
+          setPollTick((t) => t + 1);
+        }, 30);
       }
-    }, delay);
+    } else {
+      // Fixed-rate: one word every ~120ms
+      timerRef.current = setTimeout(() => {
+        setRevealedWordCount((prev) => {
+          const next = prev + 1;
+          if (next >= totalWords) setIsPlaying(false);
+          return next;
+        });
+        playTypewriterSound();
+      }, 120);
+    }
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [displayedText, isPlaying, activeAct.narrativeText, playTypewriterSound]);
+  }, [revealedWordCount, isPlaying, activeAct, playTypewriterSound, voiceEnabled, pollTick, isFinished, totalWords, charPosToWordCount]);
 
   const handleTogglePlay = () => {
-    if (!isPlaying && displayedText.length >= activeAct.narrativeText.length) {
-      setDisplayedText("");
+    if (!isPlaying && isFinished) {
+      setRevealedWordCount(0);
+      stopAllAudio();
+      voiceTargetRef.current = 0;
+      setIsPlaying(true);
+      if (voiceEnabled) startVoiceover();
+      return;
     }
-    setIsPlaying((prev) => !prev);
+    const nextPlaying = !isPlaying;
+    setIsPlaying(nextPlaying);
+    if (nextPlaying && voiceEnabled && revealedWordCount === 0 && !voiceStartedRef.current) {
+      startVoiceover();
+    }
+    if (voiceEnabled && voiceStartedRef.current) {
+      if (nextPlaying) resumeVoice();
+      else pauseVoice();
+    }
   };
 
   const handleReplay = () => {
-    setDisplayedText("");
+    stopAllAudio();
+    voiceTargetRef.current = 0;
+    setRevealedWordCount(0);
     setIsPlaying(true);
+    if (voiceEnabled) startVoiceover();
   };
 
   const handleSkip = () => {
-    setDisplayedText(activeAct.narrativeText);
+    setRevealedWordCount(totalWords);
     setIsPlaying(false);
+    stopAllAudio();
   };
-
-  const isFinished = displayedText.length >= activeAct.narrativeText.length;
-  const progressPercent = Math.round((displayedText.length / activeAct.narrativeText.length) * 100);
 
   return (
     <section
@@ -254,18 +543,26 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
             STORY TRANSMISSION · {activeAct.gameTag}
           </span>
           <span className="text-[#5CC8E8]">
-            PROGRESS: {progressPercent}% ({displayedText.length}/{activeAct.narrativeText.length})
+            PROGRESS: {progressPercent}% ({revealedWordCount}/{totalWords} words)
           </span>
         </div>
 
-        {/* Main Typewriter Text Content */}
+        {/* Main Word-by-Word Text Content */}
         <div className="min-h-[120px] text-lg font-bold leading-relaxed text-[#FFF3C4] whitespace-pre-line md:text-xl">
-          {displayedText}
-          {!isFinished && (
-            <span
-              className={`ml-1 inline-block h-6 w-3.5 ${theme.cursorColor} align-middle shadow-[0_0_8px_currentColor] animate-pulse`}
-            />
-          )}
+          {words.map((w, i) => (
+            <React.Fragment key={i}>
+              <span
+                className={`transition-opacity duration-300 ease-in ${
+                  i < revealedWordCount ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                {w.word}
+              </span>
+              <span className={i < revealedWordCount ? "opacity-100" : "opacity-0"}>
+                {w.trailing}
+              </span>
+            </React.Fragment>
+          ))}
         </div>
 
         {/* Bottom Progress Bar inside screen */}
@@ -286,7 +583,13 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
             onClick={handleTogglePlay}
             className={`flex items-center gap-2 rounded-xl border-3 border-[#243028] ${theme.avatarBg} px-4 py-2.5 text-xs font-black uppercase text-[#243028] shadow-[3px_3px_0px_#243028] hover:opacity-90 active:translate-x-[2px] active:translate-y-[2px] transition-all`}
           >
-            {isPlaying ? "⏸️ Pause Narrator" : isFinished ? "🔄 Replay Story" : "▶️ Resume Story"}
+            {isPlaying
+              ? "⏸️ Pause Narrator"
+              : isFinished
+                ? "🔄 Replay Story"
+                : revealedWordCount === 0
+                  ? "▶️ Start Story"
+                  : "▶️ Resume Story"}
           </button>
 
           {/* Replay */}
@@ -310,16 +613,54 @@ export function StorylineNarrator({ activeActId }: StorylineNarratorProps) {
           )}
         </div>
 
-        {/* Audio Mute/Unmute */}
-        <button
-          type="button"
-          onClick={() => setIsMuted((prev) => !prev)}
-          className={`flex items-center gap-1.5 rounded-xl border-3 border-[#243028] px-3.5 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#243028] ${
-            isMuted ? "bg-zinc-200 text-zinc-700" : "bg-[#B7DF77] text-[#243028]"
-          }`}
-        >
-          {isMuted ? "🔇 Audio Off" : "🔊 Audio On"}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Audio Mute/Unmute */}
+          <button
+            type="button"
+            onClick={() => setIsMuted((prev) => !prev)}
+            className={`flex items-center gap-1.5 rounded-xl border-3 border-[#243028] px-3.5 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#243028] ${
+              isMuted ? "bg-zinc-200 text-zinc-700" : "bg-[#B7DF77] text-[#243028]"
+            }`}
+          >
+            {isMuted ? "🔇 Audio Off" : "🔊 Audio On"}
+          </button>
+
+          {/* Voiceover Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              const next = !voiceEnabled;
+              setVoiceEnabled(next);
+              if (!next) {
+                stopAllAudio();
+              }
+            }}
+            className={`flex items-center gap-1.5 rounded-xl border-3 border-[#243028] px-3.5 py-2.5 text-xs font-black uppercase shadow-[3px_3px_0px_#243028] ${
+              voiceEnabled
+                ? "bg-[#5CC8E8] text-[#243028]"
+                : "bg-zinc-200 text-zinc-700"
+            }`}
+          >
+            {voiceEnabled ? "🎙️ Voice On" : "🎙️ Voice Off"}
+          </button>
+
+          {/* Voice Selector (only for speech synthesis fallback, not pre-recorded) */}
+          {voiceEnabled && !hasPrerecorded && availableVoices.length > 1 && (
+            <select
+              value={selectedVoiceIndex}
+              onChange={(e) => setSelectedVoiceIndex(Number(e.target.value))}
+              className="rounded-xl border-3 border-[#243028] bg-[#FFF3C4] px-2 py-2 text-[10px] font-bold text-[#243028] shadow-[3px_3px_0px_#243028] max-w-[140px]"
+            >
+              {availableVoices.map((voice, i) => (
+                <option key={`${voice.name}-${i}`} value={i}>
+                  {voice.name.length > 20
+                    ? voice.name.slice(0, 20) + "…"
+                    : voice.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
     </section>
   );
